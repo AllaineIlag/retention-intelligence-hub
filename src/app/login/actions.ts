@@ -19,7 +19,7 @@ export async function login(formData: FormData) {
     email,
     options: {
       // Redirect to the callback route which handles the session exchange
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` || "http://localhost:3000"}/auth/callback`,
     },
   });
 

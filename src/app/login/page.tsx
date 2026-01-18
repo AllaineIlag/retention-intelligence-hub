@@ -2,6 +2,7 @@
 
 import { MagicLoginForm } from "@/components/magic-link-form";
 import { motion } from "framer-motion";
+import { Shield } from "lucide-react";
 
 export default function LoginPage() {
   return (
@@ -18,12 +19,20 @@ export default function LoginPage() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative z-10 w-full max-w-md"
       >
-        <div className="mb-10 space-y-2 text-center">
+        <div className="mb-8 flex flex-col items-center space-y-4 text-center">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="bg-primary/10 text-primary ring-primary/20 flex h-12 w-12 items-center justify-center rounded-xl ring-1"
+          >
+            <Shield className="h-6 w-6" />
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            className="text-4xl font-bold tracking-tight text-white"
+            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
           >
             Retention Intelligence
           </motion.h1>
@@ -31,9 +40,9 @@ export default function LoginPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}
-            className="text-lg text-zinc-500"
+            className="text-base text-zinc-500"
           >
-            The Vault is waiting.
+            Secure access to your retention insights.
           </motion.p>
         </div>
 
@@ -41,7 +50,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.5 }}
-          className="rounded-2xl border border-white/5 bg-zinc-900/30 p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl"
+          className="rounded-2xl border border-white/10 bg-zinc-900/50 p-8 shadow-2xl backdrop-blur-xl"
         >
           <MagicLoginForm />
         </motion.div>
