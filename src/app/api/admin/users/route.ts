@@ -36,7 +36,7 @@ const supabaseAdmin = createSupabaseClient(
 
 export async function GET() {
   const supabase = await createClient();
-  // @ts-expect-error - Supabase Client types mismatch between packages is common, safe to ignore for this check
+  // Supabase Client types check
   if (!(await isLead(supabase))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -56,7 +56,6 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  // @ts-expect-error - Supabase Client types mismatch
   if (!(await isLead(supabase))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -95,7 +94,6 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const supabase = await createClient();
-  // @ts-expect-error - Supabase Client types mismatch
   if (!(await isLead(supabase))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
