@@ -29,7 +29,7 @@ export function UsersTable({ users }: UsersTableProps) {
 
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/admin/users?id=${id}`, {
+      const res = await fetch(`/api/lead/users?id=${id}`, {
         method: "DELETE",
       });
 

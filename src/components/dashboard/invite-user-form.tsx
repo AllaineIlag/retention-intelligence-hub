@@ -18,7 +18,7 @@ export function InviteUserForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/users", {
+      const res = await fetch("/api/lead/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, fullName }),

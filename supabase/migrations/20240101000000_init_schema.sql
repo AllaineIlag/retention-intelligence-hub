@@ -6,7 +6,7 @@ create table employees (
   id uuid primary key default uuid_generate_v4(),
   email text unique not null,
   full_name text not null,
-  role text not null check (role in ('admin', 'interviewer', 'employee')),
+  role text not null check (role in ('lead', 'interviewer', 'employee')),
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -28,13 +28,13 @@ alter table resignations enable row level security;
 -- Policies for employees
 -- Allow users to view their own profile (based on email match with auth.uid() email - conceptual, since we use magic links)
 -- efficient RLS would usually link to auth.users, but for this specific "The Floor" plan, we manage users in this table.
--- Policy: Admin and Interviewers can view all. Employees can view self.
+-- Policy: Lead and Interviewers can view all. Employees can view self.
 
-create policy "Admins and Interviewers can view all employees"
+create policy "Leads and Interviewers can view all employees"
   on employees for select
   using (
     auth.jwt() ->> 'email' in (
-      select email from employees where role in ('admin', 'interviewer')
+      select email from employees where role in ('lead', 'interviewer')
     )
   );
 
@@ -45,13 +45,13 @@ create policy "Employees can view own profile"
   );
 
 -- Policies for resignations
--- Policy: Admin and Interviewers can view all. Employees can view own.
+-- Policy: Lead and Interviewers can view all. Employees can view own.
 
-create policy "Admins and Interviewers can view all resignations"
+create policy "Leads and Interviewers can view all resignations"
   on resignations for select
   using (
     auth.jwt() ->> 'email' in (
-      select email from employees where role in ('admin', 'interviewer')
+      select email from employees where role in ('lead', 'interviewer')
     )
   );
 
@@ -63,19 +63,19 @@ create policy "Employees can view own resignation"
     )
   );
 
--- Allow Insert/Update for Interviewers/Admins (Simplified for MVP)
-create policy "Admins and Interviewers can insert/update employees"
+-- Allow Insert/Update for Interviewers/Leads (Simplified for MVP)
+create policy "Leads and Interviewers can insert/update employees"
   on employees for all
   using (
     auth.jwt() ->> 'email' in (
-      select email from employees where role in ('admin', 'interviewer')
+      select email from employees where role in ('lead', 'interviewer')
     )
   );
 
-create policy "Admins and Interviewers can insert/update resignations"
+create policy "Leads and Interviewers can insert/update resignations"
   on resignations for all
   using (
     auth.jwt() ->> 'email' in (
-      select email from employees where role in ('admin', 'interviewer')
+      select email from employees where role in ('lead', 'interviewer')
     )
   );

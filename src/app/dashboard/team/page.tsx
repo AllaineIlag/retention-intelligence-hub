@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { InviteUserForm } from "@/components/dashboard/invite-user-form";
 import { UsersTable } from "@/components/dashboard/users-table";
 
-export default async function UserManagementPage() {
+export default async function TeamPage() {
   const supabase = await createClient();
 
   const {
@@ -15,8 +15,8 @@ export default async function UserManagementPage() {
     redirect("/login");
   }
 
-  // Security Check: Ensure user is lead (Checking via Supabase Service Client for role)
-  // Reusing the pattern from API
+  // Service client for admin-level fetch if needed, though RLS should handle it strictly speaking,
+  // but here we are checking role manually.
   const supabaseService = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -29,19 +29,12 @@ export default async function UserManagementPage() {
     .eq("email", user.email)
     .single();
 
-  if (
-    currentUserProfile?.role !== "lead" &&
-    currentUserProfile?.role !== "interviewer"
-  ) {
-    // NOTE: For 'The Floor' MVP, maybe we allow 'interviewer' to see this?
-    // Restricted to lead.
-    if (currentUserProfile?.role !== "lead") {
-      return (
-        <div className="p-8 text-white">
-          Access Denied: specialized lead privileges required.
-        </div>
-      );
-    }
+  if (currentUserProfile?.role !== "lead") {
+    return (
+      <div className="p-8 text-zinc-500 dark:text-zinc-400">
+        Access Denied: You do not have permission to view this page.
+      </div>
+    );
   }
 
   // Fetch Interviewers
@@ -54,8 +47,8 @@ export default async function UserManagementPage() {
   return (
     <div className="space-y-8 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight text-white">
-          User Management
+        <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          Team Management
         </h2>
       </div>
 

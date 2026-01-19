@@ -7,7 +7,7 @@ truncate table employees cascade;
 -- Insert Employees
 insert into employees (email, full_name, role)
 values
-  ('ilagallainebenedict01380@gmail.com', 'Benedict Ilagalla', 'admin'),
+  ('ilagallainebenedict01380@gmail.com', 'Benedict Ilagalla', 'lead'),
   ('sungjinwoo1515@gmail.com', 'Sung Jinwoo', 'interviewer'),
   ('benjaminbrowning2001@gmail.com', 'Benjamin Browning', 'employee');
 

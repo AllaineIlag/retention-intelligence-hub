@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   // Default fallback if logic fails
-  let next = searchParams.get("next") ?? "/dashboard/interviewer";
+  let next = searchParams.get("next") ?? "/dashboard";
 
   if (code) {
     const supabase = await createClient();
@@ -25,14 +25,16 @@ export async function GET(request: Request) {
           .eq("email", user.email)
           .single();
 
-        // 3. Override 'next' based on role if it was the default
+        // 3. Override 'next' to Unified Dashboard
         if (employee) {
-          if (employee.role === "admin") {
-            next = "/dashboard/lead";
-          } else if (employee.role === "interviewer") {
-            next = "/dashboard/interviewer";
+          // If 'next' was the old default, update it to the new unified path
+          if (next === "/dashboard/interviewer" || next === "/dashboard/lead") {
+            next = "/dashboard";
           }
-          // Employees also default to interviewer dashboard or their specific view if needed
+          // Ensure we default to /dashboard if nothing specific was requested
+          if (!searchParams.get("next")) {
+            next = "/dashboard";
+          }
         }
       }
 

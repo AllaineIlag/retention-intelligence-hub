@@ -13,22 +13,22 @@ async function isLead(supabase: SupabaseClient) {
   } = await supabase.auth.getUser();
   if (error || !user) return false;
 
-  const supabaseAdmin = createSupabaseClient(
+  const supabaseService = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } },
   );
 
-  const { data: employee } = await supabaseAdmin
+  const { data: employee } = await supabaseService
     .from("employees")
     .select("role")
     .eq("email", user.email)
     .single();
 
-  return employee?.role === "admin" || employee?.role === "lead";
+  return employee?.role === "lead";
 }
 
-const supabaseAdmin = createSupabaseClient(
+const supabaseService = createSupabaseClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { persistSession: false } },
@@ -41,7 +41,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: interviewers, error } = await supabaseAdmin
+  const { data: interviewers, error } = await supabaseService
     .from("employees")
     .select("*")
     .eq("role", "interviewer")
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseService
       .from("employees")
       .insert([
         {
@@ -105,7 +105,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Missing user ID" }, { status: 400 });
   }
 
-  const { error } = await supabaseAdmin
+  const { error } = await supabaseService
     .from("employees")
     .delete()
     .eq("id", id)
