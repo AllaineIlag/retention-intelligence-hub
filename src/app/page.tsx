@@ -37,7 +37,7 @@ export default function Home() {
             <div className="mx-auto max-w-3xl space-y-8">
               <div className="bg-background/50 text-muted-foreground animate-in fade-in slide-in-from-bottom-4 inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium backdrop-blur-sm duration-500">
                 <span className="mr-2 flex h-2 w-2 rounded-full bg-green-500"></span>
-                v6.0 Now Live
+                v5.0 Now Live
               </div>
               <h1 className="from-foreground to-foreground/70 animate-in fade-in slide-in-from-bottom-8 bg-gradient-to-r bg-clip-text text-4xl font-bold tracking-tight text-transparent duration-700 sm:text-6xl">
                 Stop Employee Churn <br className="hidden sm:block" />
