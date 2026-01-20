@@ -5,75 +5,56 @@ import { getURL } from "@/utils/get-url";
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  let next = searchParams.get("next") ?? "/dashboard";
+  const next = "/dashboard"; // Always go to dashboard after login
 
-  // Prepare the redirect URL
+  // Get base URL
   let baseUrl = getURL();
-  if (baseUrl.endsWith("/") && next.startsWith("/")) {
+  if (baseUrl.endsWith("/")) {
     baseUrl = baseUrl.slice(0, -1);
   }
 
-  // Create response first, then attach cookies to it
-  const response = NextResponse.redirect(`${baseUrl}${next}`);
-
-  if (code) {
-    // Create a Supabase client that sets cookies on the response
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              response.cookies.set(name, value, options);
-            });
-          },
-        },
-      },
-    );
-
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      // Get the authenticated user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // Check their role in the employees table
-      if (user?.email) {
-        const { data: employee } = await supabase
-          .from("employees")
-          .select("role")
-          .eq("email", user.email)
-          .single();
-
-        // Override 'next' to Unified Dashboard if needed
-        if (employee) {
-          if (next === "/dashboard/interviewer" || next === "/dashboard/lead") {
-            next = "/dashboard";
-          }
-          if (!searchParams.get("next")) {
-            next = "/dashboard";
-          }
-        }
-      }
-
-      // Re-create the redirect URL with potentially updated 'next'
-      let finalUrl = getURL();
-      if (finalUrl.endsWith("/") && next.startsWith("/")) {
-        finalUrl = finalUrl.slice(0, -1);
-      }
-
-      // Update the redirect location with the correct path
-      response.headers.set("Location", `${finalUrl}${next}`);
-      return response;
-    }
+  if (!code) {
+    // No code provided, redirect to error page
+    return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`);
   }
 
-  // Return error page if code exchange failed
-  return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`);
+  // Create the redirect response FIRST
+  const redirectUrl = `${baseUrl}${next}`;
+  const response = NextResponse.redirect(redirectUrl);
+
+  // Create Supabase client that sets cookies on this response
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Ensure cookies are set with proper attributes for production
+            response.cookies.set(name, value, {
+              ...options,
+              // Explicitly set these for cross-site cookie handling
+              sameSite: "lax",
+              secure: true,
+            });
+          });
+        },
+      },
+    },
+  );
+
+  // Exchange the code for a session
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error("Auth callback error:", error.message);
+    return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`);
+  }
+
+  // Session exchange successful - cookies are now set on the response
+  // Return the response with cookies attached
+  return response;
 }
