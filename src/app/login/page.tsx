@@ -2,13 +2,18 @@
 
 import { login } from './actions';
 import { BarChart3, Mail, ArrowRight, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import { useActionState, useEffect } from 'react';
 import { toast } from "sonner";
+import { motion } from 'framer-motion';
 
 const initialState = {
     message: '',
     success: false
+};
+
+const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
 };
 
 export default function LoginPage() {
@@ -18,9 +23,7 @@ export default function LoginPage() {
         if (state?.message) {
             if (state.success) {
                 toast.success(state.message)
-            } else if (state.message !== '') { // Only error if message exists and not success (though initialState has empty message)
-                // If we have an error structure, or just use message for both
-                // verification: check actions.ts error return
+            } else if (state.message !== '') {
                 toast.error(state.message)
             }
         }
@@ -29,22 +32,53 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] text-white selection:bg-indigo-500/30">
             {/* Background Ambience */}
-            <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
+            <div className="absolute inset-0 -z-10 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[100px] animate-pulse" />
+            </div>
 
-            <div className="w-full max-w-md space-y-8 px-4">
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={fadeInUp}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="w-full max-w-md space-y-8 px-4"
+            >
                 {/* Logo/Header */}
                 <div className="flex flex-col items-center text-center">
-                    <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/20">
-                        <BarChart3 className="h-6 w-6 text-white" />
-                    </div>
-                    <h2 className="text-3xl font-bold tracking-tight text-white">Welcome back</h2>
-                    <p className="mt-2 text-sm text-gray-400">
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30"
+                    >
+                        <BarChart3 className="h-7 w-7 text-white" />
+                    </motion.div>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="text-3xl font-bold tracking-tight text-white"
+                    >
+                        Welcome back
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="mt-2 text-sm text-gray-400"
+                    >
                         Sign in to access your retention intelligence dashboard
-                    </p>
+                    </motion.p>
                 </div>
 
                 {/* Login Form */}
-                <div className="group rounded-2xl border border-white/5 bg-white/[0.02] p-8 -md shadow-2xl transition-all hover:bg-white/[0.04]">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.4 }}
+                    className="group rounded-2xl border border-white/5 bg-white/[0.02] p-8 shadow-2xl transition-all hover:bg-white/[0.04] backdrop-blur-sm"
+                >
                     <form action={formAction} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-xs font-medium uppercase tracking-wider text-gray-400">
@@ -58,14 +92,14 @@ export default function LoginPage() {
                                     autoComplete="email"
                                     required
                                     placeholder="name@company.com"
-                                    className="block w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 pl-11 text-sm text-white placeholder-gray-500 transition-colors focus:border-indigo-500 focus:bg-white/[0.02] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    className="block w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 pl-11 text-sm text-white placeholder-gray-500 transition-all focus:border-indigo-500 focus:bg-white/[0.02] focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                 />
                                 <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
                             </div>
                         </div>
 
-                        {state?.message && (
-                            <p className="text-sm text-amber-500 text-center">{state.message}</p>
+                        {state?.message && !state.success && (
+                            <p className="text-sm text-red-400 text-center">{state.message}</p>
                         )}
 
                         <button
@@ -83,10 +117,15 @@ export default function LoginPage() {
                             )}
                         </button>
                     </form>
-                </div>
+                </motion.div>
 
                 {/* Footer */}
-                <div className="flex flex-col items-center gap-4 text-center text-xs text-gray-500">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: 0.6 }}
+                    className="flex flex-col items-center gap-4 text-center text-xs text-gray-500"
+                >
                     <div className="flex items-center gap-2 rounded-full border border-red-500/10 bg-red-500/5 px-3 py-1.5 text-red-500/80 backdrop-blur-sm transition-colors hover:border-red-500/20 hover:bg-red-500/10">
                         <span className="relative flex h-1.5 w-1.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -97,8 +136,8 @@ export default function LoginPage() {
                     <p>
                         © {new Date().getFullYear()} <span className="font-medium text-gray-400">@League of Developer</span>. All rights reserved.
                     </p>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 }
