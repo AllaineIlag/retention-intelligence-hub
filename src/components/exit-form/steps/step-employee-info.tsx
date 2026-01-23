@@ -41,7 +41,7 @@ export function StepEmployeeInfo({
 
                 {/* Position - Required */}
                 <div className="space-y-2">
-                    <Label htmlFor="position" className="text-slate-700">Position <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="position">Position <span className="text-destructive">*</span></Label>
                     <Select
                         // Note: Resignation table doesn't strictly have 'position' column in schema yet?
                         // Checking schema from list_tables (Step 97): 
@@ -88,7 +88,7 @@ export function StepEmployeeInfo({
                         defaultValue={""}
                     // onValueChange={(val) => handleSelectChange('position', val)} 
                     >
-                        <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                        <SelectTrigger className="w-full bg-background border-input">
                             <SelectValue placeholder="Select your position" />
                         </SelectTrigger>
                         <SelectContent>
@@ -101,9 +101,9 @@ export function StepEmployeeInfo({
 
                 {/* Department - Required */}
                 <div className="space-y-2">
-                    <Label htmlFor="department" className="text-slate-700">Department <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="department">Department <span className="text-destructive">*</span></Label>
                     <Select defaultValue={""}>
-                        <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                        <SelectTrigger className="w-full bg-background border-input">
                             <SelectValue placeholder="Select your department" />
                         </SelectTrigger>
                         <SelectContent>
@@ -118,9 +118,9 @@ export function StepEmployeeInfo({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Supervisor - Required */}
                 <div className="space-y-2">
-                    <Label htmlFor="supervisor" className="text-slate-700">Supervisor <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="supervisor">Supervisor <span className="text-destructive">*</span></Label>
                     <Select defaultValue={""}>
-                        <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                        <SelectTrigger className="w-full bg-background border-input">
                             <SelectValue placeholder="Select your supervisor" />
                         </SelectTrigger>
                         <SelectContent>
@@ -133,26 +133,26 @@ export function StepEmployeeInfo({
 
                 {/* Exit Date - Required */}
                 <div className="space-y-2">
-                    <Label htmlFor="exit_date" className="text-slate-700">Last Day of Work <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="exit_date">Last Day of Work <span className="text-destructive">*</span></Label>
                     <Input
                         type="date"
                         id="exit_date"
                         name="exit_date"
                         value={resignation.exit_date || ''}
                         onChange={handleInputChange}
-                        className="w-full bg-slate-50 border-slate-200 block"
+                        className="w-full bg-background border-input block"
                     />
                 </div>
             </div>
 
             {/* Reason - Required */}
             <div className="space-y-2">
-                <Label htmlFor="reason" className="text-slate-700">Primary Reason for Leaving <span className="text-red-500">*</span></Label>
+                <Label htmlFor="reason">Primary Reason for Leaving <span className="text-destructive">*</span></Label>
                 <Select
                     value={resignation.reason || ''}
                     onValueChange={(val) => handleSelectChange('reason', val)}
                 >
-                    <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                    <SelectTrigger className="w-full bg-background border-input">
                         <SelectValue placeholder="Select a reason" />
                     </SelectTrigger>
                     <SelectContent>

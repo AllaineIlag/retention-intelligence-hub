@@ -21,12 +21,12 @@ export function WizardNavigation({
     nextLabel = "Next"
 }: WizardNavigationProps) {
     return (
-        <div className="mt-8 flex flex-col-reverse gap-3 md:flex-row md:justify-between border-t border-slate-100 pt-6">
+        <div className="mt-8 flex flex-col-reverse gap-3 md:flex-row md:justify-between border-t border-border pt-6">
             <Button
                 variant="ghost"
                 onClick={onBack}
                 disabled={isBackDisabled || isSubmitting}
-                className="w-full md:w-auto text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+                className="w-full md:w-auto text-muted-foreground hover:text-foreground hover:bg-muted"
             >
                 {backLabel}
             </Button>

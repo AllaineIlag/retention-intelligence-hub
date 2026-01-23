@@ -13,8 +13,8 @@ export function StepPrivacy({ consent, onConsentChange }: StepPrivacyProps) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-4">
-                <h3 className="text-lg font-medium text-slate-800">Data Privacy & Consent</h3>
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-600 leading-relaxed h-64 overflow-y-auto">
+                <h3 className="text-lg font-medium">Data Privacy & Consent</h3>
+                <div className="bg-muted p-4 rounded-lg border border-border text-sm text-muted-foreground leading-relaxed h-64 overflow-y-auto">
                     <p className="mb-4">
                         <strong>Confidentiality Notice:</strong> The information you provide in this exit interview will be used to help us understand why employees leave and to identify opportunities for improvement within the organization.
                     </p>
@@ -30,7 +30,7 @@ export function StepPrivacy({ consent, onConsentChange }: StepPrivacyProps) {
                 </div>
             </div>
 
-            <div className="flex items-start space-x-3 p-4 border border-slate-200 rounded-lg bg-white">
+            <div className="flex items-start space-x-3 p-4 border border-border rounded-lg bg-card">
                 <Checkbox
                     id="privacy-consent"
                     checked={consent}
@@ -43,7 +43,7 @@ export function StepPrivacy({ consent, onConsentChange }: StepPrivacyProps) {
                     >
                         I acknowledge that I have read and understood the privacy notice above.
                     </Label>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-muted-foreground">
                         I agree to the processing of my exit interview data.
                     </p>
                 </div>
