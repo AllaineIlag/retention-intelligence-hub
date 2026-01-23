@@ -2,6 +2,16 @@ import { Label } from "../../ui/label"
 import { Input } from "../../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 import { Database } from "@/lib/database.types"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
 
 type Resignation = Database['public']['Tables']['resignations']['Row']
 
@@ -134,14 +144,28 @@ export function StepEmployeeInfo({
                 {/* Exit Date - Required */}
                 <div className="space-y-2">
                     <Label htmlFor="exit_date">Last Day of Work <span className="text-destructive">*</span></Label>
-                    <Input
-                        type="date"
-                        id="exit_date"
-                        name="exit_date"
-                        value={resignation.exit_date || ''}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border-input block"
-                    />
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant={"outline"}
+                                className={cn(
+                                    "w-full justify-start text-left font-normal bg-background border-input",
+                                    !resignation.exit_date && "text-muted-foreground"
+                                )}
+                            >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {resignation.exit_date ? format(new Date(resignation.exit_date), "PPP") : <span>Pick a date</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                mode="single"
+                                selected={resignation.exit_date ? new Date(resignation.exit_date) : undefined}
+                                onSelect={(date) => date && onChange({ exit_date: format(date, 'yyyy-MM-dd') })}
+                                initialFocus
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
