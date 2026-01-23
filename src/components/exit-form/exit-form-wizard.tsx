@@ -1,240 +1,213 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { EmployeeInfoStep } from './steps/employee-info-step';
-import { QuestionnaireStep } from './steps/questionnaire-step';
-import { PrivacyStep } from './steps/privacy-step';
-import { SummaryStep } from './steps/summary-step';
-import { submitExitForm, type ExitFormData } from '@/app/exit-form/actions';
-import { toast } from 'sonner';
+import { useState } from 'react'
+import { WizardLayout } from '@/components/exit-form/wizard-layout'
+import { WizardNavigation } from '@/components/exit-form/wizard-navigation'
+import { useRouter } from 'next/navigation'
+import { Database } from '@/lib/database.types'
+import { StepEmployeeInfo } from './steps/step-employee-info'
+import { StepQuestionnaire } from './steps/step-questionnaire'
+import { StepPrivacy } from './steps/step-privacy'
+import { StepReview } from './steps/step-review'
+import { saveExitForm, submitExitForm } from '@/app/exit-form/actions'
+import { toast } from 'sonner'
 
-const STEPS = [
-    { id: 1, title: 'Employee Information', component: EmployeeInfoStep },
-    { id: 2, title: 'Exit Questionnaire', component: QuestionnaireStep },
-    { id: 3, title: 'Privacy & Agreement', component: PrivacyStep },
-    { id: 4, title: 'Summary & Confirmation', component: SummaryStep },
-];
+type Resignation = Database['public']['Tables']['resignations']['Row']
+type Question = Database['public']['Tables']['questions']['Row']
 
-const initialFormData: ExitFormData = {
-    employee_number: '',
-    employee_name: '',
-    date_hired: '',
-    position_when_hired: '',
-    current_position: '',
-    department: '',
-    supervisor: '',
-    date_of_resignation: '',
-    reasons_for_leaving: [],
-    destination_country: '',
-    reason_more_desirable: [],
-    other_reason_detail: '',
-    career_growth_rating: '',
-    pay_rate_rating: '',
-    benefits_rating: '',
-    workload_rating: '',
-    would_recommend: false,
-    privacy_consent: false,
-};
-
-interface ExitFormWizardProps {
-    resignationId: string;
-    existingData?: Partial<ExitFormData>;
+interface ReferenceData {
+    positions: string[]
+    departments: string[]
+    supervisors: string[]
 }
 
-export function ExitFormWizard({ resignationId, existingData }: ExitFormWizardProps) {
-    const [currentStep, setCurrentStep] = useState(1);
-    const [formData, setFormData] = useState<ExitFormData>({
-        ...initialFormData,
-        ...existingData,
-    });
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSubmitted, setIsSubmitted] = useState(false);
+interface ExitFormWizardProps {
+    resignation: Resignation
+    referenceData: ReferenceData
+    reasons: string[]
+    questions: Question[]
+}
 
-    const progress = (currentStep / STEPS.length) * 100;
+const STEPS = [
+    { id: 'employee-info', label: 'Employee Info' },
+    { id: 'questionnaire', label: 'Questionnaire' },
+    { id: 'privacy', label: 'Privacy & Consent' },
+    { id: 'review', label: 'Review & Submit' },
+]
 
-    const updateFormData = (updates: Partial<ExitFormData>) => {
-        setFormData((prev) => ({ ...prev, ...updates }));
-        // Clear errors for updated fields
-        const clearedErrors = { ...errors };
-        Object.keys(updates).forEach((key) => delete clearedErrors[key]);
-        setErrors(clearedErrors);
-    };
+export function ExitFormWizard({ resignation: initialResignation, referenceData, reasons, questions }: ExitFormWizardProps) {
+    const router = useRouter()
+    const [currentStep, setCurrentStep] = useState(1)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
-    const validateStep = (step: number): boolean => {
-        const newErrors: Record<string, string> = {};
+    // Form State
+    const [resignation, setResignation] = useState<Resignation>(initialResignation)
+    const [responses, setResponses] = useState<Record<string, { rating?: number, responseText?: string }>>({})
+    const [privacyConsent, setPrivacyConsent] = useState(false)
 
-        if (step === 1) {
-            if (!formData.employee_name) newErrors.employee_name = 'Required';
-            if (!formData.employee_number) newErrors.employee_number = 'Required';
-            if (!formData.date_hired) newErrors.date_hired = 'Required';
-            if (!formData.position_when_hired) newErrors.position_when_hired = 'Required';
-            if (!formData.current_position) newErrors.current_position = 'Required';
-            if (!formData.department) newErrors.department = 'Required';
-            if (!formData.supervisor) newErrors.supervisor = 'Required';
-            if (!formData.date_of_resignation) newErrors.date_of_resignation = 'Required';
-        }
+    const handleNext = async () => {
+        if (currentStep < STEPS.length) {
+            // Validate Step 1
+            if (currentStep === 1) {
+                if (!resignation.exit_date || !resignation.reason) {
+                    toast.error("Please fill in all required fields.")
+                    return
+                }
 
-        if (step === 2) {
-            if (formData.reasons_for_leaving.length === 0) {
-                newErrors.reasons_for_leaving = 'Select at least one reason';
+                try {
+                    setIsSubmitting(true)
+                    await saveExitForm({
+                        resignationId: resignation.id,
+                        exitDate: resignation.exit_date!,
+                        reason: resignation.reason!,
+                        responses: []
+                    })
+                    setIsSubmitting(false)
+                    setCurrentStep(prev => prev + 1)
+                } catch (_error) {
+                    setIsSubmitting(false)
+                    toast.error("Failed to save progress. Please try again.")
+                }
             }
-            // Conditional: If abroad, country is required
-            if (formData.reasons_for_leaving.includes('another_job_abroad') && !formData.destination_country) {
-                newErrors.destination_country = 'Required when selecting abroad';
+            // Validate Step 2 (Questionnaire)
+            else if (currentStep === 2) {
+                const missingRatings = questions.filter(q => !responses[q.id]?.rating)
+
+                if (missingRatings.length > 0) {
+                    toast.error(`Please provide a rating for all ${questions.length} questions.`)
+                    return
+                }
+
+                try {
+                    setIsSubmitting(true)
+                    const formattedResponses = Object.entries(responses).map(([questionId, data]) => ({
+                        questionId,
+                        rating: data.rating,
+                        responseText: data.responseText
+                    }))
+
+                    await saveExitForm({
+                        resignationId: resignation.id,
+                        exitDate: resignation.exit_date!,
+                        reason: resignation.reason!,
+                        responses: formattedResponses
+                    })
+                    setIsSubmitting(false)
+                    setCurrentStep(prev => prev + 1)
+                } catch (_error) {
+                    setIsSubmitting(false)
+                    toast.error("Failed to save responses. Please try again.")
+                }
             }
-            // Conditional: If job-related, desirable reasons required
-            const jobReasons = ['another_job_local', 'another_job_abroad', 'business'];
-            if (
-                formData.reasons_for_leaving.some((r) => jobReasons.includes(r)) &&
-                (!formData.reason_more_desirable || formData.reason_more_desirable.length === 0)
-            ) {
-                newErrors.reason_more_desirable = 'Required when leaving for another opportunity';
+            // Validate Step 3 (Privacy)
+            else if (currentStep === 3) {
+                if (!privacyConsent) {
+                    toast.error("You must acknowledge the privacy notice to proceed.")
+                    return
+                }
+                setCurrentStep(prev => prev + 1)
             }
-            // Conditional: If other, detail required
-            if (formData.reasons_for_leaving.includes('other') && !formData.other_reason_detail) {
-                newErrors.other_reason_detail = 'Please specify';
+            else {
+                setCurrentStep(prev => prev + 1)
             }
-            if (!formData.career_growth_rating) newErrors.career_growth_rating = 'Required';
-            if (!formData.pay_rate_rating) newErrors.pay_rate_rating = 'Required';
-            if (!formData.benefits_rating) newErrors.benefits_rating = 'Required';
-            if (!formData.workload_rating) newErrors.workload_rating = 'Required';
-        }
-
-        if (step === 3) {
-            if (!formData.privacy_consent) {
-                newErrors.privacy_consent = 'You must agree to the privacy policy';
-            }
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleNext = () => {
-        if (validateStep(currentStep)) {
-            setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
-        }
-    };
-
-    const handlePrev = () => {
-        setCurrentStep((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleSubmit = async () => {
-        if (!validateStep(currentStep)) return;
-
-        setIsSubmitting(true);
-        const result = await submitExitForm(resignationId, formData);
-
-        if (result.error) {
-            toast.error(result.error);
         } else {
-            setIsSubmitted(true);
-            toast.success('Exit form submitted successfully!');
-        }
-        setIsSubmitting(false);
-    };
+            // Handle final submit
+            try {
+                setIsSubmitting(true)
+                const formattedResponses = Object.entries(responses).map(([questionId, data]) => ({
+                    questionId,
+                    rating: data.rating,
+                    responseText: data.responseText
+                }))
 
-    if (isSubmitted) {
-        return (
-            <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex flex-col items-center justify-center py-16 text-center"
-            >
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 mb-6">
-                    <Check className="h-10 w-10 text-emerald-500" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-                <p className="text-muted-foreground max-w-md">
-                    Your exit form has been submitted successfully. We appreciate your honest feedback.
-                </p>
-            </motion.div>
-        );
+                // Final save
+                await saveExitForm({
+                    resignationId: resignation.id,
+                    exitDate: resignation.exit_date!,
+                    reason: resignation.reason!,
+                    responses: formattedResponses
+                })
+
+                // Submit action
+                await submitExitForm(resignation.id)
+
+                toast.success("Exit form submitted successfully.")
+
+                setTimeout(() => {
+                    setIsSubmitting(false)
+                    router.push('/dashboard')
+                }, 1500)
+            } catch (error) {
+                setIsSubmitting(false)
+                toast.error("Failed to submit form. Please try again.")
+            }
+        }
     }
 
-    const CurrentStepComponent = STEPS[currentStep - 1].component;
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1)
+        }
+    }
+
+    const updateResignation = (updates: Partial<Resignation>) => {
+        setResignation(prev => ({ ...prev, ...updates }))
+    }
+
+    const updateResponse = (questionId: string, data: Partial<{ rating?: number, responseText?: string }>) => {
+        setResponses(prev => ({
+            ...prev,
+            [questionId]: { ...prev[questionId], ...data }
+        }))
+    }
 
     return (
-        <div className="space-y-8">
-            {/* Progress */}
-            <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                        Step {currentStep} of {STEPS.length}
-                    </span>
-                    <span className="font-medium">{STEPS[currentStep - 1].title}</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-            </div>
+        <WizardLayout
+            title={STEPS[currentStep - 1].label}
+            description="Please complete all sections of the exit interview."
+            currentStep={currentStep}
+            totalSteps={STEPS.length}
+            steps={STEPS}
+        >
+            {currentStep === 1 && (
+                <StepEmployeeInfo
+                    resignation={resignation}
+                    referenceData={referenceData}
+                    reasons={reasons}
+                    onChange={updateResignation}
+                />
+            )}
 
-            {/* Step Indicators */}
-            <div className="flex justify-between">
-                {STEPS.map((step) => (
-                    <div
-                        key={step.id}
-                        className={`flex items-center gap-2 ${step.id === currentStep
-                                ? 'text-primary'
-                                : step.id < currentStep
-                                    ? 'text-emerald-500'
-                                    : 'text-muted-foreground'
-                            }`}
-                    >
-                        <div
-                            className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-medium transition-colors ${step.id === currentStep
-                                    ? 'border-primary bg-primary text-primary-foreground'
-                                    : step.id < currentStep
-                                        ? 'border-emerald-500 bg-emerald-500 text-white'
-                                        : 'border-muted-foreground/30'
-                                }`}
-                        >
-                            {step.id < currentStep ? <Check className="h-4 w-4" /> : step.id}
-                        </div>
-                        <span className="hidden sm:inline text-sm">{step.title}</span>
-                    </div>
-                ))}
-            </div>
+            {currentStep === 2 && (
+                <StepQuestionnaire
+                    questions={questions}
+                    responses={responses}
+                    onResponseChange={updateResponse}
+                />
+            )}
 
-            {/* Step Content */}
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={currentStep}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <CurrentStepComponent
-                        formData={formData}
-                        updateFormData={updateFormData}
-                        errors={errors}
-                    />
-                </motion.div>
-            </AnimatePresence>
+            {currentStep === 3 && (
+                <StepPrivacy
+                    consent={privacyConsent}
+                    onConsentChange={setPrivacyConsent}
+                />
+            )}
 
-            {/* Navigation */}
-            <div className="flex justify-between pt-6 border-t">
-                <Button variant="outline" onClick={handlePrev} disabled={currentStep === 1}>
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Previous
-                </Button>
+            {currentStep === 4 && (
+                <StepReview
+                    resignation={resignation}
+                    responses={responses}
+                    questions={questions}
+                />
+            )}
 
-                {currentStep < STEPS.length ? (
-                    <Button onClick={handleNext}>
-                        Next
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                    </Button>
-                ) : (
-                    <Button onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? 'Submitting...' : 'Submit Exit Form'}
-                    </Button>
-                )}
-            </div>
-        </div>
-    );
+            <WizardNavigation
+                onBack={handleBack}
+                onNext={handleNext}
+                isBackDisabled={currentStep === 1}
+                isSubmitting={isSubmitting}
+                nextLabel={currentStep === STEPS.length ? 'Submit' : 'Next'}
+            />
+        </WizardLayout>
+    )
 }
