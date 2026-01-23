@@ -36,7 +36,7 @@ export function WizardLayout({
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="w-full bg-card text-card-foreground rounded-xl shadow-lg border border-border overflow-hidden"
+                    className="w-full bg-card text-card-foreground rounded-xl shadow-lg border border-border"
                 >
                     <div className="p-6 md:p-8">
                         <div className="mb-6">
