@@ -1,0 +1,332 @@
+﻿
+> retention-intelligence-hub@0.1.0 lint
+> eslint .
+
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\app\auth\signout\route.ts
+  2:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\app\exit-form\page.tsx
+  10:10  warning  'DatePicker' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form-wizard.tsx
+   53:9   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   54:16  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   55:12  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   56:14  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   57:20  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  154:22  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  837:72  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  837:85  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  865:76  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  865:93  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  870:66  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  870:72  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx
+    6:5    warning  'CardDescription' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+    8:5    warning  'CardTitle' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   10:10   warning  'Separator' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   49:18   warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   91:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:91:26
+  89 |                 <Card>
+  90 |                     <CardHeader className="bg-muted/30 pb-4">
+> 91 |                         <SectionHeader title="Employee Information" editTarget="info" />
+     |                          ^^^^^^^^^^^^^ This component is created during render
+  92 |                     </CardHeader>
+  93 |                     <CardContent className="pt-6">
+  94 |                         <InfoItem label="Full Name" value={details.employee_name} />
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:54:27
+  52 |     };
+  53 |
+> 54 |     const SectionHeader = ({ title, editTarget }: { title: string; editTarget: 'info' | 'questions' | 'terms' }) => (
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |         <div className="flex items-center justify-between mb-4">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |             <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 69 |     );
+     | ^^^^^^ The component is created during render here
+  70 |
+  71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/static-components
+   94:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:94:26
+  92 |                     </CardHeader>
+  93 |                     <CardContent className="pt-6">
+> 94 |                         <InfoItem label="Full Name" value={details.employee_name} />
+     |                          ^^^^^^^^ This component is created during render
+  95 |                         <InfoItem label="Employee ID" value={details.employee_number} />
+  96 |                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
+  97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                                                                                                                                           react-hooks/static-components
+   95:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:95:26
+  93 |                     <CardContent className="pt-6">
+  94 |                         <InfoItem label="Full Name" value={details.employee_name} />
+> 95 |                         <InfoItem label="Employee ID" value={details.employee_number} />
+     |                          ^^^^^^^^ This component is created during render
+  96 |                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
+  97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+  98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                                                                           react-hooks/static-components
+   96:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:96:26
+  94 |                         <InfoItem label="Full Name" value={details.employee_name} />
+  95 |                         <InfoItem label="Employee ID" value={details.employee_number} />
+> 96 |                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
+     |                          ^^^^^^^^ This component is created during render
+  97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+  98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+  99 |                         <InfoItem label="Current Position" value={details.current_position} />
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                               react-hooks/static-components
+   97:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:97:26
+   95 |                         <InfoItem label="Employee ID" value={details.employee_number} />
+   96 |                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
+>  97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+      |                          ^^^^^^^^ This component is created during render
+   98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+   99 |                         <InfoItem label="Current Position" value={details.current_position} />
+  100 |                         <InfoItem label="Department / Supervisor" value={details.department_supervisor} />
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">  react-hooks/static-components
+   98:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:98:26
+   96 |                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
+   97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+>  98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+      |                          ^^^^^^^^ This component is created during render
+   99 |                         <InfoItem label="Current Position" value={details.current_position} />
+  100 |                         <InfoItem label="Department / Supervisor" value={details.department_supervisor} />
+  101 |                     </CardContent>
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                                                        react-hooks/static-components
+   99:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:99:26
+   97 |                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
+   98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+>  99 |                         <InfoItem label="Current Position" value={details.current_position} />
+      |                          ^^^^^^^^ This component is created during render
+  100 |                         <InfoItem label="Department / Supervisor" value={details.department_supervisor} />
+  101 |                     </CardContent>
+  102 |                 </Card>
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                                                                                                                               react-hooks/static-components
+  100:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:100:26
+   98 |                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
+   99 |                         <InfoItem label="Current Position" value={details.current_position} />
+> 100 |                         <InfoItem label="Department / Supervisor" value={details.department_supervisor} />
+      |                          ^^^^^^^^ This component is created during render
+  101 |                     </CardContent>
+  102 |                 </Card>
+  103 |
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:71:22
+  69 |     );
+  70 |
+> 71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+     |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 73 |             <div className="text-sm font-medium text-muted-foreground sm:col-span-1">{label}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 74 |             <div className="text-sm font-medium text-foreground sm:col-span-2">{value || "N/A"}</div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 75 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 76 |     );
+     | ^^^^^^ The component is created during render here
+  77 |
+  78 |     return (
+  79 |         <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">                                                                                                                                                                                                                                               react-hooks/static-components
+  107:26   error    Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:107:26
+  105 |                 <Card>
+  106 |                     <CardHeader className="bg-muted/30 pb-4">
+> 107 |                         <SectionHeader title="Questionnaire Responses" editTarget="questions" />
+      |                          ^^^^^^^^^^^^^ This component is created during render
+  108 |                     </CardHeader>
+  109 |                     <CardContent className="pt-6 space-y-6">
+  110 |                         <div className="space-y-3">
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\exit-form\step-summary.tsx:54:27
+  52 |     };
+  53 |
+> 54 |     const SectionHeader = ({ title, editTarget }: { title: string; editTarget: 'info' | 'questions' | 'terms' }) => (
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 55 |         <div className="flex items-center justify-between mb-4">
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 56 |             <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 68 |         </div>
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 69 |     );
+     | ^^^^^^ The component is created during render here
+  70 |
+  71 |     const InfoItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  72 |         <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 py-2 border-b border-border/50 last:border-0">                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/static-components
+  148:52   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  148:89   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  169:133  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  169:162  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  173:133  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  173:162  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  190:41   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+  190:75   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react/no-unescaped-entities
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\ui\sidebar.tsx
+  665:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\sungj\Documents\Agents\League of Developer v2\retention-intelligence-hub\src\components\ui\sidebar.tsx:665:26
+  663 |   // Random width between 50 to 90%.
+  664 |   const width = React.useMemo(() => {
+> 665 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  666 |   }, [])
+  667 |
+  668 |   return (  react-hooks/purity
+
+Γ£û 36 problems (30 errors, 6 warnings)
+

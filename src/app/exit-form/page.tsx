@@ -1,5 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import {
+    getOrCreateResignation,
+    getExitResponse,
+    getUserProfile,
+    getQuestions
+} from './actions';
+import { ExitFormWizard } from '@/components/exit-form-wizard';
 
 export default async function ExitFormPage() {
     const supabase = await createClient();
@@ -12,25 +19,33 @@ export default async function ExitFormPage() {
         redirect('/login');
     }
 
-    return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-            <div className="max-w-2xl w-full space-y-8">
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold tracking-tight">Exit Interview Form</h1>
-                    <p className="mt-2 text-muted-foreground">
-                        We value your feedback. Please complete this form before your departure.
-                    </p>
-                </div>
+    // Fetch all necessary data parallel for speed (The Gloious Evolution)
+    const [resignationRes, profileRes, questionsRes] = await Promise.all([
+        getOrCreateResignation(),
+        getUserProfile(),
+        getQuestions()
+    ]);
 
-                <div className="rounded-xl border bg-card p-8 text-center">
-                    <p className="text-muted-foreground">
-                        The exit form wizard will be implemented in Phase 3.
-                    </p>
-                    <p className="mt-4 text-sm text-muted-foreground">
-                        Logged in as: <span className="font-medium">{user.email}</span>
-                    </p>
-                </div>
-            </div>
+    if (!resignationRes.success || !resignationRes.data) {
+        return <div>Error loading resignation record: {resignationRes.error}</div>;
+    }
+
+    const resignationId = resignationRes.data.id;
+    const responseRes = await getExitResponse(resignationId);
+
+    if (!responseRes.success) {
+        return <div>Error loading exit response record: {responseRes.error}</div>;
+    }
+
+    return (
+        <div className="min-h-screen bg-background/50 dark:bg-background py-12 px-4 sm:px-6 lg:px-8">
+            <ExitFormWizard
+                user={user}
+                resignation={resignationRes.data}
+                profile={profileRes.data}
+                questions={questionsRes.data || []}
+                initialResponse={responseRes.data}
+            />
         </div>
     );
 }
