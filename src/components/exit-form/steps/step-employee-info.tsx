@@ -21,35 +21,30 @@ interface ReferenceData {
     supervisors: string[]
 }
 
+interface EmployeeDetails {
+    employeeId: string
+    name: string
+    dateHired: string
+    positionHired: string
+}
+
 interface StepEmployeeInfoProps {
     resignation: Resignation
     referenceData: ReferenceData
-    reasons: string[]
     onChange: (updates: Partial<Resignation>) => void
-    employeeDetails: {
-        employeeId: string
-        name: string
-        dateHired: string
-        positionHired: string
-    }
-    onDetailsChange: (details: any) => void
+    employeeDetails: EmployeeDetails
+    onDetailsChange: (update: (prev: EmployeeDetails) => EmployeeDetails) => void
 }
 
 export function StepEmployeeInfo({
     resignation,
     referenceData,
-    reasons,
     onChange,
     employeeDetails,
     onDetailsChange
 }: StepEmployeeInfoProps) {
-    // Helper to handle select changes
-    const handleSelectChange = (field: keyof Resignation, value: string) => {
-        onChange({ [field]: value })
-    }
-
-    const handleDetailsChange = (field: string, value: string) => {
-        onDetailsChange((prev: any) => ({ ...prev, [field]: value }))
+    const handleDetailsChange = (field: keyof EmployeeDetails, value: string) => {
+        onDetailsChange((prev) => ({ ...prev, [field]: value }))
     }
 
     return (

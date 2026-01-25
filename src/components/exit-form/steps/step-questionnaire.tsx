@@ -142,7 +142,10 @@ export function StepQuestionnaire({
                     {/* Career Growth */}
                     <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
                         <Label className="text-base font-medium">How did you feel about the opportunity for career growth?</Label>
-                        <Select>
+                        <Select
+                            value={responses['career_growth']?.responseText || ''}
+                            onValueChange={(val) => onResponseChange('career_growth', { responseText: val })}
+                        >
                             <SelectTrigger className="bg-background"><SelectValue placeholder="Select..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Very good chance">Very good chance</SelectItem>
@@ -157,7 +160,10 @@ export function StepQuestionnaire({
                     {/* Pay */}
                     <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
                         <Label className="text-base font-medium">How did you feel about the rate of pay?</Label>
-                        <Select>
+                        <Select
+                            value={responses['rate_of_pay']?.responseText || ''}
+                            onValueChange={(val) => onResponseChange('rate_of_pay', { responseText: val })}
+                        >
                             <SelectTrigger className="bg-background"><SelectValue placeholder="Select..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Very compensating">Very compensating</SelectItem>
@@ -171,7 +177,10 @@ export function StepQuestionnaire({
                     {/* Benefits */}
                     <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
                         <Label className="text-base font-medium">How did you feel about the benefits?</Label>
-                        <Select>
+                        <Select
+                            value={responses['benefits']?.responseText || ''}
+                            onValueChange={(val) => onResponseChange('benefits', { responseText: val })}
+                        >
                             <SelectTrigger className="bg-background"><SelectValue placeholder="Select..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Very adequate">Very adequate</SelectItem>
@@ -179,13 +188,21 @@ export function StepQuestionnaire({
                                 <SelectItem value="Inadequate">Inadequate</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Textarea placeholder="Other comments, if any..." className="bg-background h-20 resize-none" />
+                        <Textarea
+                            placeholder="Other comments, if any..."
+                            className="bg-background h-20 resize-none"
+                            value={responses['benefits_comment']?.responseText || ''}
+                            onChange={(e) => onResponseChange('benefits_comment', { responseText: e.target.value })}
+                        />
                     </div>
 
                     {/* Work Amount */}
                     <div className="bg-muted/30 p-4 rounded-lg border border-border space-y-3">
                         <Label className="text-base font-medium">How did you feel about the amount of work?</Label>
-                        <Select>
+                        <Select
+                            value={responses['workload']?.responseText || ''}
+                            onValueChange={(val) => onResponseChange('workload', { responseText: val })}
+                        >
                             <SelectTrigger className="bg-background"><SelectValue placeholder="Select..." /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Too much work">Too much work</SelectItem>
@@ -193,7 +210,12 @@ export function StepQuestionnaire({
                                 <SelectItem value="Minimal work">Minimal work</SelectItem>
                             </SelectContent>
                         </Select>
-                        <Textarea placeholder="Other comments, if any..." className="bg-background h-20 resize-none" />
+                        <Textarea
+                            placeholder="Other comments, if any..."
+                            className="bg-background h-20 resize-none"
+                            value={responses['workload_comment']?.responseText || ''}
+                            onChange={(e) => onResponseChange('workload_comment', { responseText: e.target.value })}
+                        />
                     </div>
                 </div>
             </div>
@@ -201,7 +223,11 @@ export function StepQuestionnaire({
             {/* SECTION 4: Recommendation */}
             <div className="space-y-4 border p-4 rounded-lg bg-card">
                 <Label className="text-lg font-semibold block">Would you recommend to a friend as a place to work?</Label>
-                <RadioGroup className="flex space-x-6 mt-2">
+                <RadioGroup
+                    className="flex space-x-6 mt-2"
+                    value={responses['recommendation']?.responseText || ''}
+                    onValueChange={(val) => onResponseChange('recommendation', { responseText: val })}
+                >
                     <div className="flex items-center space-x-2">
                         <RadioGroupItem value="Yes" id="rec-yes" />
                         <Label htmlFor="rec-yes">Yes</Label>
@@ -211,7 +237,12 @@ export function StepQuestionnaire({
                         <Label htmlFor="rec-no">No</Label>
                     </div>
                 </RadioGroup>
-                <Textarea placeholder="What management policies/practice would you highlight? OR Why not?" className="bg-background mt-4" />
+                <Textarea
+                    placeholder="What management policies/practice would you highlight? OR Why not?"
+                    className="bg-background mt-4"
+                    value={responses['recommendation_reason']?.responseText || ''}
+                    onChange={(e) => onResponseChange('recommendation_reason', { responseText: e.target.value })}
+                />
             </div>
 
         </div>

@@ -57,19 +57,25 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
         if (currentStep < STEPS.length) {
             // Validate Step 1
             if (currentStep === 1) {
-                // Basic validation for new fields (optional for now as we don't save them to DB yet)
-                if (!resignation.exit_date || !resignation.reason) {
-                    toast.error("Please fill in all required fields.")
+                // Basic validation for new fields
+                if (!resignation.exit_date) {
+                    toast.error("Please select a date of resignation.")
                     return
                 }
 
                 try {
                     setIsSubmitting(true)
                     await saveExitForm({
-                        resignationId: resignation.id,
-                        exitDate: resignation.exit_date!,
-                        reason: resignation.reason!,
-                        responses: []
+                        resignation_id: resignation.id,
+                        employee_details: {
+                            employee_number: employeeDetails.employeeId,
+                            employee_name: employeeDetails.name,
+                            date_hired: employeeDetails.dateHired,
+                            position_when_hired: employeeDetails.positionHired,
+                            current_position: '', // Already in resignation? No, we need to pass if we want to save
+                            department_supervisor: '',
+                            date_of_resignation: resignation.exit_date
+                        } as any // Allow partial save or use appropriate type assertion for transient fields
                     })
                     setIsSubmitting(false)
                     setCurrentStep(prev => prev + 1)
@@ -86,10 +92,18 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                     setIsSubmitting(true)
                     // ... saving logic
                     await saveExitForm({
-                        resignationId: resignation.id,
-                        exitDate: resignation.exit_date!,
-                        reason: resignation.reason!,
-                        responses: [] // saving basic info again
+                        resignation_id: resignation.id,
+                        questionnaire_responses: {
+                            reason_for_leaving: resignation.reason ? [resignation.reason] : [],
+                            career_growth: responses['career_growth']?.responseText,
+                            rate_of_pay: responses['rate_of_pay']?.responseText,
+                            benefits: responses['benefits']?.responseText,
+                            benefits_comment: responses['benefits_comment']?.responseText,
+                            workload: responses['workload']?.responseText,
+                            workload_comment: responses['workload_comment']?.responseText,
+                            recommendation: responses['recommendation']?.responseText,
+                            recommendation_reason: responses['recommendation_reason']?.responseText
+                        }
                     })
                     setIsSubmitting(false)
                     setCurrentStep(prev => prev + 1)
@@ -115,11 +129,30 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
             try {
                 setIsSubmitting(true)
                 // Final save
+                // Final save
                 await saveExitForm({
-                    resignationId: resignation.id,
-                    exitDate: resignation.exit_date!,
-                    reason: resignation.reason!,
-                    responses: [] // responses saved separately or ignored for now in this demo refactor
+                    resignation_id: resignation.id,
+                    employee_details: {
+                        employee_number: employeeDetails.employeeId,
+                        employee_name: employeeDetails.name,
+                        date_hired: employeeDetails.dateHired,
+                        position_when_hired: employeeDetails.positionHired,
+                        current_position: '',
+                        department_supervisor: '',
+                        date_of_resignation: resignation.exit_date || ''
+                    },
+                    questionnaire_responses: {
+                        reason_for_leaving: resignation.reason ? [resignation.reason] : [],
+                        career_growth: responses['career_growth']?.responseText,
+                        rate_of_pay: responses['rate_of_pay']?.responseText,
+                        benefits: responses['benefits']?.responseText,
+                        benefits_comment: responses['benefits_comment']?.responseText,
+                        workload: responses['workload']?.responseText,
+                        workload_comment: responses['workload_comment']?.responseText,
+                        recommendation: responses['recommendation']?.responseText,
+                        recommendation_reason: responses['recommendation_reason']?.responseText
+                    },
+                    consent_given: privacyConsent
                 })
 
                 // Submit action
@@ -167,7 +200,6 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                 <StepEmployeeInfo
                     resignation={resignation}
                     referenceData={referenceData}
-                    reasons={reasons}
                     onChange={updateResignation}
                     employeeDetails={employeeDetails}
                     onDetailsChange={setEmployeeDetails}
