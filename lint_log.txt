@@ -1,0 +1,30 @@
+﻿
+> retention-intelligence-hub@0.1.0 lint
+> eslint .
+
+
+C:\Users\sungj\Documents\Agents\League of Developer\retention-intelligence-hub\src\app\auth\signout\route.ts
+  2:10  warning  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\sungj\Documents\Agents\League of Developer\retention-intelligence-hub\src\app\exit-form\actions.ts
+    4:10  warning  'Database' is defined but never used              @typescript-eslint/no-unused-vars
+    5:10  warning  'headers' is defined but never used               @typescript-eslint/no-unused-vars
+  176:24  warning  'deleteError' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\sungj\Documents\Agents\League of Developer\retention-intelligence-hub\src\components\exit-form\exit-form-wizard.tsx
+   67:26  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+   97:26  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  140:22  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\sungj\Documents\Agents\League of Developer\retention-intelligence-hub\src\components\exit-form\steps\step-review.tsx
+    5:10  warning  'Separator' is defined but never used                            @typescript-eslint/no-unused-vars
+   86:53  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   86:73  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  101:72  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  101:79  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\sungj\Documents\Agents\League of Developer\retention-intelligence-hub\src\components\ui\textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+Γ£û 13 problems (5 errors, 8 warnings)
+
