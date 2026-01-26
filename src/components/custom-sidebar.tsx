@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -14,6 +14,8 @@ import {
     LogOut,
     ChevronLeft,
     ChevronRight,
+    Menu,
+    X,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -28,6 +30,13 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from '@/components/ui/sheet';
 
 type UserRole = 'lead' | 'interviewer' | 'employee';
 
@@ -46,10 +55,29 @@ const navItems: NavItem[] = [
     { title: 'Settings', url: '/dashboard/settings', icon: Settings, roles: ['lead', 'interviewer'] },
 ];
 
+const MOBILE_BREAKPOINT = 768;
+
+function useIsMobile() {
+    const [isMobile, setIsMobile] = useState<boolean>(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    return isMobile;
+}
+
 // Sidebar Context
 interface SidebarContextType {
     isCollapsed: boolean;
+    isMobileOpen: boolean;
+    isMobile: boolean;
     toggleSidebar: () => void;
+    toggleMobile: () => void;
+    closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | null>(null);
@@ -65,50 +93,35 @@ export function useSidebarContext() {
 // Provider Component
 export function CustomSidebarProvider({ children }: { children: React.ReactNode }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const isMobile = useIsMobile();
 
     const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+    const toggleMobile = () => setIsMobileOpen(!isMobileOpen);
+    const closeMobile = () => setIsMobileOpen(false);
 
     return (
-        <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
+        <SidebarContext.Provider value={{ isCollapsed, isMobileOpen, isMobile, toggleSidebar, toggleMobile, closeMobile }}>
             <TooltipProvider delayDuration={0}>{children}</TooltipProvider>
         </SidebarContext.Provider>
     );
 }
 
-// Main Sidebar Component
-interface CustomSidebarProps {
+// Sidebar Content (shared between desktop and mobile)
+interface SidebarContentProps {
     role: UserRole;
     email: string;
+    isCollapsed: boolean;
+    onNavClick?: () => void;
 }
 
-export function CustomSidebar({ role, email }: CustomSidebarProps) {
+function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentProps) {
     const pathname = usePathname();
-    const { isCollapsed, toggleSidebar } = useSidebarContext();
     const filteredItems = navItems.filter((item) => item.roles.includes(role));
-
     const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
 
-    const sidebarVariants = {
-        expanded: { width: 280 },
-        collapsed: { width: 72 },
-    };
-
     return (
-        <motion.aside
-            initial={false}
-            animate={isCollapsed ? 'collapsed' : 'expanded'}
-            variants={sidebarVariants}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="relative flex h-screen flex-col border-r border-white/10 bg-[#0d0d0d]"
-        >
-            {/* Toggle Button */}
-            <button
-                onClick={toggleSidebar}
-                className="absolute -right-3 top-20 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-[#0d0d0d] text-muted-foreground shadow-md transition-colors hover:bg-white/5 hover:text-white"
-            >
-                {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-            </button>
-
+        <>
             {/* Header */}
             <div className="flex h-16 items-center gap-3 border-b border-white/5 px-4">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/20">
@@ -151,6 +164,7 @@ export function CustomSidebar({ role, email }: CustomSidebarProps) {
                         const linkContent = (
                             <Link
                                 href={item.url}
+                                onClick={onNavClick}
                                 className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${isActive
                                     ? 'bg-indigo-600/10 text-indigo-400'
                                     : 'text-muted-foreground hover:bg-white/5 hover:text-white'
@@ -231,20 +245,85 @@ export function CustomSidebar({ role, email }: CustomSidebarProps) {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+        </>
+    );
+}
+
+// Main Sidebar Component
+interface CustomSidebarProps {
+    role: UserRole;
+    email: string;
+}
+
+export function CustomSidebar({ role, email }: CustomSidebarProps) {
+    const { isCollapsed, isMobileOpen, isMobile, toggleSidebar, closeMobile } = useSidebarContext();
+
+    const sidebarVariants = {
+        expanded: { width: 280 },
+        collapsed: { width: 72 },
+    };
+
+    // Mobile: Sheet overlay
+    if (isMobile) {
+        return (
+            <Sheet open={isMobileOpen} onOpenChange={closeMobile}>
+                <SheetContent
+                    side="left"
+                    className="w-[280px] p-0 bg-[#0d0d0d] border-r border-white/10 [&>button]:hidden"
+                >
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>Navigation Menu</SheetTitle>
+                        <SheetDescription>Main navigation sidebar</SheetDescription>
+                    </SheetHeader>
+                    <div className="flex h-full flex-col">
+                        <SidebarInner
+                            role={role}
+                            email={email}
+                            isCollapsed={false}
+                            onNavClick={closeMobile}
+                        />
+                    </div>
+                </SheetContent>
+            </Sheet>
+        );
+    }
+
+    // Desktop: Animated collapsible sidebar
+    return (
+        <motion.aside
+            initial={false}
+            animate={isCollapsed ? 'collapsed' : 'expanded'}
+            variants={sidebarVariants}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="relative hidden md:flex h-screen flex-col border-r border-white/10 bg-[#0d0d0d]"
+        >
+            {/* Toggle Button */}
+            <button
+                onClick={toggleSidebar}
+                className="absolute -right-3 top-20 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-[#0d0d0d] text-muted-foreground shadow-md transition-colors hover:bg-white/5 hover:text-white"
+            >
+                {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+            </button>
+
+            <SidebarInner role={role} email={email} isCollapsed={isCollapsed} />
         </motion.aside>
     );
 }
 
-// Header with Trigger (optional, for mobile)
+// Mobile Trigger Button (hamburger menu)
 export function CustomSidebarTrigger() {
-    const { toggleSidebar } = useSidebarContext();
+    const { isMobileOpen, isMobile, toggleMobile } = useSidebarContext();
+
+    // Only show on mobile
+    if (!isMobile) return null;
 
     return (
         <button
-            onClick={toggleSidebar}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-white md:hidden"
+            onClick={toggleMobile}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:bg-white/10 hover:text-white"
+            aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
         >
-            <ChevronRight className="h-4 w-4" />
+            {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </button>
     );
 }

@@ -25,6 +25,7 @@ interface StepSummaryProps {
     onEdit: (stepId: 'info' | 'questions' | 'terms') => void;
     onSubmit: () => void;
     isSubmitting: boolean;
+    readOnly?: boolean;
 }
 
 export function StepSummary({
@@ -33,6 +34,7 @@ export function StepSummary({
     onEdit,
     onSubmit,
     isSubmitting,
+    readOnly = false,
 }: StepSummaryProps) {
     // Helper to format dates
     const formatDate = (dateStr?: string) => {
@@ -63,7 +65,7 @@ export function StepSummary({
                 {/* Section 1: Employee Information */}
                 <Card>
                     <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Employee Information" editTarget="info" onEdit={onEdit} />
+                        <SectionHeader title="Employee Information" editTarget="info" onEdit={onEdit} readOnly={readOnly} />
                     </CardHeader>
                     <CardContent className="pt-6">
                         <InfoItem label="Full Name" value={details.employee_name} />
@@ -79,7 +81,7 @@ export function StepSummary({
                 {/* Section 2: Questionnaire Responses */}
                 <Card>
                     <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Questionnaire Responses" editTarget="questions" onEdit={onEdit} />
+                        <SectionHeader title="Questionnaire Responses" editTarget="questions" onEdit={onEdit} readOnly={readOnly} />
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
                         <div className="space-y-3">
@@ -178,53 +180,60 @@ export function StepSummary({
                             <CheckCircle2 className="w-5 h-5 text-green-500" />
                             <span className="text-sm font-medium">Terms and Conditions Accepted</span>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => onEdit('terms')}>Edit</Button>
+                        {!readOnly && <Button variant="ghost" size="sm" onClick={() => onEdit('terms')}>Edit</Button>}
                     </CardContent>
                 </Card>
 
             </div>
 
-            <div className="flex justify-end pt-4">
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button
-                            size="lg"
-                            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Submitting...
-                                </>
-                            ) : (
-                                <>
-                                    Confirm & Submit Resignation
-                                    <Send className="w-4 h-4 ml-2" />
-                                </>
-                            )}
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. You are about to formally submit your resignation.
-                                Once submitted, you will be signed out for security purposes.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={onSubmit}
-                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+            {!readOnly && (
+                <div className="flex justify-end pt-4">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                size="lg"
+                                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all"
+                                disabled={isSubmitting}
                             >
-                                Yes, submit my resignation
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </div>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    <>
+                                        Confirm & Submit Resignation
+                                        <Send className="w-4 h-4 ml-2" />
+                                    </>
+                                )}
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. You are about to formally submit your resignation.
+                                    Once submitted, you will be signed out for security purposes.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={onSubmit}
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                >
+                                    Yes, submit my resignation
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            )}
+            {readOnly && (
+                <div className="flex justify-center pt-8">
+                    <p className="text-muted-foreground italic">This form has been locked and submitted for review.</p>
+                </div>
+            )}
         </div>
     );
 }
@@ -232,25 +241,29 @@ export function StepSummary({
 const SectionHeader = ({
     title,
     editTarget,
-    onEdit
+    onEdit,
+    readOnly
 }: {
     title: string;
     editTarget: 'info' | 'questions' | 'terms';
     onEdit: (stepId: 'info' | 'questions' | 'terms') => void;
+    readOnly?: boolean;
 }) => (
     <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
             {title}
         </h3>
-        <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-primary"
-            onClick={() => onEdit(editTarget)}
-        >
-            <Edit2 className="w-4 h-4 mr-1" />
-            Edit
-        </Button>
+        {!readOnly && (
+            <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary"
+                onClick={() => onEdit(editTarget)}
+            >
+                <Edit2 className="w-4 h-4 mr-1" />
+                Edit
+            </Button>
+        )}
     </div>
 );
 

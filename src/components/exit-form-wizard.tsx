@@ -58,6 +58,7 @@ interface ExitFormWizardProps {
     employee_details?: Partial<EmployeeDetails>;
     questionnaire_responses?: Partial<QuestionnaireResponses>;
   } | null;
+  readOnly?: boolean;
 }
 
 const STEPS = [
@@ -104,8 +105,10 @@ export function ExitFormWizard({
   resignation,
   profile,
   initialResponse,
+  readOnly = false,
 }: ExitFormWizardProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+  // If readOnly (Locked), force start at Summary (Step 3)
+  const [currentStep, setCurrentStep] = useState(readOnly ? 3 : 0);
   const [questionnaireStep, setQuestionnaireStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -361,26 +364,39 @@ export function ExitFormWizard({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6 pb-12">
-      {/* Progress Bar & Header */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-end">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Exit Form</h1>
-            <p className="text-sm text-muted-foreground">{STEPS[currentStep].title}</p>
-          </div>
-          <div className="text-right space-y-1">
-            <div className="flex items-center gap-2 justify-end text-xs font-medium text-muted-foreground mb-1">
-              {isSaving ? (
-                <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Saving...</span>
-              ) : (
-                <span className="flex items-center gap-1 text-green-500"><CheckCircle2 className="w-3 h-3" /> Saved</span>
-              )}
-              <span className="ml-2">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-2 w-48" />
+      {/* Locked Banner */}
+      {readOnly && (
+        <div className="bg-amber-500/10 border border-amber-500/50 rounded-lg p-4 flex items-center gap-3 text-amber-600 dark:text-amber-400 animate-in slide-in-from-top-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+          <div className="flex-1">
+            <h4 className="font-semibold text-sm">Form Locked</h4>
+            <p className="text-xs opacity-90">This form is locked for review because your interview is scheduled within 24 hours.</p>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Progress Bar & Header - Hide progress bar if readOnly */}
+      {!readOnly && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight">Exit Form</h1>
+              <p className="text-sm text-muted-foreground">{STEPS[currentStep].title}</p>
+            </div>
+            <div className="text-right space-y-1">
+              <div className="flex items-center gap-2 justify-end text-xs font-medium text-muted-foreground mb-1">
+                {isSaving ? (
+                  <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Saving...</span>
+                ) : (
+                  <span className="flex items-center gap-1 text-green-500"><CheckCircle2 className="w-3 h-3" /> Saved</span>
+                )}
+                <span className="ml-2">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2 w-48" />
+            </div>
+          </div>
+        </div>
+      )}
 
       <Card className="shadow-xl border-primary/5 overflow-hidden flex flex-col bg-card/50 backdrop-blur-sm">
         <CardHeader className="bg-muted/30 border-b py-4">
@@ -971,6 +987,7 @@ export function ExitFormWizard({
                     }
                   }}
                   isSubmitting={isSaving}
+                  readOnly={readOnly}
                 />
               )}
             </motion.div>

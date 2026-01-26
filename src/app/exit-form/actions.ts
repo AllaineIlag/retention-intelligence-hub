@@ -133,6 +133,31 @@ export async function saveExitForm(formData: ExitFormData) {
 
     const responseUpdate: Record<string, unknown> = {};
 
+    // 0. Security & Lock Check
+    const { data: resignation, error: resError } = await supabase
+        .from('resignations')
+        .select('status, scheduled_interview_date')
+        .eq('id', formData.resignation_id)
+        .single();
+
+    if (resError) {
+        return { success: false, error: resError.message };
+    }
+
+    if (resignation.status === 'locked') {
+        return { success: false, error: 'Form is locked for review.' };
+    }
+
+    // Dynamic 24h Lock (in case cron hasn't run yet)
+    if (resignation.status === 'scheduled' && resignation.scheduled_interview_date) {
+        const interviewDate = new Date(resignation.scheduled_interview_date);
+        const lockThreshold = new Date(interviewDate.getTime() - (24 * 60 * 60 * 1000)); // 24h before interview
+
+        if (new Date() >= lockThreshold) {
+            return { success: false, error: 'Form is locked for review (24h Policy).' };
+        }
+    }
+
     // 1. Update flattened employee details in exit_responses
     if (formData.employee_details) {
         Object.assign(responseUpdate, {

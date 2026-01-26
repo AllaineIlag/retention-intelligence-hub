@@ -42,6 +42,10 @@ export type Database = {
           resignation_id: string
           response_text: string | null
           selected_options: string[] | null
+          original_answer: string | null
+          corrected_answer: string | null
+          is_corrected: boolean
+          interviewer_note: string | null
         }
         Insert: {
           created_at?: string
@@ -51,6 +55,10 @@ export type Database = {
           resignation_id: string
           response_text?: string | null
           selected_options?: string[] | null
+          original_answer?: string | null
+          corrected_answer?: string | null
+          is_corrected?: boolean
+          interviewer_note?: string | null
         }
         Update: {
           created_at?: string
@@ -60,6 +68,10 @@ export type Database = {
           resignation_id?: string
           response_text?: string | null
           selected_options?: string[] | null
+          original_answer?: string | null
+          corrected_answer?: string | null
+          is_corrected?: boolean
+          interviewer_note?: string | null
         }
         Relationships: [
           {
@@ -173,11 +185,11 @@ export type Database = {
     Enums: {
       app_role: "lead" | "interviewer" | "employee"
       question_category:
-        | "culture"
-        | "management"
-        | "compensation"
-        | "workload"
-        | "growth"
+      | "culture"
+      | "management"
+      | "compensation"
+      | "workload"
+      | "growth"
       resignation_status: "pending" | "scheduled" | "completed" | "cancelled"
     }
     CompositeTypes: {

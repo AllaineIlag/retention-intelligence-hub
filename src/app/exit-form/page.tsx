@@ -37,6 +37,20 @@ export default async function ExitFormPage() {
         return <div>Error loading exit response record: {responseRes.error}</div>;
     }
 
+    const resignation = resignationRes.data;
+    let isLocked = false;
+
+    if (resignation.status === 'locked') {
+        isLocked = true;
+    } else if (resignation.status === 'scheduled' && resignation.scheduled_interview_date) {
+        const interviewDate = new Date(resignation.scheduled_interview_date);
+        const lockThreshold = new Date(interviewDate.getTime() - (24 * 60 * 60 * 1000));
+
+        if (new Date() >= lockThreshold) {
+            isLocked = true;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-background/50 dark:bg-background py-12 px-4 sm:px-6 lg:px-8">
             <ExitFormWizard
@@ -45,6 +59,7 @@ export default async function ExitFormPage() {
                 profile={profileRes.data}
                 questions={questionsRes.data || []}
                 initialResponse={responseRes.data}
+                readOnly={isLocked}
             />
         </div>
     );
