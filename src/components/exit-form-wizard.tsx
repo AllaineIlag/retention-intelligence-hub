@@ -125,6 +125,7 @@ export function ExitFormWizard({
     position_when_hired: initialResponse?.employee_details?.position_when_hired || '',
     current_position: initialResponse?.employee_details?.current_position || '',
     department_supervisor: initialResponse?.employee_details?.department_supervisor || '',
+    department: initialResponse?.employee_details?.department || '',
     date_of_resignation: initialResponse?.employee_details?.date_of_resignation || resignation?.exit_date || '',
   });
 

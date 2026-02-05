@@ -1,97 +1,304 @@
-
-
 import { Suspense } from 'react';
 import { getDashboardStats, getRecentResignations } from '@/app/actions/dashboard';
+import {
+    getAnalyticsSummary,
+    getTurnoverTrends,
+    getDepartmentBreakdown,
+    getCountryStats,
+    getExitQuestionStats
+} from '@/app/actions/analytics';
 import { StatCards } from '@/components/dashboard/stat-cards';
-import { MisunderstoodWidget } from '@/components/dashboard/misunderstood-widget';
-import { TurnoverTrendsChart } from '@/components/dashboard/charts/turnover-trends';
-import { ExitReasonsChart } from '@/components/dashboard/charts/exit-reasons';
-import { RecommendationRateChart } from '@/components/dashboard/charts/recommendation-rate';
 import { RecentResignationsTable } from '@/components/dashboard/recent-resignations-table';
+import { HeroTurnoverChart } from '@/components/dashboard/analytics/charts/HeroTurnoverChart';
+import { TurnoverKPI } from '@/components/dashboard/analytics/charts/TurnoverKPI';
+import { CountryPieChart } from '@/components/dashboard/analytics/charts/CountryPieChart';
+import { QuickWinsCharts } from '@/components/dashboard/analytics/charts/QuickWinsCharts';
 import { Skeleton } from '@/components/ui/skeleton';
-
-// REMOVED: export const dynamic = 'force-dynamic';
-// Next.js will determine dynamic behavior based on the underlying fetch/cookies usage. 
-// Since we use supabase headers in actions, it will be dynamic by default, but streamable.
 
 export default function DashboardPage() {
     return (
-        <div className="space-y-8 animate-in fade-in duration-700 p-2">
+        <div className="space-y-6 animate-in fade-in duration-700 p-2">
 
+            {/* ROW 1: KPI Cards */}
             <Suspense fallback={<StatsSkeleton />}>
-                <StatsSection />
+                <KPISection />
             </Suspense>
 
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
-                <div className="lg:col-span-4">
-                    <Suspense fallback={<ChartSkeleton />}>
-                        <TurnoverSection />
-                    </Suspense>
-                </div>
-                <div className="lg:col-span-3">
-                    <Suspense fallback={<WidgetSkeleton />}>
-                        <MisunderstoodSection />
-                    </Suspense>
-                </div>
-            </div>
+            {/* MAIN GRID: Left Content (Hero + Table/Pie) vs Right Rail (Stats Stack) */}
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
 
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-7">
-                <div className="lg:col-span-4">
-                    <Suspense fallback={<ChartSkeleton />}>
-                        <ExitReasonsSection />
-                    </Suspense>
-                </div>
-                <div className="lg:col-span-3">
-                    <Suspense fallback={<WidgetSkeleton />}>
-                        <RecommendationSection />
-                    </Suspense>
-                </div>
-            </div>
+                {/* LEFT MAIN CONTENT (3 Cols) */}
+                <div className="lg:col-span-3 space-y-6">
+                    {/* Hero Chart */}
+                    <div className="w-full">
+                        <Suspense fallback={<ChartSkeleton />}>
+                            <HeroSection />
+                        </Suspense>
+                    </div>
 
-            <div className="grid gap-4 grid-cols-1">
-                <Suspense fallback={<TableSkeleton />}>
-                    <RecentResignationsSection />
-                </Suspense>
+                    {/* Bottom Split: Table & Country Pie */}
+                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
+                        <div className="lg:col-span-7">
+                            <Suspense fallback={<TableSkeleton />}>
+                                <RecentResignationsSection />
+                            </Suspense>
+                        </div>
+                        <div className="lg:col-span-3">
+                            <Suspense fallback={<WidgetSkeleton />}>
+                                <CountrySection />
+                            </Suspense>
+                        </div>
+                    </div>
+                </div>
+
+                {/* RIGHT RAIL (1 Col) - Spans Height */}
+                <div className="lg:col-span-1">
+                    <Suspense fallback={<WidgetSkeleton />}>
+                        <QuickWinsSection />
+                    </Suspense>
+                </div>
             </div>
         </div>
     );
 }
 
 // ------------------------------------------------------------------
-// STREAMING COMPONENTS (Data Fetchers)
+// DATA FETCHING COMPONENTS
 // ------------------------------------------------------------------
 
-async function StatsSection() {
-    const statsRes = await getDashboardStats();
-    const stats = statsRes.data || {
-        totalEmployees: 0,
-        activeResignations: 0,
-        retentionRate: 100,
-        misunderstoodCount: 0
+// ------------------------------------------------------------------
+// DATA FETCHING COMPONENTS
+// ------------------------------------------------------------------
+
+async function KPISection() {
+    // MOCK DATA for "2% Strategy" Visualization
+    // const summaryRes = await getAnalyticsSummary({});
+
+    // Static Scenario: 
+    // - Turnover Alert: 2.1% (Red/Warning)
+    // - Top Reason: Better Opportunity (Career Growth)
+    // - Rec: 68% (Low)
+    // - Tenure: 18 months
+
+    const summary = {
+        totalExits: 105,
+        turnoverRate: 2.1, // > 2.0% Threshold -> Should be Red/Warning
+        avgTenureMonths: 18,
+        primaryDriver: { reason: 'Better Opportunity', count: 45, percentage: 42 }
     };
-    return <StatCards stats={stats} />;
+
+    const recPercent = 68; // Net Promoter Score
+
+    // 4 Cards: Turnover, Top Exit Reason, Recommendation, Tenure
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+            {/* 1. Turnover KPI (Green/Red Logic) */}
+            <TurnoverKPI rate={summary.turnoverRate} />
+
+            {/* 2. Top Exit Reason */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Top Exit Reason</h3>
+                </div>
+                <div className="text-xl font-bold tracking-tight mt-2 line-clamp-2">
+                    {summary.primaryDriver.reason}
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
+                    {summary.primaryDriver.percentage}% of Exits
+                </p>
+            </div>
+
+            {/* 3. Recommendation */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Would Recommend</h3>
+                </div>
+                <div className="text-2xl font-bold tracking-tight mt-2 text-indigo-400">
+                    {recPercent}%
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
+                    Promoter Score
+                </p>
+            </div>
+
+            {/* 4. Tenure */}
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
+                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Avg. Tenure</h3>
+                </div>
+                <div className="text-2xl font-bold tracking-tight mt-2">
+                    {summary.avgTenureMonths} <span className="text-sm font-normal text-muted-foreground">mos</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
+                    Length of Service
+                </p>
+            </div>
+        </div>
+    );
 }
 
-async function TurnoverSection() {
-    return <TurnoverTrendsChart />;
+async function HeroSection() {
+    // MOCK DATA for Hero Chart
+
+    // Department Breakdown (Bar)
+    const deptData = [
+        { name: 'Engineering', value: 24, fill: '#6366f1' },
+        { name: 'Sales', value: 18, fill: '#8b5cf6' },
+        { name: 'Customer Support', value: 12, fill: '#ec4899' },
+        { name: 'Product', value: 8, fill: '#14b8a6' },
+        { name: 'Marketing', value: 6, fill: '#f59e0b' },
+    ];
+
+    // Monthly Trend (Area) - Showing spike over 2%
+    // Needs to match { name, resignations, retention }
+    const monthData = [
+        { name: 'Jan', resignations: 1.2, retention: 98.8 },
+        { name: 'Feb', resignations: 1.1, retention: 98.9 },
+        { name: 'Mar', resignations: 1.3, retention: 98.7 },
+        { name: 'Apr', resignations: 1.5, retention: 98.5 },
+        { name: 'May', resignations: 1.8, retention: 98.2 },
+        { name: 'Jun', resignations: 2.1, retention: 97.9 }, // Alert
+        { name: 'Jul', resignations: 2.3, retention: 97.7 }, // Alert
+        { name: 'Aug', resignations: 2.1, retention: 97.9 }, // Alert
+    ];
+
+    return (
+        <HeroTurnoverChart
+            deptData={deptData}
+            monthData={monthData}
+        />
+    );
 }
 
-async function MisunderstoodSection() {
-    return <MisunderstoodWidget />;
-}
+async function QuickWinsSection() {
+    // MOCK DATA for Quick Wins
 
-async function ExitReasonsSection() {
-    return <ExitReasonsChart />;
-}
+    // 1. Pull Factors: Why go?
+    const pullFactors = [
+        { name: 'Higher Base Salary', value: 45 },
+        { name: 'Remote Options', value: 32 },
+        { name: 'Better Benefits', value: 28 },
+    ];
 
-async function RecommendationSection() {
-    return <RecommendationRateChart />;
+    // 2. Career Growth: Q3
+    const careerGrowth = [
+        { name: 'No Growth', value: 40 },
+        { name: 'Limited Path', value: 35 },
+        { name: 'Good', value: 25 },
+    ];
+
+    // 3. Pay Rate: Q4
+    const payPerception = [
+        { name: 'Underpaid', value: 55 },
+        { name: 'Fair', value: 30 },
+        { name: 'Well Paid', value: 15 },
+    ];
+
+    // 4. Benefits: Q5
+    const benefits = [
+        { name: 'Inadequate', value: 48 },
+        { name: 'Adequate', value: 35 },
+        { name: 'Very Adequate', value: 17 },
+    ];
+
+    // 5. Amount of Work: Q6
+    const workload = [
+        { name: 'Too Much', value: 60 },
+        { name: 'Just Right', value: 30 },
+        { name: 'Minimal', value: 10 },
+    ];
+
+    return (
+        <QuickWinsCharts
+            pullFactors={pullFactors}
+            careerGrowth={careerGrowth}
+            payPerception={payPerception}
+            benefits={benefits}
+            workload={workload}
+        />
+    );
 }
 
 async function RecentResignationsSection() {
-    const recentRes = await getRecentResignations();
-    const recentResignations = recentRes.data || [];
-    return <RecentResignationsTable resignations={recentResignations} />;
+    // MOCK DATA for Table
+    const recentResignations = [
+        {
+            id: '1',
+            profiles: {
+                full_name: 'Sarah Connor',
+                employee_number: 'E-001',
+                email: 'sarah.connor@example.com',
+                role: 'employee',
+                department: 'Engineering'
+            },
+            status: 'pending',
+            last_working_day: '2026-02-15T00:00:00Z',
+        },
+        {
+            id: '2',
+            profiles: {
+                full_name: 'John Wick',
+                employee_number: 'E-101',
+                email: 'john.wick@example.com',
+                role: 'lead',
+                department: 'Sales'
+            },
+            status: 'scheduled',
+            last_working_day: '2026-02-20T00:00:00Z',
+        },
+        {
+            id: '3',
+            profiles: {
+                full_name: 'Ellen Ripley',
+                employee_number: 'E-456',
+                email: 'ellen.ripley@example.com',
+                role: 'interviewer',
+                department: 'Operations'
+            },
+            status: 'completed',
+            last_working_day: '2026-01-30T00:00:00Z',
+        },
+        {
+            id: '4',
+            profiles: {
+                full_name: 'Tony Stark',
+                employee_number: 'E-999',
+                email: 'tony.stark@example.com',
+                role: 'lead',
+                department: 'Research'
+            },
+            status: 'verified',
+            last_working_day: '2026-01-15T00:00:00Z',
+        },
+        {
+            id: '5',
+            profiles: {
+                full_name: 'Bruce Wayne',
+                employee_number: 'E-007',
+                email: 'bruce.wayne@example.com',
+                role: 'lead',
+                department: 'Finance'
+            },
+            status: 'declined',
+            last_working_day: '2026-03-01T00:00:00Z',
+        }
+    ];
+
+    // Type assertion to bypass strict typing for mock data
+    return <RecentResignationsTable resignations={recentResignations as any} />;
+}
+
+async function CountrySection() {
+    // MOCK DATA for Country Pie
+    const data = [
+        { name: 'United States', value: 35, fill: '#3b82f6' },
+        { name: 'Singapore', value: 25, fill: '#8b5cf6' },
+        { name: 'Australia', value: 20, fill: '#14b8a6' },
+        { name: 'Canada', value: 15, fill: '#f59e0b' },
+        { name: 'Other', value: 5, fill: '#64748b' },
+    ];
+
+    return <CountryPieChart data={data} />;
 }
 
 
@@ -116,16 +323,14 @@ function ChartSkeleton() {
     return (
         <div className="h-[400px] rounded-xl border bg-card/50 p-6 flex flex-col space-y-4">
             <Skeleton className="h-6 w-[200px]" />
-            <div className="flex-1 flex items-end space-x-4">
-                <Skeleton className="h-full w-full opacity-20" />
-            </div>
+            <Skeleton className="h-full w-full opacity-20" />
         </div>
     );
 }
 
 function WidgetSkeleton() {
     return (
-        <div className="h-[400px] rounded-xl border bg-card/50 p-6 flex flex-col space-y-4">
+        <div className="h-[200px] rounded-xl border bg-card/50 p-6 flex flex-col space-y-4">
             <Skeleton className="h-6 w-[150px]" />
             <Skeleton className="h-full w-full opacity-20" />
         </div>
@@ -135,21 +340,10 @@ function WidgetSkeleton() {
 function TableSkeleton() {
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <Skeleton className="h-8 w-[200px]" />
-                <Skeleton className="h-8 w-[100px]" />
-            </div>
             <div className="rounded-md border bg-card/50 p-4 space-y-4">
                 {[...Array(5)].map((_, i) => (
                     <div key={i} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <Skeleton className="h-10 w-10 rounded-full" />
-                            <div className="space-y-2">
-                                <Skeleton className="h-4 w-[150px]" />
-                                <Skeleton className="h-3 w-[100px]" />
-                            </div>
-                        </div>
-                        <Skeleton className="h-6 w-[100px]" />
+                        <Skeleton className="h-10 w-full" />
                     </div>
                 ))}
             </div>

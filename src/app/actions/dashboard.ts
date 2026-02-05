@@ -6,6 +6,7 @@ export type DashboardStats = {
     totalEmployees: number;
     activeResignations: number;
     retentionRate: number;
+    turnoverRate: number;
     misunderstoodCount: number;
 };
 
@@ -40,12 +41,23 @@ export async function getDashboardStats() {
         // Don't fail entire dashboard for this
     }
 
-    // 3. Retention Rate (Mock calculation for now: 100 - (resigned / total * 100))
-    // In a real app, this would be over a period (e.g. trailing 12 months)
-    // For now, let's just use pending resignations / total employees
-    const safeTotal = totalEmployees || 1;
-    const turnoverRateRaw = ((activeResignations || 0) / safeTotal) * 100;
-    const retentionRate = Math.max(0, 100 - turnoverRateRaw);
+    // 3. Turnover Rate (Formula: Resignations / 5000 * 100)
+    // We count all "confirmed" exits (completed, approved, verified, scheduled)
+    const { count: totalExits, error: exitsError } = await supabase
+        .from('resignations')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+
+    if (exitsError) {
+        console.error('Error fetching total exits:', exitsError);
+    }
+
+    const HEADCOUNT = 5000;
+    const turnoverRateRaw = ((totalExits || 0) / HEADCOUNT) * 100;
+    const turnoverRate = parseFloat(turnoverRateRaw.toFixed(2));
+
+    // Legacy retention rate (optional, can keep or remove)
+    const retentionRate = Math.max(0, 100 - turnoverRate);
 
     // 4. Misunderstood Questions Count (Global)
     // We count rows in exit_responses where is_corrected = true
@@ -59,7 +71,8 @@ export async function getDashboardStats() {
         data: {
             totalEmployees: totalEmployees || 0,
             activeResignations: activeResignations || 0,
-            retentionRate: parseFloat(retentionRate.toFixed(1)),
+            retentionRate: retentionRate,
+            turnoverRate: turnoverRate,
             misunderstoodCount: misunderstoodCount || 0
         }
     };
@@ -189,10 +202,12 @@ export async function getRecentResignations() {
             status,
             created_at,
             scheduled_interview_date,
+            last_working_day,
             profiles (
                 full_name,
                 email,
-                role
+                role,
+                department
             )
         `)
         .order('created_at', { ascending: false })

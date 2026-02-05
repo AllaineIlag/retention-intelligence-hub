@@ -222,7 +222,10 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
             <div className="border-t border-white/5 p-3">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5 overflow-hidden">
+                        <button
+                            className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5 overflow-hidden"
+                            suppressHydrationWarning
+                        >
                             <Avatar className="h-9 w-9 shrink-0">
                                 <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-xs font-medium text-white">
                                     {getInitials(email)}

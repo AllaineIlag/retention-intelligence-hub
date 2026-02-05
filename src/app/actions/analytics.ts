@@ -76,7 +76,8 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
     });
 
     const totalExits = filtered.length;
-    const turnoverRate = 0;
+    const HEADCOUNT = 5000;
+    const turnoverRate = (totalExits / HEADCOUNT) * 100;
 
     let totalTenureDays = 0;
     let tenureCount = 0;
@@ -143,12 +144,76 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
         success: true,
         data: {
             totalExits,
-            turnoverRate,
+            turnoverRate, // Calculated against 5000 headcount
             avgTenureMonths,
             voluntaryExits: totalExits,
             primaryDriver
         }
     };
+}
+
+export async function getCountryStats(filters: AnalyticsFilters) {
+    const supabase = await createClient();
+
+    // 1. Get relevant resignation IDs
+    const { data: resignations, error: resError } = await supabase
+        .from('resignations')
+        .select(`
+            id,
+            status,
+            last_working_day,
+            created_at,
+            profiles!employee_id (
+                department
+            )
+        `)
+        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+
+    if (resError) return { error: resError.message };
+
+    const relevantIds = new Set<string>();
+    resignations?.forEach((r: any) => {
+        // Date Filter
+        if (filters.startDate && filters.endDate) {
+            const date = parseISO(r.last_working_day || r.created_at);
+            if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
+        }
+        // Dept Filter
+        if (filters.department && filters.department.length > 0) {
+            const dept = r.profiles?.department;
+            if (!dept || !filters.department.includes(dept)) return;
+        }
+        relevantIds.add(r.id);
+    });
+
+    if (relevantIds.size === 0) return { success: true, data: [] };
+
+    // 2. Fetch country answers
+    const { data: results, error: resultsError } = await supabase
+        .from('exit_questionnaire_results')
+        .select('response_value')
+        .in('resignation_id', Array.from(relevantIds))
+        .eq('question_key', 'reason_for_leaving_country');
+
+    if (resultsError) return { error: resultsError.message };
+
+    // 3. Aggregate
+    const counts: Record<string, number> = {};
+    results.forEach(row => {
+        const val = row.response_value;
+        const country = Array.isArray(val) ? val[0] : String(val); // Should be single value
+        if (country) {
+            counts[country] = (counts[country] || 0) + 1;
+        }
+    });
+
+    // 4. Top 5
+    const chartData = Object.entries(counts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5);
+
+    return { success: true, data: chartData };
 }
 
 export async function getTurnoverTrends(filters: AnalyticsFilters) {

@@ -15,10 +15,10 @@ interface RecentResignationsTableProps {
 export function RecentResignationsTable({ resignations }: RecentResignationsTableProps) {
     if (!resignations || resignations.length === 0) {
         return (
-            <Card className="col-span-full">
+            <Card className="col-span-full border-white/5 bg-white/[0.02]">
                 <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                    <CardDescription>Latest resignation notices.</CardDescription>
+                    <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
+                    <CardDescription>Latest notices received</CardDescription>
                 </CardHeader>
                 <CardContent className="h-40 flex items-center justify-center text-muted-foreground text-sm">
                     No recent activity found.
@@ -28,50 +28,52 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
     }
 
     return (
-        <Card className="col-span-full">
+        <Card className="col-span-full border-white/5 bg-white/[0.02]">
             <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
                 <CardDescription>The database has logged {resignations.length} updates.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
-                        <TableRow>
-                            <TableHead>Employee</TableHead>
+                        <TableRow className="hover:bg-white/5 border-white/5">
+                            <TableHead className="w-[250px]">Employee</TableHead>
+                            <TableHead>Department</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Submitted</TableHead>
-                            <TableHead>Role</TableHead>
+                            <TableHead>Last Day</TableHead>
                             <TableHead className="text-right">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {resignations.map((item) => (
-                            <TableRow key={item.id}>
+                            <TableRow key={item.id} className="hover:bg-white/5 border-white/5">
                                 <TableCell className="flex items-center gap-3">
-                                    <Avatar className="h-9 w-9">
+                                    <Avatar className="h-8 w-8">
                                         <AvatarImage src={`https://avatar.vercel.sh/${item.profiles?.email}`} alt="@shadcn" />
-                                        <AvatarFallback>{item.profiles?.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                                        <AvatarFallback className="text-xs">{item.profiles?.full_name?.charAt(0) || 'U'}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
-                                        <span className="font-medium text-sm">{item.profiles?.full_name || 'Unknown'}</span>
-                                        <span className="text-xs text-muted-foreground">{item.profiles?.email}</span>
+                                        <span className="font-medium text-sm text-zinc-200">{item.profiles?.full_name || 'Unknown'}</span>
+                                        <span className="text-[10px] text-muted-foreground">{item.profiles?.role}</span>
                                     </div>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                    {item.profiles?.department || 'Unassigned'}
                                 </TableCell>
                                 <TableCell>
                                     <StatusBadge status={item.status} />
                                 </TableCell>
                                 <TableCell className="text-muted-foreground text-sm">
-                                    {item.created_at ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true }) : 'N/A'}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm capitalize">
-                                    {item.profiles?.role || 'User'}
+                                    {item.last_working_day
+                                        ? new Date(item.last_working_day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : 'Not set'}
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Link
                                         href={`/dashboard/resignation/${item.id}`}
-                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                                        className="inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-white/10 bg-white/5 shadow-sm hover:bg-white/10 hover:text-white h-7 w-7"
                                     >
-                                        <ArrowRight className="h-4 w-4" />
+                                        <ArrowRight className="h-3.5 w-3.5" />
                                         <span className="sr-only">View</span>
                                     </Link>
                                 </TableCell>
