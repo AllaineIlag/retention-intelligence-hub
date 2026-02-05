@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { GlobalFilters } from '@/components/dashboard/global-filters';
+import { CreateResignationDialog } from '@/components/dashboard/create-resignation-dialog';
+import { NotificationBell } from '@/components/dashboard/notification-bell';
 
 export default async function DashboardLayout({
     children,
@@ -39,19 +41,31 @@ export default async function DashboardLayout({
             <div className="flex h-screen overflow-hidden bg-background">
                 <CustomSidebar role={role} email={user.email || 'Unknown'} />
                 <div className="flex flex-1 flex-col overflow-hidden">
-                    <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6">
-                        <div className="flex flex-1 items-center gap-4">
+                    <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6 bg-[#0f0f11]/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-300">
+                        <div className="flex items-center gap-4">
                             <CustomSidebarTrigger />
                             <DashboardHeader />
                         </div>
 
-                        <div className="mx-8">
-                            <GlobalFilters />
-                        </div>
+                        <div className="flex items-center gap-4 md:gap-6">
+                            {/* Controls Group */}
+                            <div className="hidden md:flex items-center">
+                                <GlobalFilters />
+                            </div>
 
-                        <span className="rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-indigo-400">
-                            {role}
-                        </span>
+                            {/* Separator */}
+                            <div className="hidden md:block h-6 w-px bg-white/10" />
+
+                            {/* Actions Group */}
+                            <div className="flex items-center gap-3">
+                                <NotificationBell />
+                                <CreateResignationDialog />
+
+                                <span className="ml-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-indigo-400 border border-indigo-500/20">
+                                    {role}
+                                </span>
+                            </div>
+                        </div>
                     </header>
                     <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
                 </div>

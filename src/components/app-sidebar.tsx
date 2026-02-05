@@ -35,7 +35,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     {
-        title: 'Home',
+        title: 'Overview',
         url: '/dashboard',
         icon: Home,
         roles: ['lead', 'interviewer'],

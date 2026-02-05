@@ -49,7 +49,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-    { title: 'Home', url: '/dashboard', icon: Home, roles: ['lead', 'interviewer'] },
+    { title: 'Overview', url: '/dashboard', icon: Home, roles: ['lead', 'interviewer'] },
     { title: 'Interviews', url: '/dashboard/interviews', icon: Users, roles: ['lead', 'interviewer'] },
     { title: 'Team', url: '/dashboard/team', icon: Users, roles: ['lead'] },
     { title: 'Analytics', url: '/dashboard/analytics', icon: Activity, roles: ['lead'] },

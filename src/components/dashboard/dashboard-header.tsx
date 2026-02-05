@@ -6,7 +6,7 @@ export function DashboardHeader() {
     const pathname = usePathname();
 
     const getTitle = (path: string) => {
-        if (path === '/dashboard') return 'Home';
+        if (path === '/dashboard') return 'Overview';
         if (path.startsWith('/dashboard/interviews') || path.startsWith('/dashboard/interview/')) return 'Interviews';
         if (path.startsWith('/dashboard/team')) return 'Team';
         if (path.startsWith('/dashboard/analytics')) return 'Analytics';
@@ -14,7 +14,7 @@ export function DashboardHeader() {
         if (path.startsWith('/dashboard/settings')) return 'Settings';
         if (path.startsWith('/dashboard/audit')) return 'System Audit';
 
-        return 'Home'; // Default fallback
+        return 'Overview'; // Default fallback
     };
 
     return (
