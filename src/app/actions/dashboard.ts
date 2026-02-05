@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { subMonths } from 'date-fns';
+import { AnalyticsFilters } from './analytics';
 
 export type DashboardStats = {
     totalEmployees: number;
@@ -16,55 +18,104 @@ export type CorrectionStat = {
     questionText: string;
 };
 
-export async function getDashboardStats() {
+export async function getDashboardStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // 1. Total Employees (active profiles)
-    const { count: totalEmployees, error: employeesError } = await supabase
+    // 1. Total Employees (active profiles) - Filtered by department if applicable
+    let employeesQuery = supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
         .eq('role', 'employee');
+
+    if (filters.department && filters.department.length > 0) {
+        employeesQuery = employeesQuery.in('department', filters.department);
+    }
+
+    const { count: totalEmployees, error: employeesError } = await employeesQuery;
 
     if (employeesError) {
         console.error('Error fetching employees count:', employeesError);
         return { success: false, error: employeesError.message };
     }
 
-    // 2. Active Resignations
-    const { count: activeResignations, error: resignationsError } = await supabase
+    // 2. Active Resignations - Filtered by profile department
+    let resignationsQuery = supabase
         .from('resignations')
-        .select('*', { count: 'exact', head: true })
+        .select(`
+            id,
+            profiles!employee_id (
+                department
+            )
+        `, { count: 'exact', head: true })
         .in('status', ['pending', 'scheduled']);
+
+    if (filters.department && filters.department.length > 0) {
+        resignationsQuery = resignationsQuery.in('profiles.department', filters.department);
+    }
+
+    const { count: activeResignations, error: resignationsError } = await resignationsQuery;
 
     if (resignationsError) {
         console.error('Error fetching resignations count:', resignationsError);
-        // Don't fail entire dashboard for this
     }
 
-    // 3. Turnover Rate (Formula: Resignations / 5000 * 100)
-    // We count all "confirmed" exits (completed, approved, verified, scheduled)
-    const { count: totalExits, error: exitsError } = await supabase
+    // 3. Turnover Rate (Formula: Resignations / Headcount * 100)
+    let exitsQuery = supabase
         .from('resignations')
-        .select('*', { count: 'exact', head: true })
+        .select(`
+            id,
+            profiles!employee_id (
+                department
+            )
+        `, { count: 'exact', head: true })
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+
+    if (filters.startDate) {
+        exitsQuery = exitsQuery.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        exitsQuery = exitsQuery.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        exitsQuery = exitsQuery.in('profiles.department', filters.department);
+    }
+
+    const { count: totalExits, error: exitsError } = await exitsQuery;
 
     if (exitsError) {
         console.error('Error fetching total exits:', exitsError);
     }
 
-    const HEADCOUNT = 5000;
+    // If filtering by dept, calculate rate only for that dept
+    const HEADCOUNT = filters.department && filters.department.length > 0 ? (totalEmployees || 1) : 5000;
     const turnoverRateRaw = ((totalExits || 0) / HEADCOUNT) * 100;
     const turnoverRate = parseFloat(turnoverRateRaw.toFixed(2));
-
-    // Legacy retention rate (optional, can keep or remove)
     const retentionRate = Math.max(0, 100 - turnoverRate);
 
-    // 4. Misunderstood Questions Count (Global)
-    // We count rows in exit_responses where is_corrected = true
-    const { count: misunderstoodCount, error: correctionError } = await supabase
+    // 4. Misunderstood Questions Count (Filtered)
+    let correctionQuery = supabase
         .from('exit_responses')
-        .select('*', { count: 'exact', head: true })
+        .select(`
+            id,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `, { count: 'exact', head: true })
         .eq('is_corrected', true);
+
+    if (filters.startDate) {
+        correctionQuery = correctionQuery.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        correctionQuery = correctionQuery.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        correctionQuery = correctionQuery.in('resignations.profiles.department', filters.department);
+    }
+
+    const { count: misunderstoodCount, error: correctionError } = await correctionQuery;
 
     return {
         success: true,
@@ -78,22 +129,33 @@ export async function getDashboardStats() {
     };
 }
 
-// Updated to accept date range
-export async function getMisunderstoodQuestions(startDate?: Date, endDate?: Date): Promise<{ success: boolean; data?: CorrectionStat[]; error?: string }> {
+export async function getMisunderstoodQuestions(filters: AnalyticsFilters = {}): Promise<{ success: boolean; data?: CorrectionStat[]; error?: string }> {
     const supabase = await createClient();
 
     let query = supabase
         .from('exit_responses')
-        .select('original_answer, corrected_answer, created_at')
+        .select(`
+            original_answer, 
+            corrected_answer, 
+            created_at,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `)
         .eq('is_corrected', true)
         .not('original_answer', 'is', null)
         .not('corrected_answer', 'is', null);
 
-    if (startDate) {
-        query = query.gte('created_at', startDate.toISOString());
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
     }
-    if (endDate) {
-        query = query.lte('created_at', endDate.toISOString());
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('resignations.profiles.department', filters.department);
     }
 
     const { data: responses, error } = await query;
@@ -102,7 +164,6 @@ export async function getMisunderstoodQuestions(startDate?: Date, endDate?: Date
         return { success: false, error: error.message };
     }
 
-    // Aggregation Logic
     const statsMap: Record<string, number> = {};
 
     responses?.forEach(res => {
@@ -132,20 +193,30 @@ export async function getMisunderstoodQuestions(startDate?: Date, endDate?: Date
     return { success: true, data: stats };
 }
 
-// Updated to accept date range
-export async function getDetailedExitStats(startDate?: Date, endDate?: Date) {
+export async function getDetailedExitStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     let query = supabase
         .from('exit_responses')
-        .select('questionnaire_responses, created_at')
+        .select(`
+            questionnaire_responses, 
+            created_at,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `)
         .not('questionnaire_responses', 'is', null);
 
-    if (startDate) {
-        query = query.gte('created_at', startDate.toISOString());
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
     }
-    if (endDate) {
-        query = query.lte('created_at', endDate.toISOString());
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('resignations.profiles.department', filters.department);
     }
 
     const { data: responses, error } = await query;
@@ -172,13 +243,11 @@ export async function getDetailedExitStats(startDate?: Date, endDate?: Date) {
         data: {
             topReasons: Object.entries(reasonCounts)
                 .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => b.value - a.value) // Sort desc but allow slicing in UI if needed
+                .sort((a, b) => b.value - a.value)
         }
     };
 }
 
-
-// Helper for readable keys
 function formatQuestionKey(key: string): string {
     const map: Record<string, string> = {
         'reason_for_leaving': 'Reason for Leaving',
@@ -192,10 +261,10 @@ function formatQuestionKey(key: string): string {
     return map[key] || key.replace(/_/g, ' ');
 }
 
-export async function getRecentResignations() {
+export async function getRecentResignations(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('resignations')
         .select(`
             id,
@@ -203,13 +272,26 @@ export async function getRecentResignations() {
             created_at,
             scheduled_interview_date,
             last_working_day,
-            profiles (
+            profiles!employee_id (
                 full_name,
                 email,
                 role,
                 department
             )
-        `)
+        `);
+
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('profiles.department', filters.department);
+    }
+
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+
+    const { data, error } = await query
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -221,17 +303,20 @@ export async function getRecentResignations() {
     return { success: true, data };
 }
 
-// [NEW] Turnover Trends Aggregation
-export async function getTurnoverTrends(startDate: Date, endDate: Date) {
+export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // In a real production app, we would join resignations with a dates table or use date_trunc in SQL.
-    // Since we are "faking" history for MVP by creating resignations, we will just select all within range
-    // and group by Month/Day in Typescript.
+    const endDate = filters.endDate || new Date();
+    const startDate = filters.startDate || subMonths(endDate, 1);
 
     const { data: resignations, error } = await supabase
         .from('resignations')
-        .select('created_at')
+        .select(`
+            created_at,
+            profiles!employee_id (
+                department
+            )
+        `)
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
@@ -239,17 +324,21 @@ export async function getTurnoverTrends(startDate: Date, endDate: Date) {
         return { success: false, error: error.message };
     }
 
-    // Determine granularity based on range duration
+    const filtered = (resignations as any[]).filter(r => {
+        if (filters.department && filters.department.length > 0) {
+            const dept = r.profiles?.department;
+            if (!dept || !filters.department.includes(dept)) return false;
+        }
+        return true;
+    });
+
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // Logic: < 30 days = Day granularity, > 30 days = Month granularity
-    const isMonthly = diffDays > 32; // slightly loose buffer
+    const isMonthly = diffDays > 32;
 
     const groupedData: Record<string, number> = {};
-
-    // Initialize periods (simple approach: loop from starDate to endDate)
     const current = new Date(startDate);
+
     while (current <= endDate) {
         const key = isMonthly
             ? current.toLocaleString('default', { month: 'short' })
@@ -257,7 +346,6 @@ export async function getTurnoverTrends(startDate: Date, endDate: Date) {
 
         if (!groupedData[key]) groupedData[key] = 0;
 
-        // Increment day/month
         if (isMonthly) {
             current.setMonth(current.getMonth() + 1);
         } else {
@@ -265,8 +353,7 @@ export async function getTurnoverTrends(startDate: Date, endDate: Date) {
         }
     }
 
-    // Populate counts
-    resignations?.forEach(r => {
+    filtered.forEach(r => {
         const d = new Date(r.created_at);
         const key = isMonthly
             ? d.toLocaleString('default', { month: 'short' })
@@ -277,29 +364,42 @@ export async function getTurnoverTrends(startDate: Date, endDate: Date) {
         }
     });
 
-    // Transform
     const data = Object.entries(groupedData).map(([name, resignations]) => ({
         name,
         resignations,
-        // Mocking retention % fluctuating inversely to resignations for visual effect
-        // Base 95%, minus 2% per resignation
         retention: Math.max(70, 95 - (resignations * 2))
     }));
 
     return { success: true, data };
 }
 
-
-// [NEW] Recommendation Stats
-export async function getRecommendationStats(startDate: Date, endDate: Date) {
+export async function getRecommendationStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    const { data: responses, error } = await supabase
+    let query = supabase
         .from('exit_responses')
-        .select('questionnaire_responses, created_at')
-        .not('questionnaire_responses', 'is', null)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .select(`
+            questionnaire_responses, 
+            created_at,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `)
+        .not('questionnaire_responses', 'is', null);
+
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('resignations.profiles.department', filters.department);
+    }
+
+    const { data: responses, error } = await query;
 
     if (error) {
         return { success: false, error: error.message };
@@ -313,7 +413,7 @@ export async function getRecommendationStats(startDate: Date, endDate: Date) {
         const q = res.questionnaire_responses as { recommendation?: string };
         if (q.recommendation === 'Yes') promoter++;
         else if (q.recommendation === 'No') detractor++;
-        else passive++; // Maybe/Undefined
+        else passive++;
     });
 
     const data = [
@@ -322,44 +422,53 @@ export async function getRecommendationStats(startDate: Date, endDate: Date) {
         { name: 'Passive (Maybe)', value: passive }
     ];
 
-    // If empty, return mock structure but zeroed to avoid errors
-    const total = promoter + detractor + passive;
-    if (total === 0) {
-        // Optional: Return empty data or keep zeros
-    }
-
     return { success: true, data };
 }
 
-// [NEW] Career Growth Stats
-export async function getCareerGrowthStats(startDate: Date, endDate: Date) {
+export async function getCareerGrowthStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    const { data: responses, error } = await supabase
+    let query = supabase
         .from('exit_responses')
-        .select('questionnaire_responses, created_at')
-        .not('questionnaire_responses', 'is', null)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .select(`
+            questionnaire_responses, 
+            created_at,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `)
+        .not('questionnaire_responses', 'is', null);
+
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('resignations.profiles.department', filters.department);
+    }
+
+    const { data: responses, error } = await query;
 
     if (error) {
         return { success: false, error: error.message };
     }
 
-    // Ordinal keys in generic order for consistent chart sorting
     const ordinalMap: Record<string, number> = {
         'Very good chance': 0,
         'Good chances': 0,
         'Little chances': 0,
         'Very little': 0,
         'No chances': 0,
-        'N/A': 0 // Fallback
+        'N/A': 0
     };
 
     responses?.forEach(res => {
         const q = res.questionnaire_responses as { career_growth?: string };
         const answer = q.career_growth || 'N/A';
-        // Normalize checking against keys
         if (ordinalMap[answer] !== undefined) {
             ordinalMap[answer]++;
         } else {
@@ -367,14 +476,6 @@ export async function getCareerGrowthStats(startDate: Date, endDate: Date) {
         }
     });
 
-    // Transform to array
-    const data = Object.entries(ordinalMap).map(([name, value]) => ({
-        name,
-        value
-    }));
-
-    // No sorting needed if we rely on the insertion order of the pre-defined map, 
-    // but strict ordered array ensures "Very Good" -> "No chances" flow.
     const orderedKeys = ['Very good chance', 'Good chances', 'Little chances', 'Very little', 'No chances'];
 
     const sortedData = orderedKeys.map(key => ({
@@ -385,16 +486,33 @@ export async function getCareerGrowthStats(startDate: Date, endDate: Date) {
     return { success: true, data: sortedData };
 }
 
-// [NEW] Rate of Pay Stats
-export async function getRateOfPayStats(startDate: Date, endDate: Date) {
+export async function getRateOfPayStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    const { data: responses, error } = await supabase
+    let query = supabase
         .from('exit_responses')
-        .select('questionnaire_responses, created_at')
-        .not('questionnaire_responses', 'is', null)
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
+        .select(`
+            questionnaire_responses, 
+            created_at,
+            resignations!inner (
+                profiles!employee_id (
+                    department
+                )
+            )
+        `)
+        .not('questionnaire_responses', 'is', null);
+
+    if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate.toISOString());
+    }
+    if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate.toISOString());
+    }
+    if (filters.department && filters.department.length > 0) {
+        query = query.in('resignations.profiles.department', filters.department);
+    }
+
+    const { data: responses, error } = await query;
 
     if (error) {
         return { success: false, error: error.message };
@@ -428,3 +546,16 @@ export async function getRateOfPayStats(startDate: Date, endDate: Date) {
     return { success: true, data: sortedData };
 }
 
+export async function getDepartments() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('profiles')
+        .select('department')
+        .not('department', 'is', null);
+
+    if (error) return { success: false, error: error.message };
+
+    const departments = Array.from(new Set(data.map(p => p.department))).sort();
+    return { success: true, data: departments };
+}

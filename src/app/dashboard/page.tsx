@@ -16,48 +16,57 @@ import { RingMetricCard } from '@/components/dashboard/analytics/charts/RingMetr
 import { CountryPieChart } from '@/components/dashboard/analytics/charts/CountryPieChart';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function DashboardPage() {
+import { parseISO } from 'date-fns';
+import { AnalyticsFilters } from '@/app/actions/analytics';
+
+export default async function DashboardPage({
+    searchParams
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+    const params = await searchParams;
+
+    // Extract Filters
+    const filters: AnalyticsFilters = {
+        startDate: params.from ? parseISO(params.from as string) : undefined,
+        endDate: params.to ? parseISO(params.to as string) : undefined,
+        department: params.dept ? [params.dept as string] : undefined,
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-2">
-
-            {/* MAIN GRID: Left Content (KPIs + Hero + Table/Pie) vs Right Rail (Stats Stack) */}
+            {/* MAIN GRID */}
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
-
-                {/* LEFT MAIN CONTENT (3 Cols) */}
                 <div className="lg:col-span-3 space-y-6">
-                    {/* ROW 1: KPI Cards */}
                     <div className="w-full">
                         <Suspense fallback={<StatsSkeleton />}>
-                            <KPISection />
+                            <KPISection filters={filters} />
                         </Suspense>
                     </div>
 
-                    {/* Hero Chart */}
                     <div className="w-full">
                         <Suspense fallback={<ChartSkeleton />}>
-                            <HeroSection />
+                            <HeroSection filters={filters} />
                         </Suspense>
                     </div>
 
-                    {/* Bottom Split: Table & Country Pie */}
                     <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
                         <div className="lg:col-span-7">
                             <Suspense fallback={<TableSkeleton />}>
-                                <RecentResignationsSection />
+                                <RecentResignationsSection filters={filters} />
                             </Suspense>
                         </div>
                         <div className="lg:col-span-3">
                             <Suspense fallback={<WidgetSkeleton />}>
-                                <CountrySection />
+                                <CountrySection filters={filters} />
                             </Suspense>
                         </div>
                     </div>
                 </div>
 
-                {/* RIGHT RAIL (1 Col) - Spans Full Height */}
                 <div className="lg:col-span-1 h-full">
                     <Suspense fallback={<WidgetSkeleton />}>
-                        <QuickWinsSection />
+                        <QuickWinsSection filters={filters} />
                     </Suspense>
                 </div>
             </div>
@@ -65,55 +74,43 @@ export default function DashboardPage() {
     );
 }
 
-// ------------------------------------------------------------------
-// DATA FETCHING COMPONENTS
-// ------------------------------------------------------------------
-
-// ------------------------------------------------------------------
-// DATA FETCHING COMPONENTS
-// ------------------------------------------------------------------
-
-async function KPISection() {
-    // MOCK DATA for "2% Strategy" Visualization
-    // const summaryRes = await getAnalyticsSummary({});
-
-    // Static Scenario: 
-    // - Turnover Alert: 2.1% (Red/Warning)
-    // - Top Reason: Better Opportunity (Career Growth)
-    // - Rec: 68% (Low)
-    // - Tenure: 18 months
-
-    const summary = {
-        totalExits: 105,
-        turnoverRate: 2.1, // > 2.0% Threshold -> Should be Red/Warning
-        avgTenureMonths: 18,
-        primaryDriver: { reason: 'Better Opportunity', count: 45, percentage: 42 }
+async function KPISection({ filters }: { filters: AnalyticsFilters }) {
+    const summaryRes = await getAnalyticsSummary(filters);
+    const summary = summaryRes.success ? summaryRes.data! : {
+        totalExits: 0,
+        turnoverRate: 0,
+        avgTenureMonths: 0,
+        primaryDriver: null
     };
 
-    const recPercent = 68; // Net Promoter Score
+    // For RecommendationScore, we fetch question stats
+    const questionStatsRes = await getExitQuestionStats(filters);
+    const recStats = questionStatsRes.success ? questionStatsRes.data?.find(s => s.question_key === 'recommendation') : null;
 
-    // 4 Cards: Turnover, Top Exit Reason, Recommendation, Tenure
+    let recPercent = 0;
+    if (recStats && recStats.totalResponses > 0) {
+        const promoters = recStats.stats.find(s => s.name === 'Yes')?.value || 0;
+        recPercent = Math.round((promoters / recStats.totalResponses) * 100);
+    }
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-            {/* 1. Turnover Rate */}
             <RingMetricCard
                 title="Turnover Rate"
-                value={`${summary.turnoverRate}%`}
+                value={`${summary.turnoverRate.toFixed(1)}%`}
                 subtext="Monthly Rate"
                 progress={Math.min((summary.turnoverRate / 3) * 100, 100)}
                 color={summary.turnoverRate > 2.2 ? '#f43f5e' : '#10b981'}
             />
 
-            {/* 2. Top Exit Reason */}
             <RingMetricCard
                 title="Top Exit Reason"
-                value={`${summary.primaryDriver.percentage}%`}
-                subtext={summary.primaryDriver.reason}
-                progress={summary.primaryDriver.percentage}
+                value={summary.primaryDriver ? `${summary.primaryDriver.percentage}%` : '0%'}
+                subtext={summary.primaryDriver ? summary.primaryDriver.reason : 'No Data'}
+                progress={summary.primaryDriver ? summary.primaryDriver.percentage : 0}
                 color="#f59e0b"
             />
 
-            {/* 3. Recommendation */}
             <RingMetricCard
                 title="Would Recommend"
                 value={`${recPercent}%`}
@@ -122,7 +119,6 @@ async function KPISection() {
                 color={recPercent >= 50 ? '#10b981' : '#f43f5e'}
             />
 
-            {/* 4. Tenure */}
             <RingMetricCard
                 title="Avg. Tenure"
                 value={`${summary.avgTenureMonths} mo`}
@@ -134,168 +130,58 @@ async function KPISection() {
     );
 }
 
-async function HeroSection() {
-    // MOCK DATA for Hero Chart
+async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
+    const [deptRes, trendRes] = await Promise.all([
+        getDepartmentBreakdown(filters),
+        getTurnoverTrends(filters)
+    ]);
 
-    // Department Breakdown (Bar)
-    const deptData = [
-        { name: 'Engineering', value: 24, fill: '#6366f1' },
-        { name: 'Sales', value: 18, fill: '#8b5cf6' },
-        { name: 'Customer Support', value: 12, fill: '#14b8a6' },
-        { name: 'Product', value: 8, fill: '#10b981' },
-        { name: 'Marketing', value: 6, fill: '#f59e0b' },
-    ];
+    const deptData = deptRes.success ? deptRes.data?.map((d, i) => ({
+        ...d,
+        fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#f59e0b'][i % 5]
+    })) : [];
 
-    // Monthly Trend (Area) - Showing spike over 2%
-    // Needs to match { name, resignations, retention }
-    const monthData = [
-        { name: 'Jan', resignations: 1.2, retention: 98.8 },
-        { name: 'Feb', resignations: 1.1, retention: 98.9 },
-        { name: 'Mar', resignations: 1.3, retention: 98.7 },
-        { name: 'Apr', resignations: 1.5, retention: 98.5 },
-        { name: 'May', resignations: 1.8, retention: 98.2 },
-        { name: 'Jun', resignations: 2.1, retention: 97.9 }, // Alert
-        { name: 'Jul', resignations: 2.3, retention: 97.7 }, // Alert
-        { name: 'Aug', resignations: 2.1, retention: 97.9 }, // Alert
-    ];
+    const monthData = trendRes.success ? trendRes.data || [] : [];
 
     return (
         <HeroTurnoverChart
-            deptData={deptData}
-            monthData={monthData}
+            deptData={deptData as any}
+            monthData={monthData as any}
         />
     );
 }
 
-async function QuickWinsSection() {
-    // MOCK DATA for Quick Wins
+async function QuickWinsSection({ filters }: { filters: AnalyticsFilters }) {
+    const statsRes = await getExitQuestionStats(filters);
+    const stats = statsRes.success ? statsRes.data || [] : [];
 
-    // 1. Pull Factors: Why go?
-    const pullFactors = [
-        { name: 'Higher Base Salary', value: 45 },
-        { name: 'Remote Options', value: 32 },
-        { name: 'Better Benefits', value: 28 },
-    ];
-
-    // 2. Career Growth: Q3
-    const careerGrowth = [
-        { name: 'No Growth', value: 40 },
-        { name: 'Limited Path', value: 35 },
-        { name: 'Good', value: 25 },
-    ];
-
-    // 3. Pay Rate: Q4
-    const payPerception = [
-        { name: 'Underpaid', value: 55 },
-        { name: 'Fair', value: 30 },
-        { name: 'Well Paid', value: 15 },
-    ];
-
-    // 4. Benefits: Q5
-    const benefits = [
-        { name: 'Inadequate', value: 48 },
-        { name: 'Adequate', value: 35 },
-        { name: 'Very Adequate', value: 17 },
-    ];
-
-    // 5. Amount of Work: Q6
-    const workload = [
-        { name: 'Too Much', value: 60 },
-        { name: 'Just Right', value: 30 },
-        { name: 'Minimal', value: 10 },
-    ];
+    const getChartData = (key: string) => stats.find(s => s.question_key === key)?.stats || [];
 
     return (
         <QuickWinsCharts
-            pullFactors={pullFactors}
-            careerGrowth={careerGrowth}
-            payPerception={payPerception}
-            benefits={benefits}
-            workload={workload}
+            pullFactors={getChartData('reason_for_leaving')}
+            careerGrowth={getChartData('career_growth')}
+            payPerception={getChartData('rate_of_pay')}
+            benefits={getChartData('benefits')}
+            workload={getChartData('workload')}
         />
     );
 }
 
-async function RecentResignationsSection() {
-    // MOCK DATA for Table
-    const recentResignations = [
-        {
-            id: '1',
-            profiles: {
-                full_name: 'Sarah Connor',
-                employee_number: 'E-001',
-                email: 'sarah.connor@example.com',
-                role: 'employee',
-                department: 'Engineering'
-            },
-            status: 'pending',
-            last_working_day: '2026-02-15T00:00:00Z',
-        },
-        {
-            id: '2',
-            profiles: {
-                full_name: 'John Wick',
-                employee_number: 'E-101',
-                email: 'john.wick@example.com',
-                role: 'lead',
-                department: 'Sales'
-            },
-            status: 'scheduled',
-            last_working_day: '2026-02-20T00:00:00Z',
-        },
-        {
-            id: '3',
-            profiles: {
-                full_name: 'Ellen Ripley',
-                employee_number: 'E-456',
-                email: 'ellen.ripley@example.com',
-                role: 'interviewer',
-                department: 'Operations'
-            },
-            status: 'completed',
-            last_working_day: '2026-01-30T00:00:00Z',
-        },
-        {
-            id: '4',
-            profiles: {
-                full_name: 'Tony Stark',
-                employee_number: 'E-999',
-                email: 'tony.stark@example.com',
-                role: 'lead',
-                department: 'Research'
-            },
-            status: 'verified',
-            last_working_day: '2026-01-15T00:00:00Z',
-        },
-        {
-            id: '5',
-            profiles: {
-                full_name: 'Bruce Wayne',
-                employee_number: 'E-007',
-                email: 'bruce.wayne@example.com',
-                role: 'lead',
-                department: 'Finance'
-            },
-            status: 'declined',
-            last_working_day: '2026-03-01T00:00:00Z',
-        }
-    ];
-
-    // Type assertion to bypass strict typing for mock data
-    return <RecentResignationsTable resignations={recentResignations as any} />;
+async function RecentResignationsSection({ filters }: { filters: AnalyticsFilters }) {
+    const res = await getRecentResignations(filters);
+    const data = res.success ? res.data || [] : [];
+    return <RecentResignationsTable resignations={data as any} />;
 }
 
-async function CountrySection() {
-    // MOCK DATA for Country Pie
-    const data = [
-        { name: 'United States', value: 35, fill: '#6366f1' },
-        { name: 'Singapore', value: 25, fill: '#8b5cf6' },
-        { name: 'Australia', value: 20, fill: '#14b8a6' },
-        { name: 'Canada', value: 15, fill: '#f59e0b' },
-        { name: 'Other', value: 5, fill: '#64748b' },
-    ];
+async function CountrySection({ filters }: { filters: AnalyticsFilters }) {
+    const res = await getCountryStats(filters);
+    const data = res.success ? res.data?.map((d, i) => ({
+        ...d,
+        fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#64748b'][i % 5]
+    })) : [];
 
-    return <CountryPieChart data={data} />;
+    return <CountryPieChart data={data as any} />;
 }
 
 

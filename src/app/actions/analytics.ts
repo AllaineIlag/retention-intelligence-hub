@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { addDays, format, isWithinInterval, parseISO, subMonths, eachDayOfInterval, eachMonthOfInterval, startOfMonth, endOfMonth, subDays, differenceInDays } from 'date-fns';
+import { addDays, format, isWithinInterval, parseISO, subMonths, subDays, differenceInDays } from 'date-fns';
 
 export type AnalyticsFilters = {
     startDate?: Date;
@@ -28,19 +28,18 @@ export type PrimaryDriver = {
     count: number;
 };
 
-// Define a type for the joined query result
 type ResignationWithProfile = {
-    id: string; // Added ID for joins
+    id: string;
     last_working_day: string | null;
     created_at: string;
     status: string;
     profiles: {
         date_hired: string | null;
         department: string | null;
-    } | null; // Supabase returns single object for !employee_id
+    } | null;
 };
 
-export async function getAnalyticsSummary(filters: AnalyticsFilters) {
+export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     const { data: resignations, error } = await supabase
@@ -55,9 +54,9 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
         .in('status', ['completed', 'approved', 'verified', 'scheduled'])
         .returns<ResignationWithProfile[]>();
 
-    if (error) return { error: error.message };
+    if (error) return { success: false, error: error.message };
 
-    const filtered = resignations.filter(r => {
+    const filtered = (resignations as ResignationWithProfile[]).filter(r => {
         // Date Filter
         if (filters.startDate && filters.endDate) {
             const date = parseISO(r.last_working_day || r.created_at);
@@ -76,8 +75,20 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
     });
 
     const totalExits = filtered.length;
-    const HEADCOUNT = 5000;
-    const turnoverRate = (totalExits / HEADCOUNT) * 100;
+
+    // HEADCOUNT Logic: If filtered by department, we should ideally get the headcount for that department.
+    // However, for MVP and based on the current schema, we'll use total active employees in that dept or 5000 as fallback.
+    let headCount = 5000;
+    if (filters.department && filters.department.length > 0) {
+        const { count } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('role', 'employee')
+            .in('department', filters.department);
+        headCount = count || 1;
+    }
+
+    const turnoverRate = (totalExits / headCount) * 100;
 
     let totalTenureDays = 0;
     let tenureCount = 0;
@@ -95,12 +106,10 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
     });
     const avgTenureMonths = tenureCount > 0 ? Math.round((totalTenureDays / tenureCount) / 30 * 10) / 10 : 0;
 
-    // --- PRIMARY DRIVER (The 'Why') ---
     let primaryDriver: PrimaryDriver | null = null;
     const resignationIds = filtered.map(r => r.id);
 
     if (resignationIds.length > 0) {
-        // Fetch reasons for visible resignations
         const { data: reasons } = await supabase
             .from('exit_questionnaire_results')
             .select('response_value')
@@ -120,7 +129,6 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
                 });
             });
 
-            // Find max
             let maxReason = '';
             let maxCount = 0;
             Object.entries(counts).forEach(([reason, count]) => {
@@ -144,7 +152,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
         success: true,
         data: {
             totalExits,
-            turnoverRate, // Calculated against 5000 headcount
+            turnoverRate,
             avgTenureMonths,
             voluntaryExits: totalExits,
             primaryDriver
@@ -152,10 +160,9 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters) {
     };
 }
 
-export async function getCountryStats(filters: AnalyticsFilters) {
+export async function getCountryStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // 1. Get relevant resignation IDs
     const { data: resignations, error: resError } = await supabase
         .from('resignations')
         .select(`
@@ -169,16 +176,14 @@ export async function getCountryStats(filters: AnalyticsFilters) {
         `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
-    if (resError) return { error: resError.message };
+    if (resError) return { success: false, error: resError.message };
 
     const relevantIds = new Set<string>();
     resignations?.forEach((r: any) => {
-        // Date Filter
         if (filters.startDate && filters.endDate) {
             const date = parseISO(r.last_working_day || r.created_at);
             if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
-        // Dept Filter
         if (filters.department && filters.department.length > 0) {
             const dept = r.profiles?.department;
             if (!dept || !filters.department.includes(dept)) return;
@@ -188,26 +193,23 @@ export async function getCountryStats(filters: AnalyticsFilters) {
 
     if (relevantIds.size === 0) return { success: true, data: [] };
 
-    // 2. Fetch country answers
     const { data: results, error: resultsError } = await supabase
         .from('exit_questionnaire_results')
         .select('response_value')
         .in('resignation_id', Array.from(relevantIds))
         .eq('question_key', 'reason_for_leaving_country');
 
-    if (resultsError) return { error: resultsError.message };
+    if (resultsError) return { success: false, error: resultsError.message };
 
-    // 3. Aggregate
     const counts: Record<string, number> = {};
     results.forEach(row => {
         const val = row.response_value;
-        const country = Array.isArray(val) ? val[0] : String(val); // Should be single value
+        const country = Array.isArray(val) ? val[0] : String(val);
         if (country) {
             counts[country] = (counts[country] || 0) + 1;
         }
     });
 
-    // 4. Top 5
     const chartData = Object.entries(counts)
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value)
@@ -216,47 +218,58 @@ export async function getCountryStats(filters: AnalyticsFilters) {
     return { success: true, data: chartData };
 }
 
-export async function getTurnoverTrends(filters: AnalyticsFilters) {
+export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // We only need dates for trends
     const { data: resignations, error } = await supabase
         .from('resignations')
-        .select('last_working_day, created_at, status')
+        .select(`
+            last_working_day, 
+            created_at, 
+            status,
+            profiles!employee_id (
+                department
+            )
+        `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
-    if (error) return { error: error.message };
+    if (error) return { success: false, error: error.message };
 
     const monthlyStats: Record<string, number> = {};
 
-    for (let i = 5; i >= 0; i--) {
-        const d = subMonths(new Date(), i);
-        const key = format(d, 'MMM yyyy');
-        monthlyStats[key] = 0;
-    }
+    // Default to last 6 months if no range
+    const today = filters.endDate || new Date();
+    const start = filters.startDate || subMonths(today, 5);
 
-    resignations.forEach(r => {
-        const date = parseISO(r.last_working_day || r.created_at);
-
-        if (filters.startDate && filters.endDate) {
-            if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
+    // Filter by dept first
+    const filtered = (resignations as any[]).filter(r => {
+        if (filters.department && filters.department.length > 0) {
+            const dept = r.profiles?.department;
+            if (!dept || !filters.department.includes(dept)) return false;
         }
+        return true;
+    });
 
-        const key = format(date, 'MMM yyyy');
-        if (monthlyStats[key] !== undefined) {
-            monthlyStats[key]++;
+    filtered.forEach(r => {
+        const date = parseISO(r.last_working_day || r.created_at);
+        if (isWithinInterval(date, { start, end: today })) {
+            const key = format(date, 'MMM yyyy');
+            monthlyStats[key] = (monthlyStats[key] || 0) + 1;
         }
     });
 
-    const chartData: TurnoverDataPoint[] = Object.entries(monthlyStats).map(([name, value]) => ({
-        name,
-        value
-    }));
+    const chartData: TurnoverDataPoint[] = Object.entries(monthlyStats)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => {
+            const dateA = parseISO(`01 ${a.name}`);
+            const dateB = parseISO(`01 ${b.name}`);
+            return dateA.getTime() - dateB.getTime();
+        });
 
     return { success: true, data: chartData };
 }
 
-export async function getDepartmentBreakdown(filters: AnalyticsFilters) {
+export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     const { data: resignations, error } = await supabase
@@ -272,7 +285,7 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters) {
         .in('status', ['completed', 'approved', 'verified', 'scheduled'])
         .returns<ResignationWithProfile[]>();
 
-    if (error) return { error: error.message };
+    if (error) return { success: false, error: error.message };
 
     const deptCounts: Record<string, number> = {};
 
@@ -285,7 +298,14 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters) {
         }
 
         const dept = r.profiles?.department || 'Unknown';
-        deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+        // If we are filtering by specific depts, only count those
+        if (filters.department && filters.department.length > 0) {
+            if (filters.department.includes(dept)) {
+                deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+            }
+        } else {
+            deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+        }
     });
 
     const chartData: TurnoverDataPoint[] = Object.entries(deptCounts)
@@ -301,11 +321,10 @@ export type QuestionStats = {
     totalResponses: number;
 };
 
-export async function getExitQuestionStats(filters: AnalyticsFilters) {
+export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // 1. Get relevant resignation IDs first based on filters
-    let query = supabase
+    const { data: resignations, error: resError } = await supabase
         .from('resignations')
         .select(`
             id,
@@ -318,29 +337,19 @@ export async function getExitQuestionStats(filters: AnalyticsFilters) {
         `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
-    const { data: resignations, error: resError } = await query;
+    if (resError) return { success: false, error: resError.message };
 
-    if (resError) return { error: resError.message };
-
-    // Apply memory filtering for dates/department (slower but simpler for now than complex SQL joins)
-    // TODO: Optimize with exact SQL query later if scale increases
     const relevantIds = new Set<string>();
 
     resignations.forEach((r: any) => {
-        // Date Filter
         if (filters.startDate && filters.endDate) {
             const date = parseISO(r.last_working_day || r.created_at);
-            if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) {
-                return;
-            }
+            if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
-
-        // Dept Filter
         if (filters.department && filters.department.length > 0) {
             const dept = r.profiles?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
-
         relevantIds.add(r.id);
     });
 
@@ -348,18 +357,14 @@ export async function getExitQuestionStats(filters: AnalyticsFilters) {
         return { success: true, data: [] };
     }
 
-    // 2. Fetch results for these resignations
     const { data: results, error: resultsError } = await supabase
         .from('exit_questionnaire_results')
         .select('*')
         .in('resignation_id', Array.from(relevantIds));
 
-    if (resultsError) return { error: resultsError.message };
+    if (resultsError) return { success: false, error: resultsError.message };
 
-    // 3. Aggregate
     const aggregation: Record<string, Record<string, number>> = {};
-
-    // Initialize standard keys to ensure they exist even if empty (optional, but good for UI)
     const standardKeys = [
         'reason_for_leaving', 'why_more_desirable', 'career_growth',
         'rate_of_pay', 'benefits', 'workload', 'recommendation'
@@ -369,24 +374,16 @@ export async function getExitQuestionStats(filters: AnalyticsFilters) {
     results.forEach(row => {
         const key = row.question_key;
         if (!aggregation[key]) aggregation[key] = {};
-
         const values = Array.isArray(row.response_value) ? row.response_value : [row.response_value];
-
         values.forEach((val: string) => {
-            // Normalize value (some might be JSON strings)
-            const label = val;
-            aggregation[key][label] = (aggregation[key][label] || 0) + 1;
+            aggregation[key][val] = (aggregation[key][val] || 0) + 1;
         });
     });
 
-    // 4. Format for Frontend
     const finalStats: QuestionStats[] = Object.entries(aggregation).map(([key, counts]) => {
         const stats = Object.entries(counts).map(([name, value]) => ({ name, value }));
-        // Sort by value desc
         stats.sort((a, b) => b.value - a.value);
-
         const totalResponses = stats.reduce((acc, curr) => acc + curr.value, 0);
-
         return {
             question_key: key,
             stats,
@@ -396,45 +393,41 @@ export async function getExitQuestionStats(filters: AnalyticsFilters) {
 
     return { success: true, data: finalStats };
 }
+
 export type ComparisonDataPoint = {
-    date: string; // Display label (e.g., "Day 1", "Jan")
+    date: string;
     current: number;
     previous: number;
-    fullDateCurrent: string; // Tooltip context
-    fullDatePrevious: string; // Tooltip context
+    fullDateCurrent: string;
+    fullDatePrevious: string;
 };
 
-export async function getTurnoverComparison(filters: AnalyticsFilters) {
+export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // 1. Determine Ranges
-    const today = new Date();
-    // Default to last 30 days if no filter
-    const currentEnd = filters.endDate || today;
+    const today = filters.endDate || new Date();
     const currentStart = filters.startDate || subDays(today, 30);
+    const durationDays = differenceInDays(today, currentStart) + 1;
 
-    const durationDays = differenceInDays(currentEnd, currentStart) + 1;
-
-    // Previous range is immediately preceding
     const previousEnd = subDays(currentStart, 1);
     const previousStart = subDays(previousEnd, durationDays - 1);
 
-    // 2. Fetch ALL resignations (completed/scheduled)
-    // Optimization: In a real app, filtering by DB date range would be better, 
-    // but we need to cover a wide potential range for 'previous' without complex OR queries.
-    // Given the scale, fetching status=approved/etc is fine for now.
     const { data: resignations, error } = await supabase
         .from('resignations')
-        .select('last_working_day, created_at, status')
+        .select(`
+            last_working_day, 
+            created_at, 
+            status,
+            profiles!employee_id (
+                department
+            )
+        `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
-    if (error) return { error: error.message };
+    if (error) return { success: false, error: error.message };
 
-    // 3. Bucket Data
-    // We normalize by "Day Index" (0 to durationDays-1)
     const comparisonMap: Record<number, { current: number, previous: number, currentDate: Date, prevDate: Date }> = {};
 
-    // Initialize buckets
     for (let i = 0; i < durationDays; i++) {
         comparisonMap[i] = {
             current: 0,
@@ -445,43 +438,36 @@ export async function getTurnoverComparison(filters: AnalyticsFilters) {
     }
 
     resignations.forEach(r => {
+        if (filters.department && filters.department.length > 0) {
+            const dept = (r as any).profiles?.department;
+            if (!dept || !filters.department.includes(dept)) return;
+        }
+
         const date = parseISO(r.last_working_day || r.created_at);
 
-        // Check Current Range
-        if (isWithinInterval(date, { start: currentStart, end: currentEnd })) {
+        if (isWithinInterval(date, { start: currentStart, end: today })) {
             const dayIndex = differenceInDays(date, currentStart);
             if (comparisonMap[dayIndex]) comparisonMap[dayIndex].current++;
         }
 
-        // Check Previous Range
         if (isWithinInterval(date, { start: previousStart, end: previousEnd })) {
             const dayIndex = differenceInDays(date, previousStart);
             if (comparisonMap[dayIndex]) comparisonMap[dayIndex].previous++;
         }
     });
 
-    // 4. Format Output
-    // If duration > 60 days, maybe aggregate by week/month? 
-    // For now, let's keep it daily but formatted nicely.
-    // If > 90 days, we could aggregate, but "Day 1..90" is readable enough on a chart.
-
     const chartData: ComparisonDataPoint[] = Object.values(comparisonMap).map((bucket, index) => {
         let label = `Day ${index + 1}`;
-
-        // Smart Labels
         if (durationDays <= 31) {
             label = format(bucket.currentDate, 'MMM d');
+        } else if (bucket.currentDate.getDate() === 1) {
+            label = format(bucket.currentDate, 'MMM');
         } else {
-            // For long ranges, show month name on the 1st
-            if (bucket.currentDate.getDate() === 1) {
-                label = format(bucket.currentDate, 'MMM');
-            } else {
-                label = ''; // Hide label to avoid clutter, tickFormatter will handle or tooltip
-            }
+            label = '';
         }
 
         return {
-            date: label, // This might need refining for the XAxis ticks
+            date: label,
             current: bucket.current,
             previous: bucket.previous,
             fullDateCurrent: format(bucket.currentDate, 'MMM d, yyyy'),
@@ -493,7 +479,7 @@ export async function getTurnoverComparison(filters: AnalyticsFilters) {
         success: true,
         data: chartData,
         meta: {
-            currentLabel: `${format(currentStart, 'MMM d')} - ${format(currentEnd, 'MMM d')}`,
+            currentLabel: `${format(currentStart, 'MMM d')} - ${format(today, 'MMM d')}`,
             previousLabel: `${format(previousStart, 'MMM d')} - ${format(previousEnd, 'MMM d')}`
         }
     };

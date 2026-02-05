@@ -32,7 +32,7 @@ export function HeroTurnoverChart({ deptData, monthData, className }: HeroTurnov
     const TARGET_THRESHOLD = 100;
 
     return (
-        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02]", className)}>
+        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl", className)}>
             <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                     <CardTitle className="text-base font-medium tracking-tight">Turnover Analysis</CardTitle>
