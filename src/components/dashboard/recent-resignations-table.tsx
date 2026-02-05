@@ -17,7 +17,6 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
             <Card className="col-span-full border-white/5 bg-white/[0.02]">
                 <CardHeader>
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
-                    <CardDescription>Latest notices received</CardDescription>
                 </CardHeader>
                 <CardContent className="h-40 flex items-center justify-center text-muted-foreground text-sm">
                     No recent activity found.
@@ -30,7 +29,6 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
         <Card className="col-span-full border-white/5 bg-white/[0.02] h-full">
             <CardHeader>
                 <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
-                <CardDescription>The database has logged {resignations.length} updates.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>

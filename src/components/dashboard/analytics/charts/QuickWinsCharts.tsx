@@ -24,30 +24,30 @@ interface QuickWinsChartsProps {
 }
 
 const COLORS = [
-    '#3b82f6', // Blue
+    '#6366f1', // Indigo
     '#10b981', // Emerald
     '#f59e0b', // Amber
-    '#ec4899', // Pink
+    '#14b8a6', // Teal
     '#8b5cf6', // Violet
 ];
 
 export function QuickWinsCharts({ pullFactors, careerGrowth, payPerception, benefits, workload }: QuickWinsChartsProps) {
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <DonutMetricCard title="Key Pull Factors" data={pullFactors} unit="Resp" />
-            <DonutMetricCard title="Career Growth" data={careerGrowth} unit="Resp" />
-            <DonutMetricCard title="Pay Perception" data={payPerception} unit="Resp" />
-            <DonutMetricCard title="Feel About Benefits" data={benefits} unit="Resp" />
-            <DonutMetricCard title="Amount of Work" data={workload} unit="Resp" />
+        <div className="flex flex-col gap-4 h-full min-h-0">
+            <DonutMetricCard title="Key Pull Factors" data={pullFactors} unit="Resp" className="flex-1" />
+            <DonutMetricCard title="Career Growth" data={careerGrowth} unit="Resp" className="flex-1" />
+            <DonutMetricCard title="Pay Perception" data={payPerception} unit="Resp" className="flex-1" />
+            <DonutMetricCard title="Feel About Benefits" data={benefits} unit="Resp" className="flex-1" />
+            <DonutMetricCard title="Amount of Work" data={workload} unit="Resp" className="flex-1" />
         </div>
     );
 }
 
-function DonutMetricCard({ title, data, unit }: { title: string, data: QuickWinData[], unit: string }) {
+function DonutMetricCard({ title, data, unit, className }: { title: string, data: QuickWinData[], unit: string, className?: string }) {
     const total = data.reduce((acc, curr) => acc + curr.value, 0);
 
     return (
-        <Card className="flex flex-col border-white/5 bg-white/[0.02] min-h-[160px] rounded-3xl shadow-sm hover:bg-white/[0.04] transition-colors duration-300 overflow-hidden">
+        <Card className={cn("flex flex-col border-white/5 bg-white/[0.02] min-h-0 rounded-3xl shadow-sm hover:bg-white/[0.04] transition-colors duration-300 overflow-hidden", className)}>
             <CardHeader className="py-3 px-5 shrink-0">
                 <CardTitle className="text-sm font-medium text-zinc-100">{title}</CardTitle>
             </CardHeader>

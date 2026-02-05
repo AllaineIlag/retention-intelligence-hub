@@ -47,7 +47,7 @@ export function HeroTurnoverChart({ deptData, monthData, className }: HeroTurnov
                         className={cn("h-7 text-xs", view === 'department' && "bg-white/10 text-white")}
                         onClick={() => setView('department')}
                     >
-                        By Dept
+                        By Department
                     </Button>
                     <Button
                         variant="ghost"
@@ -62,13 +62,20 @@ export function HeroTurnoverChart({ deptData, monthData, className }: HeroTurnov
             <CardContent className="h-[350px]">
                 {view === 'department' ? (
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={deptData} layout="vertical" margin={{ left: 0, right: 30, top: 10 }}>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} horizontal={false} />
-                            <XAxis type="number" hide />
-                            <YAxis
+                        <BarChart data={deptData} margin={{ left: 0, right: 0, top: 10, bottom: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} vertical={false} />
+                            <XAxis
                                 dataKey="name"
-                                type="category"
-                                width={120}
+                                fontSize={11}
+                                tickLine={false}
+                                axisLine={false}
+                                stroke="#a1a1aa"
+                                interval={0}
+                                angle={-15}
+                                textAnchor="end"
+                            />
+                            <YAxis
+                                type="number"
                                 fontSize={11}
                                 tickLine={false}
                                 axisLine={false}
@@ -81,9 +88,9 @@ export function HeroTurnoverChart({ deptData, monthData, className }: HeroTurnov
                             />
                             <Bar
                                 dataKey="value"
-                                fill="#adfa1d"
-                                radius={[0, 4, 4, 0]}
-                                barSize={24}
+                                fill="#14b8a6"
+                                radius={[4, 4, 0, 0]}
+                                barSize={40}
                                 name="Exits"
                                 animationDuration={1000}
                             />

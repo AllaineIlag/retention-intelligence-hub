@@ -128,7 +128,7 @@ async function KPISection() {
                 value={`${summary.avgTenureMonths} mo`}
                 subtext="Length of Service"
                 progress={Math.min((summary.avgTenureMonths / 36) * 100, 100)}
-                color="#3b82f6"
+                color="#6366f1"
             />
         </div>
     );
@@ -141,8 +141,8 @@ async function HeroSection() {
     const deptData = [
         { name: 'Engineering', value: 24, fill: '#6366f1' },
         { name: 'Sales', value: 18, fill: '#8b5cf6' },
-        { name: 'Customer Support', value: 12, fill: '#ec4899' },
-        { name: 'Product', value: 8, fill: '#14b8a6' },
+        { name: 'Customer Support', value: 12, fill: '#14b8a6' },
+        { name: 'Product', value: 8, fill: '#10b981' },
         { name: 'Marketing', value: 6, fill: '#f59e0b' },
     ];
 
@@ -288,7 +288,7 @@ async function RecentResignationsSection() {
 async function CountrySection() {
     // MOCK DATA for Country Pie
     const data = [
-        { name: 'United States', value: 35, fill: '#3b82f6' },
+        { name: 'United States', value: 35, fill: '#6366f1' },
         { name: 'Singapore', value: 25, fill: '#8b5cf6' },
         { name: 'Australia', value: 20, fill: '#14b8a6' },
         { name: 'Canada', value: 15, fill: '#f59e0b' },

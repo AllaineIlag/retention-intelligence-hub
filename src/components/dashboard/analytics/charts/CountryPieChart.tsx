@@ -16,13 +16,13 @@ interface CountryPieChartProps {
     className?: string;
 }
 
-const COLORS = ['#adfa1d', '#10b981', '#3b82f6', '#8b5cf6', '#f43f5e'];
+const COLORS = ['#14b8a6', '#10b981', '#6366f1', '#8b5cf6', '#f43f5e'];
 
 export function CountryPieChart({ data, className }: CountryPieChartProps) {
     return (
         <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] h-full flex flex-col", className)}>
             <CardHeader className="shrink-0">
-                <CardTitle className="text-sm font-medium tracking-tight uppercase">Where are they going?</CardTitle>
+                <CardTitle className="text-sm font-medium tracking-tight">Destination of Exits</CardTitle>
                 <CardDescription className="text-xs">Top destinations for jobs abroad</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 min-h-[250px]">

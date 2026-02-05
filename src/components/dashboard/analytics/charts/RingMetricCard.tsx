@@ -31,7 +31,7 @@ export function RingMetricCard({
     const TRACK_COLOR = '#27272a';
 
     return (
-        <Card className={cn("rounded-xl border border-white/5 bg-white/[0.02] shadow-sm flex flex-col justify-between h-full", className)}>
+        <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm flex flex-col justify-between h-full", className)}>
             <CardHeader className="pb-2">
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground line-clamp-1" title={title}>
                     {title}
