@@ -1,14 +1,14 @@
 'use client';
 
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Tooltip,
-    ResponsiveContainer
+    PieChart,
+    Pie,
+    Cell,
+    ResponsiveContainer,
+    Tooltip
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface QuickWinData {
     name: string;
@@ -23,51 +23,82 @@ interface QuickWinsChartsProps {
     workload: QuickWinData[];
 }
 
+const COLORS = [
+    '#3b82f6', // Blue
+    '#10b981', // Emerald
+    '#f59e0b', // Amber
+    '#ec4899', // Pink
+    '#8b5cf6', // Violet
+];
+
 export function QuickWinsCharts({ pullFactors, careerGrowth, payPerception, benefits, workload }: QuickWinsChartsProps) {
     return (
-        <div className="flex flex-col h-full gap-4">
-            <MiniChart title="Key Pull Factors" data={pullFactors} color="#f472b6" /> {/* Pink */}
-            <MiniChart title="Career Growth" data={careerGrowth} color="#34d399" /> {/* Green */}
-            <MiniChart title="Pay Perception" data={payPerception} color="#60a5fa" /> {/* Blue */}
-            <MiniChart title="Feel About Benefits" data={benefits} color="#a78bfa" /> {/* Purple */}
-            <MiniChart title="Amount of Work" data={workload} color="#fbbf24" /> {/* Amber */}
+        <div className="flex flex-col gap-4 h-full">
+            <DonutMetricCard title="Key Pull Factors" data={pullFactors} unit="Resp" />
+            <DonutMetricCard title="Career Growth" data={careerGrowth} unit="Resp" />
+            <DonutMetricCard title="Pay Perception" data={payPerception} unit="Resp" />
+            <DonutMetricCard title="Feel About Benefits" data={benefits} unit="Resp" />
+            <DonutMetricCard title="Amount of Work" data={workload} unit="Resp" />
         </div>
     );
 }
 
-function MiniChart({ title, data, color }: { title: string, data: QuickWinData[], color: string }) {
+function DonutMetricCard({ title, data, unit }: { title: string, data: QuickWinData[], unit: string }) {
+    const total = data.reduce((acc, curr) => acc + curr.value, 0);
+
     return (
-        <Card className="flex flex-col flex-1 border-white/5 bg-white/[0.02] min-h-[140px]">
-            <CardHeader className="py-3 px-4 shrink-0">
-                <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
+        <Card className="flex flex-col border-white/5 bg-white/[0.02] min-h-[160px] rounded-3xl shadow-sm hover:bg-white/[0.04] transition-colors duration-300 overflow-hidden">
+            <CardHeader className="py-3 px-5 shrink-0">
+                <CardTitle className="text-sm font-medium text-zinc-100">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="py-0 px-4 pb-3 flex-1 min-h-0">
-                {data && data.length > 0 ? (
+            <CardContent className="flex flex-1 items-center pb-4 px-2 min-h-0">
+                {/* Donut Chart (Left) */}
+                <div className="relative w-1/2 h-full min-h-[100px] flex items-center justify-center">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data} layout="vertical" margin={{ left: 0, right: 10, top: 0, bottom: 0 }}>
-                            <XAxis type="number" hide />
-                            <YAxis
-                                dataKey="name"
-                                type="category"
-                                width={80}
-                                fontSize={9}
-                                tickLine={false}
-                                axisLine={false}
-                                stroke="#71717a"
-                                interval={0}
-                            />
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="65%"
+                                outerRadius="85%"
+                                paddingAngle={5}
+                                dataKey="value"
+                                stroke="none"
+                                cornerRadius={4}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
                             <Tooltip
-                                cursor={{ fill: 'white', opacity: 0.05 }}
-                                contentStyle={{ background: '#18181b', border: 'none', fontSize: '10px', color: '#fff' }}
+                                contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
                             />
-                            <Bar dataKey="value" fill={color} radius={[0, 2, 2, 0]} barSize={12} />
-                        </BarChart>
+                        </PieChart>
                     </ResponsiveContainer>
-                ) : (
-                    <div className="flex items-center justify-center h-full text-[10px] text-muted-foreground">
-                        No data
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-lg font-bold text-white leading-none">{total}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase">{unit}</span>
                     </div>
-                )}
+                </div>
+
+                {/* Legend (Right) */}
+                <div className="w-1/2 flex flex-col justify-center gap-2 pl-2">
+                    {data.map((item, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <div
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] text-zinc-400 truncate">{item.name}</span>
+                                {/* Optional: Show Value next to name? */}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </CardContent>
         </Card>
     );

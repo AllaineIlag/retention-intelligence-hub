@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+
 import { getDashboardStats, getRecentResignations } from '@/app/actions/dashboard';
 import {
     getAnalyticsSummary,
@@ -10,9 +11,9 @@ import {
 import { StatCards } from '@/components/dashboard/stat-cards';
 import { RecentResignationsTable } from '@/components/dashboard/recent-resignations-table';
 import { HeroTurnoverChart } from '@/components/dashboard/analytics/charts/HeroTurnoverChart';
-import { TurnoverKPI } from '@/components/dashboard/analytics/charts/TurnoverKPI';
-import { CountryPieChart } from '@/components/dashboard/analytics/charts/CountryPieChart';
 import { QuickWinsCharts } from '@/components/dashboard/analytics/charts/QuickWinsCharts';
+import { RingMetricCard } from '@/components/dashboard/analytics/charts/RingMetricCard';
+import { CountryPieChart } from '@/components/dashboard/analytics/charts/CountryPieChart';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
@@ -94,47 +95,41 @@ async function KPISection() {
     // 4 Cards: Turnover, Top Exit Reason, Recommendation, Tenure
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-            {/* 1. Turnover KPI (Green/Red Logic) */}
-            <TurnoverKPI rate={summary.turnoverRate} />
+            {/* 1. Turnover Rate */}
+            <RingMetricCard
+                title="Turnover Rate"
+                value={`${summary.turnoverRate}%`}
+                subtext="Monthly Rate"
+                progress={Math.min((summary.turnoverRate / 3) * 100, 100)}
+                color={summary.turnoverRate > 2.2 ? '#f43f5e' : '#10b981'}
+            />
 
             {/* 2. Top Exit Reason */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Top Exit Reason</h3>
-                </div>
-                <div className="text-xl font-bold tracking-tight mt-2 line-clamp-2">
-                    {summary.primaryDriver.reason}
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
-                    {summary.primaryDriver.percentage}% of Exits
-                </p>
-            </div>
+            <RingMetricCard
+                title="Top Exit Reason"
+                value={`${summary.primaryDriver.percentage}%`}
+                subtext={summary.primaryDriver.reason}
+                progress={summary.primaryDriver.percentage}
+                color="#f59e0b"
+            />
 
             {/* 3. Recommendation */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Would Recommend</h3>
-                </div>
-                <div className="text-2xl font-bold tracking-tight mt-2 text-indigo-400">
-                    {recPercent}%
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
-                    Promoter Score
-                </p>
-            </div>
+            <RingMetricCard
+                title="Would Recommend"
+                value={`${recPercent}%`}
+                subtext="Promoter Score"
+                progress={recPercent}
+                color={recPercent >= 50 ? '#10b981' : '#f43f5e'}
+            />
 
             {/* 4. Tenure */}
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 shadow-sm">
-                <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Avg. Tenure</h3>
-                </div>
-                <div className="text-2xl font-bold tracking-tight mt-2">
-                    {summary.avgTenureMonths} <span className="text-sm font-normal text-muted-foreground">mos</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase">
-                    Length of Service
-                </p>
-            </div>
+            <RingMetricCard
+                title="Avg. Tenure"
+                value={`${summary.avgTenureMonths} mo`}
+                subtext="Length of Service"
+                progress={Math.min((summary.avgTenureMonths / 36) * 100, 100)}
+                color="#3b82f6"
+            />
         </div>
     );
 }
