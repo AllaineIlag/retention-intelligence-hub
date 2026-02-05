@@ -62,65 +62,66 @@ export function CorrectionCard({ response, onSave }: CorrectionCardProps) {
     };
 
     return (
-        <Card className="w-full border-l-4 border-l-indigo-500 shadow-sm">
-            <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium text-slate-800 flex justify-between items-center">
+        <Card className="w-full border-none bg-black/20 backdrop-blur-md shadow-2xl ring-1 ring-white/5 overflow-hidden">
+            <CardHeader className="pb-4 bg-white/[0.02] border-b border-white/5">
+                <CardTitle className="text-xl font-bold text-white flex justify-between items-center tracking-tight">
                     <span>{response.question?.text || 'Question'}</span>
                     {response.is_corrected && (
-                        <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
-                            Corrected
+                        <Badge variant="secondary" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 px-3 py-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                            Verified Reality
                         </Badge>
                     )}
                 </CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 pt-6">
                 {/* Original Answer (Read Only) */}
-                <div className="bg-slate-50 p-3 rounded-md border border-slate-100">
-                    <Label className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                        Employee's Original Answer
+                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5 relative group">
+                    <div className="absolute inset-0 bg-indigo-500/[0.02] opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
+                        Employee's Original Perception
                     </Label>
-                    <p className="mt-1 text-slate-700 font-medium">{originalDisplay}</p>
+                    <p className="mt-2 text-indigo-100/90 font-medium leading-relaxed">{originalDisplay}</p>
                 </div>
 
                 {/* Correction Input */}
-                <div className="space-y-2">
-                    <Label htmlFor="correction" className="text-indigo-900 font-semibold">
-                        Corrected/Verified Reality
+                <div className="space-y-3">
+                    <Label htmlFor="correction" className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                        Interviewer's Validated Truth
                     </Label>
                     <Textarea
                         id="correction"
                         placeholder="Enter the factual reality if different from above..."
                         value={correctedAnswer}
                         onChange={(e) => setCorrectedAnswer(e.target.value)}
-                        className="bg-white border-indigo-100 focus:border-indigo-400 focus:ring-indigo-400 min-h-[80px]"
+                        className="bg-black/40 border-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20 min-h-[100px] text-white rounded-xl transition-all"
                     />
                 </div>
 
                 {/* Notes */}
-                <div className="space-y-2">
-                    <Label htmlFor="notes" className="text-slate-600">
-                        Interviewer Notes (Internal)
+                <div className="space-y-3">
+                    <Label htmlFor="notes" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                        Strategic Nuance (Internal Notes)
                     </Label>
                     <Textarea
                         id="notes"
                         placeholder="Context, nuance, or details of the conversation..."
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        className="text-sm bg-slate-50 border-slate-200 min-h-[60px]"
+                        className="text-sm bg-black/20 border-white/5 focus:border-white/20 focus:ring-0 min-h-[80px] text-gray-300 rounded-xl transition-all"
                     />
                 </div>
             </CardContent>
 
-            <CardFooter className="pt-2 flex justify-end">
+            <CardFooter className="pt-2 pb-6 flex justify-end px-6 bg-white/[0.01] border-t border-white/5">
                 <Button
                     onClick={handleSave}
                     disabled={loading}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white transition-all"
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-lg shadow-indigo-500/10 px-8 font-bold"
                 >
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {response.is_corrected ? 'Update Correction' : 'Save Correction'}
+                    {response.is_corrected ? 'Update Verification' : 'Seal Verification'}
                 </Button>
             </CardFooter>
         </Card>

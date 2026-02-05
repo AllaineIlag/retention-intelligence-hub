@@ -26,6 +26,9 @@ interface EmployeeDetails {
     name: string
     dateHired: string
     positionHired: string
+    position: string
+    department: string
+    supervisor: string
 }
 
 interface StepEmployeeInfoProps {
@@ -125,7 +128,10 @@ export function StepEmployeeInfo({
                 {/* Current Position (Existing) */}
                 <div className="space-y-2">
                     <Label htmlFor="position">Current Position <span className="text-destructive">*</span></Label>
-                    <Select defaultValue="">
+                    <Select
+                        value={employeeDetails.position}
+                        onValueChange={(val) => handleDetailsChange('position', val)}
+                    >
                         <SelectTrigger className="w-full bg-background border-input">
                             <SelectValue placeholder="Select your position" />
                         </SelectTrigger>
@@ -137,39 +143,7 @@ export function StepEmployeeInfo({
                     </Select>
                 </div>
 
-                {/* Department (Existing) */}
-                <div className="space-y-2">
-                    <Label htmlFor="department">Department <span className="text-destructive">*</span></Label>
-                    <Select defaultValue="">
-                        <SelectTrigger className="w-full bg-background border-input">
-                            <SelectValue placeholder="Select your department" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {referenceData.departments.map(dept => (
-                                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Supervisor (Existing) */}
-                <div className="space-y-2">
-                    <Label htmlFor="supervisor">Immediate Superior <span className="text-destructive">*</span></Label>
-                    <Select defaultValue="">
-                        <SelectTrigger className="w-full bg-background border-input">
-                            <SelectValue placeholder="Select your supervisor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {referenceData.supervisors.map(sup => (
-                                <SelectItem key={sup} value={sup}>{sup}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {/* Exit Date - Required (Existing) */}
+                {/* Exit Date - Required (Existing) - Moved here to pair with Position */}
                 <div className="space-y-2">
                     <Label htmlFor="exit_date">Date of Resignation <span className="text-destructive">*</span></Label>
                     <Popover>
@@ -195,6 +169,42 @@ export function StepEmployeeInfo({
                         </PopoverContent>
                     </Popover>
                 </div>
+            </div>
+
+            {/* Department - Full Width for better separation */}
+            <div className="space-y-2">
+                <Label htmlFor="department">Department <span className="text-destructive">*</span></Label>
+                <Select
+                    value={employeeDetails.department}
+                    onValueChange={(val) => handleDetailsChange('department', val)}
+                >
+                    <SelectTrigger className="w-full bg-background border-input">
+                        <SelectValue placeholder="Select your department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {referenceData.departments.map(dept => (
+                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* Supervisor - Full Width for better separation */}
+            <div className="space-y-2">
+                <Label htmlFor="supervisor">Immediate Superior <span className="text-destructive">*</span></Label>
+                <Select
+                    value={employeeDetails.supervisor}
+                    onValueChange={(val) => handleDetailsChange('supervisor', val)}
+                >
+                    <SelectTrigger className="w-full bg-background border-input">
+                        <SelectValue placeholder="Select your supervisor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {referenceData.supervisors.map(sup => (
+                            <SelectItem key={sup} value={sup}>{sup}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
         </div>
     )

@@ -1,0 +1,131 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartTimeFilter } from '@/components/dashboard/analytics/chart-time-filter';
+import { getCareerGrowthStats } from '@/app/actions/dashboard';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Loader2, TrendingUp } from 'lucide-react';
+import { subDays, startOfDay, subMonths } from 'date-fns';
+
+export function CareerGrowthChart() {
+    const [timeRange, setTimeRange] = useState('30d');
+    const [data, setData] = useState<{ name: string; value: number }[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // [DEV] Static Data for Visualization (Forced as per user request)
+                const MOCK_DATA = [
+                    { name: 'Very good chance', value: 12 },
+                    { name: 'Good chances', value: 25 },
+                    { name: 'Little chances', value: 18 },
+                    { name: 'Very little', value: 8 },
+                    { name: 'No chances', value: 15 }
+                ];
+
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+                setData(MOCK_DATA);
+
+                /* 
+                // TODO: Uncomment when ready for real data
+                const result = await getCareerGrowthStats(startDate, now);
+                if (result.success && result.data && result.data.length > 0) {
+                    setData(result.data);
+                }
+                */
+            } catch (error) {
+                console.error('Failed to fetch career growth stats:', error);
+                // Fallback is also mock data
+                setData([
+                    { name: 'Very good chance', value: 12 },
+                    { name: 'Good chances', value: 25 },
+                    { name: 'Little chances', value: 18 },
+                    { name: 'Very little', value: 8 },
+                    { name: 'No chances', value: 15 }
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [timeRange]);
+
+    // Custom coloring logic
+    const getColor = (name: string) => {
+        if (name.includes('Very good')) return '#10b981'; // Emerald 500
+        if (name.includes('Good')) return '#34d399';      // Emerald 400
+        if (name.includes('Little')) return '#fbbf24';    // Amber 400
+        if (name.includes('Very little')) return '#f87171'; // Rose 400
+        if (name.includes('No chances')) return '#ef4444';  // Rose 500
+        return '#94a3b8'; // Slate 400
+    };
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-xl">
+                    <p className="text-slate-200 font-medium text-sm">{label}</p>
+                    <p className="text-white font-bold text-lg">
+                        {payload[0].value} <span className="text-xs text-slate-400 font-normal">Responses</span>
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    return (
+        <Card className="col-span-1 h-[400px] bg-white/5 border-white/10 backdrop-blur-md flex flex-col">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div className="space-y-1">
+                    <CardTitle className="text-lg font-medium text-slate-200 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-400" />
+                        Career Growth
+                    </CardTitle>
+                    <CardDescription className="text-xs text-slate-400">
+                        Perceived opportunity for advancement
+                    </CardDescription>
+                </div>
+                <ChartTimeFilter value={timeRange as any} onChange={setTimeRange as any} />
+            </CardHeader>
+            <CardContent className="flex-1 w-full min-h-0 pl-0">
+                {loading ? (
+                    <div className="h-full flex items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-slate-500" />
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                            data={data}
+                            layout="vertical"
+                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#ffffff10" />
+                            <XAxis type="number" hide />
+                            <YAxis
+                                dataKey="name"
+                                type="category"
+                                width={100}
+                                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#ffffff05' }} />
+                            <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} animationDuration={1500}>
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={getColor(entry.name)} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+
+                )}
+            </CardContent>
+        </Card>
+    );
+}

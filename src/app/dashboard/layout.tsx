@@ -2,6 +2,8 @@ import { CustomSidebarProvider, CustomSidebar, CustomSidebarTrigger } from '@/co
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+
 export default async function DashboardLayout({
     children,
 }: {
@@ -39,13 +41,13 @@ export default async function DashboardLayout({
                     <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6">
                         <div className="flex items-center gap-3">
                             <CustomSidebarTrigger />
-                            <h2 className="text-lg font-semibold">Dashboard</h2>
+                            <DashboardHeader />
                         </div>
                         <span className="rounded-full bg-indigo-600/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-indigo-400">
                             {role}
                         </span>
                     </header>
-                    <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+                    <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
                 </div>
             </div>
         </CustomSidebarProvider>

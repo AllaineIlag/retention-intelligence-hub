@@ -164,3 +164,39 @@ export async function finalizeInterview(resignationId: string) {
     revalidatePath('/dashboard');
     return { success: true };
 }
+
+export async function getAllInterviews() {
+    const supabase = await createClient();
+
+    const { data: interviews, error } = await supabase
+        .from('resignations')
+        .select(`
+            id,
+            status,
+            created_at,
+            scheduled_interview_date,
+            exit_date,
+            employee:profiles (
+                id,
+                full_name,
+                email,
+                role,
+                department
+            )
+        `)
+        .in('status', ['pending', 'scheduled'])
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching interviews:', error);
+        return { success: false, error: 'Failed to fetch interviews' };
+    }
+
+    // Transform data to ensure employee is a single object (Supabase sometimes returns array for joins)
+    const formattedInterviews = interviews?.map(interview => ({
+        ...interview,
+        employee: Array.isArray(interview.employee) ? interview.employee[0] : interview.employee
+    }));
+
+    return { success: true, data: formattedInterviews };
+}

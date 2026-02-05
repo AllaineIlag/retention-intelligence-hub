@@ -19,6 +19,9 @@ interface StepReviewProps {
         name: string
         dateHired: string
         positionHired: string
+        position: string
+        department: string
+        supervisor: string
     }
 }
 
@@ -49,6 +52,18 @@ export function StepReview({ resignation, responses, questions, employeeDetails 
                     <div>
                         <Label className="text-muted-foreground text-xs uppercase">Position when Hired</Label>
                         <p className="font-medium">{employeeDetails.positionHired || "Not set"}</p>
+                    </div>
+                    <div>
+                        <Label className="text-muted-foreground text-xs uppercase">Current Position</Label>
+                        <p className="font-medium">{employeeDetails.position || "Not selected"}</p>
+                    </div>
+                    <div>
+                        <Label className="text-muted-foreground text-xs uppercase">Department</Label>
+                        <p className="font-medium">{employeeDetails.department || "Not selected"}</p>
+                    </div>
+                    <div>
+                        <Label className="text-muted-foreground text-xs uppercase">Immediate Supervisor</Label>
+                        <p className="font-medium">{employeeDetails.supervisor || "Not selected"}</p>
                     </div>
                     <div>
                         <Label className="text-muted-foreground text-xs uppercase">Last Day of Work</Label>

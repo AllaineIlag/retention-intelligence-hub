@@ -50,7 +50,10 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
         employeeId: '',
         name: '',
         dateHired: '',
-        positionHired: ''
+        positionHired: '',
+        position: '',
+        department: '',
+        supervisor: ''
     })
 
     const handleNext = async () => {
@@ -72,8 +75,9 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                             employee_name: employeeDetails.name,
                             date_hired: employeeDetails.dateHired,
                             position_when_hired: employeeDetails.positionHired,
-                            current_position: '', // Already in resignation? No, we need to pass if we want to save
-                            department_supervisor: '',
+                            current_position: employeeDetails.position,
+                            department_supervisor: employeeDetails.supervisor,
+                            department: employeeDetails.department,
                             date_of_resignation: resignation.exit_date
                         } as any // Allow partial save or use appropriate type assertion for transient fields
                     })
@@ -137,8 +141,9 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                         employee_name: employeeDetails.name,
                         date_hired: employeeDetails.dateHired,
                         position_when_hired: employeeDetails.positionHired,
-                        current_position: '',
-                        department_supervisor: '',
+                        current_position: employeeDetails.position,
+                        department_supervisor: employeeDetails.supervisor,
+                        department: employeeDetails.department,
                         date_of_resignation: resignation.exit_date || ''
                     },
                     questionnaire_responses: {

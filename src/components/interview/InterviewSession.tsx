@@ -45,15 +45,15 @@ export function InterviewSession({ resignation, responses }: InterviewSessionPro
     };
 
     return (
-        <div className="flex h-[calc(100vh-100px)] gap-6">
+        <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-140px)] gap-6">
             {/* LEFT: Question List (Sidebar) */}
-            <div className="w-1/3 bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50">
-                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-indigo-500" />
+            <div className="w-full lg:w-1/3 bg-black/20 rounded-2xl border border-white/5 flex flex-col overflow-hidden backdrop-blur-md shrink-0">
+                <div className="p-5 border-b border-white/5 bg-white/[0.02]">
+                    <h3 className="font-bold text-white flex items-center gap-2 tracking-tight">
+                        <MessageSquare className="w-4 h-4 text-indigo-400" />
                         Interview Topics
                     </h3>
-                    <p className="text-xs text-slate-500 mt-1">Select a topic to review/correct.</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1 opacity-60">Select topic to review</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
@@ -62,30 +62,38 @@ export function InterviewSession({ resignation, responses }: InterviewSessionPro
                             <button
                                 key={response.id}
                                 onClick={() => setSelectedResponseId(response.id)}
-                                className={`w-full text-left p-3 rounded-lg text-sm transition-all border ${selectedResponseId === response.id
-                                    ? 'bg-indigo-50 border-indigo-200 shadow-sm'
-                                    : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'
+                                className={`w-full text-left p-4 rounded-xl text-sm transition-all border relative overflow-hidden group ${selectedResponseId === response.id
+                                    ? 'bg-indigo-500/10 border-indigo-500/30'
+                                    : 'bg-transparent border-transparent hover:bg-white/5'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-1">
-                                    <span className={`font-medium ${selectedResponseId === response.id ? 'text-indigo-900' : 'text-slate-700'}`}>
-                                        Q{index + 1}
+                                    <span className={`font-bold tracking-tight ${selectedResponseId === response.id ? 'text-indigo-400' : 'text-gray-400'}`}>
+                                        STEP {index + 1}
                                     </span>
-                                    {response.is_corrected && (
-                                        <CheckCircle className="w-4 h-4 text-green-500" />
+                                    {response.is_corrected ? (
+                                        <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                    ) : (
+                                        <div className="w-1 h-1 rounded-full bg-white/20 mt-2" />
                                     )}
                                 </div>
-                                <p className={`line-clamp-2 text-xs ${selectedResponseId === response.id ? 'text-indigo-700' : 'text-slate-500'}`}>
+                                <p className={`line-clamp-1 text-xs leading-relaxed ${selectedResponseId === response.id ? 'text-indigo-200/70' : 'text-muted-foreground/60'}`}>
                                     {response.question?.text}
                                 </p>
+                                {selectedResponseId === response.id && (
+                                    <motion.div
+                                        layoutId="active-pill"
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+                                    />
+                                )}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-slate-100 bg-slate-50">
+                <div className="p-5 border-t border-white/5 bg-white/[0.01]">
                     <Button
-                        className="w-full bg-slate-900 hover:bg-black text-white"
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold"
                         onClick={handleFinalize}
                         disabled={finishing}
                     >

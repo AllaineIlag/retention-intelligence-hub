@@ -1,0 +1,137 @@
+'use client';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatDistanceToNow } from 'date-fns';
+import { ArrowRight, Loader, CalendarClock, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import Link from 'next/link';
+
+interface RecentResignationsTableProps {
+    resignations: any[]; // Ideally typed with Database type, but simplified for now
+}
+
+export function RecentResignationsTable({ resignations }: RecentResignationsTableProps) {
+    if (!resignations || resignations.length === 0) {
+        return (
+            <Card className="col-span-full">
+                <CardHeader>
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardDescription>Latest resignation notices.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-40 flex items-center justify-center text-muted-foreground text-sm">
+                    No recent activity found.
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card className="col-span-full">
+            <CardHeader>
+                <CardTitle>Recent Activity</CardTitle>
+                <CardDescription>The database has logged {resignations.length} updates.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Employee</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Submitted</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {resignations.map((item) => (
+                            <TableRow key={item.id}>
+                                <TableCell className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9">
+                                        <AvatarImage src={`https://avatar.vercel.sh/${item.profiles?.email}`} alt="@shadcn" />
+                                        <AvatarFallback>{item.profiles?.full_name?.charAt(0) || 'U'}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-sm">{item.profiles?.full_name || 'Unknown'}</span>
+                                        <span className="text-xs text-muted-foreground">{item.profiles?.email}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <StatusBadge status={item.status} />
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-sm">
+                                    {item.created_at ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true }) : 'N/A'}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-sm capitalize">
+                                    {item.profiles?.role || 'User'}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Link
+                                        href={`/dashboard/resignation/${item.id}`}
+                                        className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-8 w-8"
+                                    >
+                                        <ArrowRight className="h-4 w-4" />
+                                        <span className="sr-only">View</span>
+                                    </Link>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
+}
+
+function StatusBadge({ status }: { status: string }) {
+    const config: Record<string, { icon: any, color: string, border: string, bg: string, spin?: boolean, label?: string }> = {
+        pending: {
+            icon: Loader,
+            color: 'text-amber-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5',
+            label: 'In Process'
+        },
+        scheduled: {
+            icon: CalendarClock,
+            color: 'text-indigo-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5'
+        },
+        completed: {
+            icon: CheckCircle2,
+            color: 'text-emerald-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5'
+        },
+        verified: {
+            icon: CheckCircle2,
+            color: 'text-emerald-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5'
+        },
+        declined: {
+            icon: XCircle,
+            color: 'text-rose-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5'
+        },
+        default: {
+            icon: Clock,
+            color: 'text-slate-400',
+            border: 'border-white/10',
+            bg: 'bg-white/5'
+        }
+    };
+
+    const style = config[status.toLowerCase()] || config.default;
+    const Icon = style.icon;
+
+    return (
+        <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${style.border} ${style.bg} text-muted-foreground`}>
+            <Icon className={`h-3.5 w-3.5 ${style.color} ${style.spin ? 'animate-spin' : ''}`} />
+            <span className="capitalize">{style.label || status}</span>
+        </div>
+    );
+}

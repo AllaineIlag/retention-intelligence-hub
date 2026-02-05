@@ -16,6 +16,7 @@ import {
     ChevronRight,
     Menu,
     X,
+    ClipboardCheck, // For Corrections
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -49,10 +50,12 @@ interface NavItem {
 
 const navItems: NavItem[] = [
     { title: 'Home', url: '/dashboard', icon: Home, roles: ['lead', 'interviewer'] },
+    { title: 'Interviews', url: '/dashboard/interviews', icon: Users, roles: ['lead', 'interviewer'] },
     { title: 'Team', url: '/dashboard/team', icon: Users, roles: ['lead'] },
     { title: 'Analytics', url: '/dashboard/analytics', icon: Activity, roles: ['lead'] },
-    { title: 'Audit Logs', url: '/dashboard/audit', icon: ShieldCheck, roles: ['lead'] },
+    { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] },
     { title: 'Settings', url: '/dashboard/settings', icon: Settings, roles: ['lead', 'interviewer'] },
+    { title: 'System Audit', url: '/dashboard/audit', icon: ShieldCheck, roles: ['lead'] },
 ];
 
 const MOBILE_BREAKPOINT = 768;
@@ -124,7 +127,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
         <>
             {/* Header */}
             <div className="flex h-16 items-center gap-3 border-b border-white/5 px-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/20">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/40 border border-white/10">
                     <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <AnimatePresence>
@@ -190,7 +193,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeIndicator"
-                                        className="absolute left-0 h-8 w-1 rounded-r-full bg-indigo-500"
+                                        className="absolute left-0 h-6 w-[3px] rounded-r-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.8)]"
                                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                     />
                                 )}
@@ -269,7 +272,7 @@ export function CustomSidebar({ role, email }: CustomSidebarProps) {
             <Sheet open={isMobileOpen} onOpenChange={closeMobile}>
                 <SheetContent
                     side="left"
-                    className="w-[280px] p-0 bg-[#0d0d0d] border-r border-white/10 [&>button]:hidden"
+                    className="w-[280px] p-0 bg-[#0a0a0a] border-r border-white/5 [&>button]:hidden shadow-2xl shadow-indigo-500/5"
                 >
                     <SheetHeader className="sr-only">
                         <SheetTitle>Navigation Menu</SheetTitle>

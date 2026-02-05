@@ -36,8 +36,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ message: 'No resignations to lock.' });
     }
 
-    console.log(`Locking ${resignations.length} resignations...`);
-
     const results = [];
 
     for (const r of resignations) {

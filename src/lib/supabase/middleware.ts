@@ -49,9 +49,7 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // RBAC Enforcement placeholder - more specific logic can be added here or in route specific checks
-    // For now, we rely on the protected routes logic below or subsequent checks.
-    // Ideally, middleware handles the redirect if logic requires it.
+    // RBAC Enforcement handle redirects to /dashboard if role restricted below
 
     return supabaseResponse;
 }

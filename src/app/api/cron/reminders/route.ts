@@ -44,8 +44,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ message: 'No reminders to send.' });
     }
 
-    console.log(`Processing ${resignations.length} reminders...`);
-
     const results = [];
 
     for (const resignation of resignations) {

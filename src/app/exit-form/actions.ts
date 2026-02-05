@@ -11,6 +11,7 @@ export interface EmployeeDetails {
     position_when_hired: string;
     current_position: string;
     department_supervisor: string;
+    department: string;
     date_of_resignation: string;
 }
 
@@ -167,6 +168,7 @@ export async function saveExitForm(formData: ExitFormData) {
             position_when_hired: formData.employee_details.position_when_hired,
             current_position: formData.employee_details.current_position,
             department_supervisor: formData.employee_details.department_supervisor,
+            department: formData.employee_details.department,
             date_of_resignation: formData.employee_details.date_of_resignation || null,
             // Keep JSON for backward compatibility/migration period if needed
             employee_details: formData.employee_details
