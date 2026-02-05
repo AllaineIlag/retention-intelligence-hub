@@ -19,16 +19,18 @@ export default function DashboardPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-2">
 
-            {/* ROW 1: KPI Cards */}
-            <Suspense fallback={<StatsSkeleton />}>
-                <KPISection />
-            </Suspense>
-
-            {/* MAIN GRID: Left Content (Hero + Table/Pie) vs Right Rail (Stats Stack) */}
+            {/* MAIN GRID: Left Content (KPIs + Hero + Table/Pie) vs Right Rail (Stats Stack) */}
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
 
                 {/* LEFT MAIN CONTENT (3 Cols) */}
                 <div className="lg:col-span-3 space-y-6">
+                    {/* ROW 1: KPI Cards */}
+                    <div className="w-full">
+                        <Suspense fallback={<StatsSkeleton />}>
+                            <KPISection />
+                        </Suspense>
+                    </div>
+
                     {/* Hero Chart */}
                     <div className="w-full">
                         <Suspense fallback={<ChartSkeleton />}>
@@ -51,8 +53,8 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                {/* RIGHT RAIL (1 Col) - Spans Height */}
-                <div className="lg:col-span-1">
+                {/* RIGHT RAIL (1 Col) - Spans Full Height */}
+                <div className="lg:col-span-1 h-full">
                     <Suspense fallback={<WidgetSkeleton />}>
                         <QuickWinsSection />
                     </Suspense>

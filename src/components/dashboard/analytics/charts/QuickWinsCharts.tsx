@@ -37,11 +37,11 @@ export function QuickWinsCharts({ pullFactors, careerGrowth, payPerception, bene
 
 function MiniChart({ title, data, color }: { title: string, data: QuickWinData[], color: string }) {
     return (
-        <Card className="border-white/5 bg-white/[0.02]">
-            <CardHeader className="py-3 px-4">
+        <Card className="flex flex-col flex-1 border-white/5 bg-white/[0.02] min-h-[140px]">
+            <CardHeader className="py-3 px-4 shrink-0">
                 <CardTitle className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
             </CardHeader>
-            <CardContent className="py-0 px-4 pb-3 h-[100px]">
+            <CardContent className="py-0 px-4 pb-3 flex-1 min-h-0">
                 {data && data.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data} layout="vertical" margin={{ left: 0, right: 10, top: 0, bottom: 0 }}>

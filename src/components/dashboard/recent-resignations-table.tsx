@@ -1,6 +1,5 @@
 'use client';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -28,7 +27,7 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
     }
 
     return (
-        <Card className="col-span-full border-white/5 bg-white/[0.02]">
+        <Card className="col-span-full border-white/5 bg-white/[0.02] h-full">
             <CardHeader>
                 <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
                 <CardDescription>The database has logged {resignations.length} updates.</CardDescription>
@@ -48,10 +47,6 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
                         {resignations.map((item) => (
                             <TableRow key={item.id} className="hover:bg-white/5 border-white/5">
                                 <TableCell className="flex items-center gap-3">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={`https://avatar.vercel.sh/${item.profiles?.email}`} alt="@shadcn" />
-                                        <AvatarFallback className="text-xs">{item.profiles?.full_name?.charAt(0) || 'U'}</AvatarFallback>
-                                    </Avatar>
                                     <div className="flex flex-col">
                                         <span className="font-medium text-sm text-zinc-200">{item.profiles?.full_name || 'Unknown'}</span>
                                         <span className="text-[10px] text-muted-foreground">{item.profiles?.role}</span>

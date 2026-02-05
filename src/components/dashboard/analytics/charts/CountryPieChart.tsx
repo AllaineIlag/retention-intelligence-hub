@@ -20,12 +20,12 @@ const COLORS = ['#adfa1d', '#10b981', '#3b82f6', '#8b5cf6', '#f43f5e'];
 
 export function CountryPieChart({ data, className }: CountryPieChartProps) {
     return (
-        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02]", className)}>
-            <CardHeader>
+        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] h-full flex flex-col", className)}>
+            <CardHeader className="shrink-0">
                 <CardTitle className="text-sm font-medium tracking-tight uppercase">Where are they going?</CardTitle>
                 <CardDescription className="text-xs">Top destinations for jobs abroad</CardDescription>
             </CardHeader>
-            <CardContent className="h-[250px]">
+            <CardContent className="flex-1 min-h-[250px]">
                 {data.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart margin={{ top: 0, bottom: 0 }}>
