@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { AnalyticsFilters, AnalyticsFiltersState } from '@/components/dashboard/analytics/AnalyticsFilters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { HorizontalBarList } from '@/components/dashboard/analytics/charts/HorizontalBarList';
@@ -48,11 +47,11 @@ export default function PublicAnalyticsPage() {
         avgTenureMonths: 18
     };
 
-    const handleFilterChange = async (filters: AnalyticsFiltersState) => {
-        setLoading(true);
-        // Simulate network delay
-        setTimeout(() => setLoading(false), 800);
-    };
+    // const handleFilterChange = async (filters: any) => {
+    //     setLoading(true);
+    //     // Simulate network delay
+    //     setTimeout(() => setLoading(false), 800);
+    // };
 
     return (
         <div className="flex-1 space-y-4 p-8 pt-6 bg-background min-h-screen">
@@ -60,7 +59,7 @@ export default function PublicAnalyticsPage() {
                 <h2 className="text-3xl font-bold tracking-tight">Analytics Deep-Dive (Visual Model)</h2>
             </div>
 
-            <AnalyticsFilters onFilterChange={handleFilterChange} />
+            {/* <AnalyticsFilters onFilterChange={handleFilterChange} /> - REMOVED for Cleanup */}
 
             {loading && (
                 <div className="flex items-center justify-center p-10">
