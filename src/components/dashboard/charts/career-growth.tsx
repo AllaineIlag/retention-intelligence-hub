@@ -32,7 +32,7 @@ export function CareerGrowthChart() {
 
                 /* 
                 // TODO: Uncomment when ready for real data
-                const result = await getCareerGrowthStats(startDate, now);
+                const result = await getCareerGrowthStats({ startDate, endDate: now });
                 if (result.success && result.data && result.data.length > 0) {
                     setData(result.data);
                 }

@@ -29,7 +29,7 @@ export function ExitReasonsChart({ initialData }: ExitReasonsChartProps) {
             if (timeRange === '3m') startDate.setMonth(endDate.getMonth() - 3);
 
             startTransition(async () => {
-                const res = await getDetailedExitStats(startDate, endDate);
+                const res = await getDetailedExitStats({ startDate, endDate });
                 if (res.success && res.data) {
                     setData(res.data.topReasons);
                     setHasLoaded(true);

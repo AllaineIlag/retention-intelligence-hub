@@ -38,7 +38,7 @@ export default async function DashboardLayout({
 
     return (
         <CustomSidebarProvider>
-            <div className="flex h-screen overflow-hidden bg-background">
+            <div className="flex h-screen overflow-hidden bg-background" suppressHydrationWarning>
                 <CustomSidebar role={role} email={user.email || 'Unknown'} />
                 <div className="flex flex-1 flex-col overflow-hidden">
                     <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6 bg-[#0f0f11]/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-300">

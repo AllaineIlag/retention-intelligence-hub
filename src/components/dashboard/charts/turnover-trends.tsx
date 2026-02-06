@@ -22,7 +22,7 @@ export function TurnoverTrendsChart() {
             if (timeRange === '3m') startDate.setMonth(endDate.getMonth() - 3);
 
             startTransition(async () => {
-                const res = await getTurnoverTrends(startDate, endDate);
+                const res = await getTurnoverTrends({ startDate, endDate });
                 if (res.success && res.data) {
                     setData(res.data);
                 }

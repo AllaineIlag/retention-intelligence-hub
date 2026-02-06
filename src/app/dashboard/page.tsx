@@ -171,6 +171,7 @@ async function QuickWinsSection({ filters }: { filters: AnalyticsFilters }) {
 async function RecentResignationsSection({ filters }: { filters: AnalyticsFilters }) {
     const res = await getRecentResignations(filters);
     const data = res.success ? res.data || [] : [];
+
     return <RecentResignationsTable resignations={data as any} />;
 }
 

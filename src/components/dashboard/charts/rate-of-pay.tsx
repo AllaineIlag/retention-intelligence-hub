@@ -36,7 +36,7 @@ export function RateOfPayChart() {
                 if (timeRange === '7d') startDate = startOfDay(subDays(now, 7));
                 if (timeRange === '3m') startDate = startOfDay(subMonths(now, 3));
 
-                const result = await getRateOfPayStats(startDate, now);
+                const result = await getRateOfPayStats({ startDate, endDate: now });
                 if (result.success && result.data && result.data.length > 0) {
                      setData(result.data);
                 }

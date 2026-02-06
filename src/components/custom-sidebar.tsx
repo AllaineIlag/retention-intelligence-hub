@@ -39,6 +39,12 @@ import {
     SheetDescription,
 } from '@/components/ui/sheet';
 
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+
 type UserRole = 'lead' | 'interviewer' | 'employee';
 
 interface NavItem {
@@ -46,14 +52,35 @@ interface NavItem {
     url: string;
     icon: React.ElementType;
     roles: UserRole[];
+    subItems?: { title: string; url: string }[];
 }
 
 const navItems: NavItem[] = [
     { title: 'Overview', url: '/dashboard', icon: Home, roles: ['lead', 'interviewer'] },
-    { title: 'Interviews', url: '/dashboard/interviews', icon: Users, roles: ['lead', 'interviewer'] },
+    {
+        title: 'Interviews',
+        url: '/dashboard/interview',
+        icon: Users,
+        roles: ['lead', 'interviewer'],
+        subItems: [
+            { title: 'Schedule', url: '/dashboard/interview/schedule' },
+            { title: 'Live Workspace', url: '/dashboard/interview/live' },
+            { title: 'Corrections', url: '/dashboard/interview/corrections' },
+        ],
+    },
     { title: 'Team', url: '/dashboard/team', icon: Users, roles: ['lead'] },
-    { title: 'Analytics', url: '/dashboard/analytics', icon: Activity, roles: ['lead'] },
-    { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] },
+    {
+        title: 'Analytics',
+        url: '/dashboard/analytics',
+        icon: Activity,
+        roles: ['lead'],
+        subItems: [
+            { title: 'Trends', url: '/dashboard/analytics/trends' },
+            { title: 'Exit Drivers', url: '/dashboard/analytics/exit-drivers' },
+            { title: 'Deep Dive', url: '/dashboard/analytics/deep-dive' },
+        ],
+    },
+    // { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] }, // Moved to sub-menu
     { title: 'Settings', url: '/dashboard/settings', icon: Settings, roles: ['lead', 'interviewer'] },
     { title: 'System Audit', url: '/dashboard/audit', icon: ShieldCheck, roles: ['lead'] },
 ];
@@ -123,6 +150,21 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
     const filteredItems = navItems.filter((item) => item.roles.includes(role));
     const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
 
+    // Fix hydration mismatch by only rendering Radix components on client
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Helper to check if any child is active
+    const isChildActive = (item: NavItem) => {
+        return item.subItems?.some(sub => pathname.startsWith(sub.url)) || false;
+    };
+
+    if (!isMounted) {
+        return null; // or a loading skeleton if preferred, but for sidebar fast load null is often acceptable or static structure
+    }
+
     return (
         <>
             {/* Header */}
@@ -161,20 +203,29 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                 </AnimatePresence>
                 <ul className="space-y-1">
                     {filteredItems.map((item) => {
-                        const isActive = pathname === item.url;
                         const Icon = item.icon;
+                        const hasSubItems = item.subItems && item.subItems.length > 0;
+                        const active = pathname === item.url || isChildActive(item);
+                        const isActiveParent = hasSubItems && isChildActive(item);
 
+                        // Parent Link Content
                         const linkContent = (
                             <Link
-                                href={item.url}
-                                onClick={onNavClick}
-                                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${isActive
+                                href={item.url} // For parent with subItems, clicking usually toggles, but here we link to base
+                                onClick={(e) => {
+                                    if (hasSubItems && !isCollapsed) {
+                                        // e.preventDefault(); // If we want click to just toggle. 
+                                        // For now let's allow navigation to /dashboard/interviews which redirects to schedule
+                                    }
+                                    if (onNavClick && !hasSubItems) onNavClick();
+                                }}
+                                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${active
                                     ? 'bg-indigo-600/10 text-indigo-400'
                                     : 'text-muted-foreground hover:bg-white/5 hover:text-white'
                                     }`}
                             >
                                 <Icon
-                                    className={`h-5 w-5 shrink-0 transition-colors ${isActive ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-white'
+                                    className={`h-5 w-5 shrink-0 transition-colors ${active ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-white'
                                         }`}
                                 />
                                 <AnimatePresence>
@@ -184,22 +235,62 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: -10 }}
                                             transition={{ duration: 0.15 }}
-                                            className="text-sm font-medium"
+                                            className="text-sm font-medium flex-1"
                                         >
                                             {item.title}
                                         </motion.span>
                                     )}
                                 </AnimatePresence>
-                                {isActive && (
+                                {active && !hasSubItems && (
                                     <motion.div
                                         layoutId="activeIndicator"
                                         className="absolute left-0 h-6 w-[3px] rounded-r-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.8)]"
                                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                     />
                                 )}
+                                {hasSubItems && !isCollapsed && (
+                                    <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                )}
                             </Link>
                         );
 
+                        // Render Nested Menu
+                        if (hasSubItems) {
+                            return (
+                                <li key={item.title} className="relative">
+                                    <Collapsible open={isActiveParent || undefined} className="group/collapsible">
+                                        <CollapsibleTrigger asChild>
+                                            {linkContent}
+                                        </CollapsibleTrigger>
+                                        <CollapsibleContent>
+                                            {!isCollapsed && (
+                                                <ul className="mt-1 space-y-1 px-2 border-l border-white/10 ml-4">
+                                                    {item.subItems?.map((sub) => {
+                                                        const isSubActive = pathname === sub.url;
+                                                        return (
+                                                            <li key={sub.title}>
+                                                                <Link
+                                                                    href={sub.url}
+                                                                    onClick={onNavClick}
+                                                                    className={`block rounded-md px-3 py-2 text-sm transition-colors ${isSubActive
+                                                                        ? 'text-indigo-400 font-medium bg-indigo-500/10'
+                                                                        : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                                                        }`}
+                                                                >
+                                                                    {sub.title}
+                                                                </Link>
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            )}
+                                        </CollapsibleContent>
+                                    </Collapsible>
+                                </li>
+                            );
+                        }
+
+                        // Standard Menu Item
                         return (
                             <li key={item.title} className="relative">
                                 {isCollapsed ? (
