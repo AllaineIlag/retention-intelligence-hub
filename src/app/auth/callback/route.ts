@@ -16,6 +16,17 @@ export async function GET(request: Request) {
                 data: { user },
             } = await supabase.auth.getUser();
 
+            const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
+            const isLocalEnv = process.env.NODE_ENV === 'development';
+
+            // Determine the correct base URL for redirects
+            let baseUrl = origin;
+            if (isLocalEnv) {
+                baseUrl = origin;
+            } else if (forwardedHost) {
+                baseUrl = `https://${forwardedHost}`;
+            }
+
             if (user) {
                 try {
                     const { data: profile, error: profileError } = await supabase
@@ -26,31 +37,21 @@ export async function GET(request: Request) {
 
                     if (profileError || !profile) {
                         console.error('Auth Callback Error: Profile not found for user', user.id);
-                        return NextResponse.redirect(`${origin}/login?message=Profile not found. Please contact support.`);
+                        return NextResponse.redirect(`${baseUrl}/login?message=Profile not found. Please contact support.`);
                     }
 
                     if (profile.role === 'employee') {
-                        return NextResponse.redirect(`${origin}/exit-form`);
+                        return NextResponse.redirect(`${baseUrl}/exit-form`);
                     }
                 } catch (err) {
                     console.error('Auth Callback Unexpected Error:', err);
-                    return NextResponse.redirect(`${origin}/login?message=System error during login.`);
+                    return NextResponse.redirect(`${baseUrl}/login?message=System error during login.`);
                 }
             } else {
-                return NextResponse.redirect(`${origin}/login?message=Authentication failed.`);
+                return NextResponse.redirect(`${baseUrl}/login?message=Authentication failed.`);
             }
 
-            const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
-            const isLocalEnv = process.env.NODE_ENV === 'development';
-
-            if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-                return NextResponse.redirect(`${origin}${next}`);
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`);
-            } else {
-                return NextResponse.redirect(`${origin}${next}`);
-            }
+            return NextResponse.redirect(`${baseUrl}${next}`);
         }
     }
 

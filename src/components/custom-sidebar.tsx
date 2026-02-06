@@ -208,22 +208,9 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                         const active = pathname === item.url || isChildActive(item);
                         const isActiveParent = hasSubItems && isChildActive(item);
 
-                        // Parent Link Content
-                        const linkContent = (
-                            <Link
-                                href={item.url} // For parent with subItems, clicking usually toggles, but here we link to base
-                                onClick={(e) => {
-                                    if (hasSubItems && !isCollapsed) {
-                                        // e.preventDefault(); // If we want click to just toggle. 
-                                        // For now let's allow navigation to /dashboard/interviews which redirects to schedule
-                                    }
-                                    if (onNavClick && !hasSubItems) onNavClick();
-                                }}
-                                className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${active
-                                    ? 'bg-indigo-600/10 text-indigo-400'
-                                    : 'text-muted-foreground hover:bg-white/5 hover:text-white'
-                                    }`}
-                            >
+                        // Parent Link Content - Decoupled Navigation Logic
+                        const content = (
+                            <>
                                 <Icon
                                     className={`h-5 w-5 shrink-0 transition-colors ${active ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-white'
                                         }`}
@@ -251,6 +238,27 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                                 {hasSubItems && !isCollapsed && (
                                     <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                 )}
+                            </>
+                        );
+
+                        const commonClasses = `group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 cursor-pointer ${active
+                            ? 'bg-indigo-600/10 text-indigo-400'
+                            : 'text-muted-foreground hover:bg-white/5 hover:text-white'
+                            }`;
+
+                        const linkContent = hasSubItems ? (
+                            <div className={commonClasses}>
+                                {content}
+                            </div>
+                        ) : (
+                            <Link
+                                href={item.url}
+                                onClick={() => {
+                                    if (onNavClick) onNavClick();
+                                }}
+                                className={commonClasses}
+                            >
+                                {content}
                             </Link>
                         );
 
