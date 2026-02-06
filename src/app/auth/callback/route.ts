@@ -17,15 +17,27 @@ export async function GET(request: Request) {
             } = await supabase.auth.getUser();
 
             if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
+                try {
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single();
 
-                if (profile?.role === 'employee') {
-                    return NextResponse.redirect(`${origin}/exit-form`);
+                    if (profileError || !profile) {
+                        console.error('Auth Callback Error: Profile not found for user', user.id);
+                        return NextResponse.redirect(`${origin}/login?message=Profile not found. Please contact support.`);
+                    }
+
+                    if (profile.role === 'employee') {
+                        return NextResponse.redirect(`${origin}/exit-form`);
+                    }
+                } catch (err) {
+                    console.error('Auth Callback Unexpected Error:', err);
+                    return NextResponse.redirect(`${origin}/login?message=System error during login.`);
                 }
+            } else {
+                return NextResponse.redirect(`${origin}/login?message=Authentication failed.`);
             }
 
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
