@@ -17,11 +17,11 @@ interface RecentResignationsTableProps {
 export function RecentResignationsTable({ resignations }: RecentResignationsTableProps) {
     if (!resignations || resignations.length === 0) {
         return (
-            <Card className="col-span-full border-white/5 bg-white/[0.02]">
+            <Card className="col-span-full border-white/5 bg-white/[0.02] h-full flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
                 </CardHeader>
-                <CardContent className="h-40 flex items-center justify-center text-muted-foreground text-sm">
+                <CardContent className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
                     No recent activity found.
                 </CardContent>
             </Card>
