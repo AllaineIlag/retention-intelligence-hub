@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { resend } from '@/lib/email';
+import { headers } from 'next/headers';
 import ResignationAckEmail from '@/emails/ResignationAckEmail';
 import ResignationApprovalEmail from '@/emails/ResignationApprovalEmail';
 import ResignationDeclineEmail from '@/emails/ResignationDeclineEmail';
@@ -67,6 +68,9 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
 
     if (resignation?.profiles?.email) {
         try {
+            const headerList = await headers();
+            const origin = headerList.get('origin') || process.env.NEXT_PUBLIC_SITE_URL;
+
             await resend.emails.send({
                 from: 'Retention Intelligence Hub <noreply@demos.resend.dev>',
                 to: [resignation.profiles.email],
@@ -74,6 +78,7 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
                 react: ResignationApprovalEmail({
                     employeeName: resignation.profiles.full_name,
                     interviewDate: format(scheduleDate, 'PPP p'), // e.g. "Apr 29, 2026 2:00 PM"
+                    baseUrl: origin,
                 }),
             });
         } catch (emailError) {

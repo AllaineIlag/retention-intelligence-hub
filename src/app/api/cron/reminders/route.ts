@@ -57,6 +57,7 @@ export async function GET(request: Request) {
                     react: ResignationReminderEmail({
                         employeeName: resignation.profiles.full_name,
                         interviewDate: format(new Date(resignation.scheduled_interview_date), 'PPP p'),
+                        baseUrl: request.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL, // Use request origin if available
                     }),
                 });
 
