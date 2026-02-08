@@ -133,19 +133,16 @@ function LoginForm() {
                                 maxLength={6}
                                 value={otp}
                                 onChange={(value) => setOtp(value)}
-                                render={({ slots }) => (
-                                    <InputOTPGroup className="gap-2">
-                                        {slots.map((slot, index) => (
-                                            <InputOTPSlot
-                                                key={index}
-                                                {...slot}
-                                                index={index}
-                                                className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md"
-                                            />
-                                        ))}
-                                    </InputOTPGroup>
-                                )}
-                            />
+                            >
+                                <InputOTPGroup className="gap-2">
+                                    <InputOTPSlot index={0} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                    <InputOTPSlot index={1} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                    <InputOTPSlot index={2} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                    <InputOTPSlot index={3} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                    <InputOTPSlot index={4} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                    <InputOTPSlot index={5} className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md" />
+                                </InputOTPGroup>
+                            </InputOTP>
                         </div>
 
                         {(urlMessage) && !state.success && (
