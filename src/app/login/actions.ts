@@ -3,22 +3,21 @@
 import { createClient } from '@/lib/supabase/server';
 import { headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { redirect } from 'next/navigation';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function login(prevState: any, formData: FormData) {
+export async function sendOtp(prevState: any, formData: FormData) {
     try {
         const supabase = await createClient();
         const email = formData.get('email') as string;
-        const origin = (await headers()).get('origin');
 
-        console.log('[Login Action] Start. Origin:', origin, 'Email:', email);
+        console.log('[Auth] Sending OTP to:', email);
 
         if (!email) {
             return { success: false, message: 'Email is required' };
         }
 
-        // Security Check: Verify email exists in profiles BEFORE sending magic link
-        // We use the Admin Client because standard users (or anon) cannot query profiles freely
+        // Security Check: Verify email exists in profiles
         const adminClient = createAdminClient();
         const { data: profile, error: profileError } = await adminClient
             .from('profiles')
@@ -27,35 +26,75 @@ export async function login(prevState: any, formData: FormData) {
             .single();
 
         if (profileError || !profile) {
-            console.error('Login refused: Email not found in profiles', email, profileError);
+            console.error('[Auth] Login refused: Email not found', email);
             return {
                 success: false,
                 message: 'Access Denied: This email is not authorized for system access.'
             };
         }
 
-        const redirectUrl = origin ? `${origin}/auth/callback` : `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
-        console.log('[Login Action] Redirect URL:', redirectUrl);
-
         const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: redirectUrl,
+                shouldCreateUser: false,
+                // We still provide a redirect URL for magic link fallback, but the UI will ask for code
+                // emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
             },
         });
 
         if (error) {
-            console.error('[Login Action] Supabase Auth Error:', error);
+            console.error('[Auth] Supabase OTP Error:', error);
             return { success: false, message: error.message };
         }
 
-        // redirect('/login?message=Check email for Magic Link');
-        return { success: true, message: 'Magic link sent! Check your email.' };
+        return { success: true, message: 'Code sent! Check your email.' };
     } catch (error) {
-        console.error('[Login Action] Unexpected Error:', error);
+        console.error('[Auth] Unexpected Error:', error);
         return {
             success: false,
-            message: 'An unexpected error occurred. Please check console logs.'
+            message: 'An unexpected error occurred.'
         };
+    }
+}
+
+export async function verifyOtp(email: string, token: string) {
+    try {
+        const supabase = await createClient();
+        console.log('[Auth] Verifying OTP for:', email);
+
+        const { data: { session }, error } = await supabase.auth.verifyOtp({
+            email,
+            token,
+            type: 'email',
+        });
+
+        if (error) {
+            console.error('[Auth] Verify Error:', error);
+            return { success: false, message: error.message };
+        }
+
+        if (!session) {
+            return { success: false, message: 'Verification failed. No session created.' };
+        }
+
+        // Check Role for Redirect
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (profile?.role === 'employee') {
+                return { success: true, redirectUrl: '/exit-form' };
+            }
+        }
+
+        return { success: true, redirectUrl: '/dashboard' };
+
+    } catch (error) {
+        console.error('[Auth] Verify Exception:', error);
+        return { success: false, message: 'System error during verification.' };
     }
 }

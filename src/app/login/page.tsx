@@ -1,143 +1,197 @@
 'use client';
 
-import { login } from './actions';
-import { BarChart3, Mail, ArrowRight, Loader2 } from 'lucide-react';
-import { useActionState, useEffect } from 'react';
-import { toast } from "sonner";
-import { motion } from 'framer-motion';
+import { useActionState, useEffect, useState, useTransition } from 'react';
+import { sendOtp, verifyOtp } from './actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { AlertCircle, CheckCircle2, Loader2, ArrowRight, Lock } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from '@/components/ui/input-otp';
 
-const initialState = {
+// Define the shape of our form state
+interface FormState {
+    success: boolean;
+    message: string;
+}
+
+const initialState: FormState = {
+    success: false,
     message: '',
-    success: false
-};
-
-const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
 };
 
 export default function LoginPage() {
-    const [state, formAction, isPending] = useActionState(login, initialState);
+    const [state, formAction, isPending] = useActionState(sendOtp, initialState);
+    const [step, setStep] = useState<'email' | 'otp'>('email');
+    const [email, setEmail] = useState('');
+    const [otp, setOtp] = useState('');
+    const [isVerifying, startVerify] = useTransition();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Handle initial state message from URL
+    const [urlMessage, setUrlMessage] = useState('');
 
     useEffect(() => {
-        if (state?.message) {
-            if (state.success) {
-                toast.success(state.message)
-            } else if (state.message !== '') {
-                toast.error(state.message)
-            }
+        const msg = searchParams.get('message');
+        if (msg) setUrlMessage(msg);
+    }, [searchParams]);
+
+    // When sendOtp succeeds, move to OTP step
+    useEffect(() => {
+        if (state.success && step === 'email') {
+            setStep('otp');
         }
-    }, [state])
+    }, [state, step]);
+
+    const handleVerify = () => {
+        if (!otp || otp.length !== 6) return;
+
+        startVerify(async () => {
+            const result = await verifyOtp(email, otp);
+            if (result.success && result.redirectUrl) {
+                router.push(result.redirectUrl);
+            } else {
+                // Show error (reuse existing state mechanism or add new one)
+                // For simplicity, we'll set a custom error in the UI
+                setUrlMessage(result.message || 'Verification failed');
+            }
+        });
+    };
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] text-white selection:bg-indigo-500/30">
-            {/* Background Ambience */}
-            <div className="absolute inset-0 -z-10 overflow-hidden">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0a0a0a] to-[#0a0a0a]" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[500px] rounded-full bg-indigo-600/10 blur-[100px] animate-pulse" />
-            </div>
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
 
-            <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={fadeInUp}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className="w-full max-w-md space-y-8 px-4"
-            >
-                {/* Logo/Header */}
-                <div className="flex flex-col items-center text-center">
-                    <motion.div
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-500/30"
-                    >
-                        <BarChart3 className="h-7 w-7 text-white" />
-                    </motion.div>
-                    <motion.h2
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-3xl font-bold tracking-tight text-white"
-                    >
-                        Welcome back
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="mt-2 text-sm text-gray-400"
-                    >
-                        Sign in to access your retention intelligence dashboard
-                    </motion.p>
-                </div>
-
-                {/* Login Form */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 }}
-                    className="group rounded-2xl border border-white/5 bg-white/[0.02] p-8 shadow-2xl transition-all hover:bg-white/[0.04] backdrop-blur-sm"
-                >
-                    <form action={formAction} className="space-y-6">
-                        <div>
-                            <label htmlFor="email" className="block text-xs font-medium uppercase tracking-wider text-gray-400">
-                                Email Address
-                            </label>
-                            <div className="mt-2 relative">
-                                <input
+            <Card className="w-full max-w-md border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl relative z-10">
+                <CardHeader className="space-y-3 text-center">
+                    <div className="flex justify-center">
+                        <div className="rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 ring-1 ring-white/10">
+                            <Lock className="h-8 w-8 text-indigo-400" />
+                        </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold tracking-tight text-white">
+                        {step === 'email' ? 'Welcome Back' : 'Enter One-Time Password'}
+                    </CardTitle>
+                    <CardDescription className="text-zinc-400">
+                        {step === 'email'
+                            ? 'Sign in to access the Retention Intelligence Hub'
+                            : `We sent a code to ${email}`}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {step === 'email' ? (
+                        <form action={formAction} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
+                                <Input
                                     id="email"
                                     name="email"
                                     type="email"
-                                    autoComplete="email"
-                                    required
                                     placeholder="name@company.com"
-                                    className="block w-full rounded-lg border border-white/10 bg-black/20 px-4 py-3 pl-11 text-sm text-white placeholder-gray-500 transition-all focus:border-indigo-500 focus:bg-white/[0.02] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    required
+                                    className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                 />
-                                <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
+                            </div>
+
+                            {(state.message || urlMessage) && (
+                                <Alert variant={state.success ? 'default' : 'destructive'}
+                                    className={`border-none ${state.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                    {state.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                                    <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
+                                    <AlertDescription>
+                                        {state.message || urlMessage}
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+
+                            <Button
+                                type="submit"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 transition-all"
+                                disabled={isPending}
+                            >
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Sending Code...
+                                    </>
+                                ) : (
+                                    <>
+                                        Sign In
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    ) : (
+                        <div className="space-y-6">
+                            <div className="flex justify-center">
+                                <InputOTP
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(value) => setOtp(value)}
+                                    render={({ slots }) => (
+                                        <InputOTPGroup className="gap-2">
+                                            {slots.map((slot, index) => (
+                                                <InputOTPSlot
+                                                    key={index}
+                                                    {...slot}
+                                                    index={index}
+                                                    className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md"
+                                                />
+                                            ))}
+                                        </InputOTPGroup>
+                                    )}
+                                />
+                            </div>
+
+                            {(urlMessage) && !state.success && (
+                                <Alert variant="destructive" className="bg-red-500/10 text-red-400 border-none">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertDescription>{urlMessage}</AlertDescription>
+                                </Alert>
+                            )}
+
+                            <Button
+                                onClick={handleVerify}
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10"
+                                disabled={isVerifying || otp.length < 6}
+                            >
+                                {isVerifying ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Verifying...
+                                    </>
+                                ) : (
+                                    'Verify Code'
+                                )}
+                            </Button>
+
+                            <div className="text-center">
+                                <button
+                                    onClick={() => { setStep('email'); setUrlMessage(''); }}
+                                    className="text-xs text-zinc-500 hover:text-white transition-colors"
+                                >
+                                    Wrong email? Go back
+                                </button>
                             </div>
                         </div>
-
-                        {state?.message && !state.success && (
-                            <p className="text-sm text-red-400 text-center">{state.message}</p>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={isPending}
-                            className="group relative flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 hover:scale-[1.02] hover:shadow-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#0a0a0a] disabled:opacity-50 disabled:pointer-events-none"
-                        >
-                            {isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <span>Send Magic Link</span>
-                                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                                </>
-                            )}
-                        </button>
-                    </form>
-                </motion.div>
-
-                {/* Footer */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.5, delay: 0.6 }}
-                    className="flex flex-col items-center gap-4 text-center text-xs text-gray-500"
-                >
-                    <div className="flex items-center gap-2 rounded-full border border-red-500/10 bg-red-500/5 px-3 py-1.5 text-red-500/80 backdrop-blur-sm transition-colors hover:border-red-500/20 hover:bg-red-500/10">
-                        <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
-                        </span>
-                        <span className="font-medium tracking-wide">AUTHORIZED PERSONNEL ONLY</span>
-                    </div>
-                    <p>
-                        © {new Date().getFullYear()} <span className="font-medium text-gray-400">@League of Developer</span>. All rights reserved.
+                    )}
+                </CardContent>
+                <CardFooter className="justify-center border-t border-white/5 py-4">
+                    <p className="text-xs text-zinc-500">
+                        Protected by Retention Intelligence System
                     </p>
-                </motion.div>
-            </motion.div>
+                </CardFooter>
+            </Card>
         </div>
     );
 }
