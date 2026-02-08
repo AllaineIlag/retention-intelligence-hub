@@ -14,13 +14,11 @@ import * as React from "react";
 interface ResignationReminderEmailProps {
     employeeName: string;
     interviewDate: string; // Formatted date string
-    baseUrl?: string;
 }
 
 export const ResignationReminderEmail = ({
     employeeName,
     interviewDate,
-    baseUrl = process.env.NEXT_PUBLIC_SITE_URL,
 }: ResignationReminderEmailProps) => (
     <Html>
         <Head />
@@ -43,7 +41,7 @@ export const ResignationReminderEmail = ({
                 </Text>
                 <Button
                     style={button}
-                    href={`${baseUrl}/exit-form`}
+                    href={`${process.env.NEXT_PUBLIC_SITE_URL}/exit-form`}
                 >
                     Review My Answers
                 </Button>
