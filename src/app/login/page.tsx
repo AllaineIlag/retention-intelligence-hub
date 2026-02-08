@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState, useTransition } from 'react';
+import { Suspense, useActionState, useEffect, useState, useTransition } from 'react';
 import { sendOtp, verifyOtp } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ const initialState: FormState = {
     message: '',
 };
 
-export default function LoginPage() {
+function LoginForm() {
     const [state, formAction, isPending] = useActionState(sendOtp, initialState);
     const [step, setStep] = useState<'email' | 'otp'>('email');
     const [email, setEmail] = useState('');
@@ -58,140 +58,149 @@ export default function LoginPage() {
             if (result.success && result.redirectUrl) {
                 router.push(result.redirectUrl);
             } else {
-                // Show error (reuse existing state mechanism or add new one)
-                // For simplicity, we'll set a custom error in the UI
                 setUrlMessage(result.message || 'Verification failed');
             }
         });
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        <Card className="w-full max-w-md border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl relative z-10">
+            <CardHeader className="space-y-3 text-center">
+                <div className="flex justify-center">
+                    <div className="rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 ring-1 ring-white/10">
+                        <Lock className="h-8 w-8 text-indigo-400" />
+                    </div>
+                </div>
+                <CardTitle className="text-2xl font-bold tracking-tight text-white">
+                    {step === 'email' ? 'Welcome Back' : 'Enter One-Time Password'}
+                </CardTitle>
+                <CardDescription className="text-zinc-400">
+                    {step === 'email'
+                        ? 'Sign in to access the Retention Intelligence Hub'
+                        : `We sent a code to ${email}`}
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {step === 'email' ? (
+                    <form action={formAction} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
+                            <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="name@company.com"
+                                required
+                                className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </div>
 
-            <Card className="w-full max-w-md border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl relative z-10">
-                <CardHeader className="space-y-3 text-center">
-                    <div className="flex justify-center">
-                        <div className="rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 ring-1 ring-white/10">
-                            <Lock className="h-8 w-8 text-indigo-400" />
+                        {(state.message || urlMessage) && (
+                            <Alert variant={state.success ? 'default' : 'destructive'}
+                                className={`border-none ${state.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                {state.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                                <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
+                                <AlertDescription>
+                                    {state.message || urlMessage}
+                                </AlertDescription>
+                            </Alert>
+                        )}
+
+                        <Button
+                            type="submit"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 transition-all"
+                            disabled={isPending}
+                        >
+                            {isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Sending Code...
+                                </>
+                            ) : (
+                                <>
+                                    Sign In
+                                    <ArrowRight className="ml-2 h-4 w-4" />
+                                </>
+                            )}
+                        </Button>
+                    </form>
+                ) : (
+                    <div className="space-y-6">
+                        <div className="flex justify-center">
+                            <InputOTP
+                                maxLength={6}
+                                value={otp}
+                                onChange={(value) => setOtp(value)}
+                                render={({ slots }) => (
+                                    <InputOTPGroup className="gap-2">
+                                        {slots.map((slot, index) => (
+                                            <InputOTPSlot
+                                                key={index}
+                                                {...slot}
+                                                index={index}
+                                                className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md"
+                                            />
+                                        ))}
+                                    </InputOTPGroup>
+                                )}
+                            />
+                        </div>
+
+                        {(urlMessage) && !state.success && (
+                            <Alert variant="destructive" className="bg-red-500/10 text-red-400 border-none">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>{urlMessage}</AlertDescription>
+                            </Alert>
+                        )}
+
+                        <Button
+                            onClick={handleVerify}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10"
+                            disabled={isVerifying || otp.length < 6}
+                        >
+                            {isVerifying ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Verifying...
+                                </>
+                            ) : (
+                                'Verify Code'
+                            )}
+                        </Button>
+
+                        <div className="text-center">
+                            <button
+                                onClick={() => { setStep('email'); setUrlMessage(''); }}
+                                className="text-xs text-zinc-500 hover:text-white transition-colors"
+                            >
+                                Wrong email? Go back
+                            </button>
                         </div>
                     </div>
-                    <CardTitle className="text-2xl font-bold tracking-tight text-white">
-                        {step === 'email' ? 'Welcome Back' : 'Enter One-Time Password'}
-                    </CardTitle>
-                    <CardDescription className="text-zinc-400">
-                        {step === 'email'
-                            ? 'Sign in to access the Retention Intelligence Hub'
-                            : `We sent a code to ${email}`}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {step === 'email' ? (
-                        <form action={formAction} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="name@company.com"
-                                    required
-                                    className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </div>
+                )}
+            </CardContent>
+            <CardFooter className="justify-center border-t border-white/5 py-4">
+                <p className="text-xs text-zinc-500">
+                    Protected by Retention Intelligence System
+                </p>
+            </CardFooter>
+        </Card>
+    );
+}
 
-                            {(state.message || urlMessage) && (
-                                <Alert variant={state.success ? 'default' : 'destructive'}
-                                    className={`border-none ${state.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                    {state.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                                    <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
-                                    <AlertDescription>
-                                        {state.message || urlMessage}
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-
-                            <Button
-                                type="submit"
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 transition-all"
-                                disabled={isPending}
-                            >
-                                {isPending ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Sending Code...
-                                    </>
-                                ) : (
-                                    <>
-                                        Sign In
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </>
-                                )}
-                            </Button>
-                        </form>
-                    ) : (
-                        <div className="space-y-6">
-                            <div className="flex justify-center">
-                                <InputOTP
-                                    maxLength={6}
-                                    value={otp}
-                                    onChange={(value) => setOtp(value)}
-                                    render={({ slots }) => (
-                                        <InputOTPGroup className="gap-2">
-                                            {slots.map((slot, index) => (
-                                                <InputOTPSlot
-                                                    key={index}
-                                                    {...slot}
-                                                    index={index}
-                                                    className="h-12 w-10 border-white/10 bg-white/5 text-white text-lg rounded-md"
-                                                />
-                                            ))}
-                                        </InputOTPGroup>
-                                    )}
-                                />
-                            </div>
-
-                            {(urlMessage) && !state.success && (
-                                <Alert variant="destructive" className="bg-red-500/10 text-red-400 border-none">
-                                    <AlertCircle className="h-4 w-4" />
-                                    <AlertDescription>{urlMessage}</AlertDescription>
-                                </Alert>
-                            )}
-
-                            <Button
-                                onClick={handleVerify}
-                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-10"
-                                disabled={isVerifying || otp.length < 6}
-                            >
-                                {isVerifying ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        Verifying...
-                                    </>
-                                ) : (
-                                    'Verify Code'
-                                )}
-                            </Button>
-
-                            <div className="text-center">
-                                <button
-                                    onClick={() => { setStep('email'); setUrlMessage(''); }}
-                                    className="text-xs text-zinc-500 hover:text-white transition-colors"
-                                >
-                                    Wrong email? Go back
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter className="justify-center border-t border-white/5 py-4">
-                    <p className="text-xs text-zinc-500">
-                        Protected by Retention Intelligence System
-                    </p>
-                </CardFooter>
-            </Card>
+export default function LoginPage() {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+            <Suspense fallback={
+                <div className="flex items-center justify-center text-white">
+                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                </div>
+            }>
+                <LoginForm />
+            </Suspense>
         </div>
     );
 }
