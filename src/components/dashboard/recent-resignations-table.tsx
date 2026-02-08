@@ -3,9 +3,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowRight, Loader, CalendarClock, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { ArrowRight, Loader, CalendarClock, CheckCircle2, XCircle, Clock, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface RecentResignationsTableProps {
     resignations: any[]; // Ideally typed with Database type, but simplified for now
@@ -28,7 +31,10 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
     return (
         <Card className="col-span-full border-white/5 bg-white/[0.02] h-full">
             <CardHeader>
-                <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
+                    <ExportButton />
+                </div>
             </CardHeader>
             <CardContent>
                 <Table>
@@ -76,6 +82,77 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
                 </Table>
             </CardContent>
         </Card>
+    );
+}
+
+
+
+function ExportButton() {
+    // We need to check permission client-side or just let the server reject it.
+    // For better UX, we could pass permission as prop, but for now let's try-catch the action.
+    const [loading, setLoading] = useState(false);
+
+    const handleExport = async () => {
+        setLoading(true);
+        try {
+            const { exportResignations } = await import('@/app/actions/user-actions');
+            const result = await exportResignations();
+
+            if (result.error) {
+                toast.error(result.error);
+                return;
+            }
+
+            if (!result.data || result.data.length === 0) {
+                toast.info("No data to export.");
+                return;
+            }
+
+            // Convert to CSV
+            const headers = ['Employee', 'Department', 'Role', 'Status', 'Last Day', 'Created At'];
+            const csvContent = [
+                headers.join(','),
+                ...result.data.map((r: any) => [
+                    `"${r.profiles?.full_name || 'Unknown'}"`,
+                    `"${r.profiles?.department || 'N/A'}"`,
+                    `"${r.profiles?.role || 'N/A'}"`,
+                    r.status,
+                    r.last_working_day || '',
+                    r.created_at
+                ].join(','))
+            ].join('\n');
+
+            // Download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `resignations_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            toast.success("Export successful.");
+        } catch (error) {
+            toast.error("Export failed.");
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={loading}
+            className="h-8 border-white/10 bg-white/5 hover:bg-white/10 text-xs"
+        >
+            {loading ? <Loader className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
+            Export CSV
+        </Button>
     );
 }
 

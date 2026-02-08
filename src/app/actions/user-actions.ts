@@ -99,3 +99,42 @@ export async function getTeamMembers() {
 
     return { success: true, data: profiles };
 }
+
+export async function exportResignations() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+        return { error: 'Unauthorized' };
+    }
+
+    // Check permissions
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('can_export_data, role')
+        .eq('id', user.id)
+        .single();
+
+    if (!profile) {
+        return { error: 'Profile not found' };
+    }
+
+    if (profile.role !== 'lead' && !profile.can_export_data) {
+        return { error: 'Export permission denied. Contact your administrator.' };
+    }
+
+    // Fetch Data
+    const { data: resignations, error } = await supabase
+        .from('resignations')
+        .select(`
+            *,
+            profiles:employee_id (full_name, department, role)
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        return { error: error.message };
+    }
+
+    return { success: true, data: resignations };
+}
