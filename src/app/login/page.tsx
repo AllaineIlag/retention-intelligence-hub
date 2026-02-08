@@ -145,7 +145,7 @@ function LoginForm() {
                             </InputOTP>
                         </div>
 
-                        {(urlMessage) && !state.success && (
+                        {urlMessage && (
                             <Alert variant="destructive" className="bg-red-500/10 text-red-400 border-none">
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertDescription>{urlMessage}</AlertDescription>
