@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { addDays, format, isWithinInterval, parseISO, subMonths, subDays, differenceInDays } from 'date-fns';
+import { addDays, format, isWithinInterval, parseISO, subMonths, subDays, differenceInDays, startOfMonth, addMonths, endOfMonth } from 'date-fns';
 
 export type AnalyticsFilters = {
     startDate?: Date;
@@ -28,16 +28,17 @@ export type PrimaryDriver = {
     count: number;
 };
 
-type ResignationWithProfile = {
+type ResignationWithDetails = {
     id: string;
     last_working_day: string | null;
     created_at: string;
     status: string;
-    profiles: {
+    employee_details: {
         date_hired: string | null;
         department: string | null;
     } | null;
 };
+
 
 export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
@@ -46,17 +47,19 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
         .from('resignations')
         .select(`
             *,
-            profiles!employee_id (
+            employee_details!inner (
                 date_hired,
                 department
             )
         `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled'])
-        .returns<ResignationWithProfile[]>();
+        .returns<ResignationWithDetails[]>();
+
 
     if (error) return { success: false, error: error.message };
 
-    const filtered = (resignations as ResignationWithProfile[]).filter(r => {
+    const filtered = (resignations as ResignationWithDetails[]).filter(r => {
+
         // Date Filter
         if (filters.startDate && filters.endDate) {
             const date = parseISO(r.last_working_day || r.created_at);
@@ -67,9 +70,10 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
 
         // Dept Filter
         if (filters.department && filters.department.length > 0) {
-            const dept = r.profiles?.department;
+            const dept = r.employee_details?.department;
             if (!dept || !filters.department.includes(dept)) return false;
         }
+
 
         return true;
     });
@@ -81,11 +85,11 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     let headCount = 5000;
     if (filters.department && filters.department.length > 0) {
         const { count } = await supabase
-            .from('profiles')
+            .from('employee_details')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'employee')
             .in('department', filters.department);
         headCount = count || 1;
+
     }
 
     const turnoverRate = (totalExits / headCount) * 100;
@@ -93,7 +97,8 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     let totalTenureDays = 0;
     let tenureCount = 0;
     filtered.forEach(r => {
-        const hired = r.profiles?.date_hired;
+        const hired = r.employee_details?.date_hired;
+
         const left = r.last_working_day || r.created_at;
         if (hired && left) {
             const start = parseISO(hired);
@@ -170,10 +175,11 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            profiles!employee_id (
+            employee_details!inner (
                 department
             )
         `)
+
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
     if (resError) return { success: false, error: resError.message };
@@ -185,11 +191,13 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
             if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
         if (filters.department && filters.department.length > 0) {
-            const dept = r.profiles?.department;
+            const dept = r.employee_details?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
         relevantIds.add(r.id);
     });
+
+
 
     if (relevantIds.size === 0) return { success: true, data: [] };
 
@@ -227,7 +235,7 @@ export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
             last_working_day, 
             created_at, 
             status,
-            profiles!employee_id (
+            employee_details!inner (
                 department
             )
         `)
@@ -235,36 +243,44 @@ export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
 
     if (error) return { success: false, error: error.message };
 
-    const monthlyStats: Record<string, number> = {};
-
-    // Default to last 6 months if no range
+    // Determine Date Range
     const today = filters.endDate || new Date();
     const start = filters.startDate || subMonths(today, 5);
 
-    // Filter by dept first
-    const filtered = (resignations as any[]).filter(r => {
-        if (filters.department && filters.department.length > 0) {
-            const dept = r.profiles?.department;
-            if (!dept || !filters.department.includes(dept)) return false;
+    // Initialize Map with 0 for all months in range
+    const monthlyStats = new Map<string, number>();
+    let currentIter = startOfMonth(start); // Normalize to start of month
+    while (currentIter <= today) {
+        const key = format(currentIter, 'MMM yyyy');
+        if (!monthlyStats.has(key)) {
+            monthlyStats.set(key, 0);
         }
-        return true;
-    });
+        currentIter = addMonths(currentIter, 1);
+    }
 
-    filtered.forEach(r => {
+    // Filter and Count
+    resignations?.forEach((r: any) => {
+        // Department Filter
+        if (filters.department && filters.department.length > 0) {
+            const dept = r.employee_details?.department;
+            if (!dept || !filters.department.includes(dept)) return;
+        }
+
         const date = parseISO(r.last_working_day || r.created_at);
         if (isWithinInterval(date, { start, end: today })) {
             const key = format(date, 'MMM yyyy');
-            monthlyStats[key] = (monthlyStats[key] || 0) + 1;
+            if (monthlyStats.has(key)) {
+                monthlyStats.set(key, (monthlyStats.get(key) || 0) + 1);
+            }
         }
     });
 
-    const chartData: TurnoverDataPoint[] = Object.entries(monthlyStats)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => {
-            const dateA = parseISO(`01 ${a.name}`);
-            const dateB = parseISO(`01 ${b.name}`);
-            return dateA.getTime() - dateB.getTime();
-        });
+    // Convert to Array (Map preserves insertion order if we initialized chronologically)
+    const chartData = Array.from(monthlyStats.entries()).map(([name, resignations]) => ({
+        name,
+        resignations,
+        retention: 100 // Placemarker for now
+    }));
 
     return { success: true, data: chartData };
 }
@@ -278,12 +294,13 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            profiles!employee_id (
+            employee_details!inner (
                 department
             )
         `)
         .in('status', ['completed', 'approved', 'verified', 'scheduled'])
-        .returns<ResignationWithProfile[]>();
+        .returns<ResignationWithDetails[]>();
+
 
     if (error) return { success: false, error: error.message };
 
@@ -297,10 +314,11 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
             }
         }
 
-        const dept = r.profiles?.department || 'Unknown';
+        const dept = r.employee_details?.department || 'Unknown';
         // If we are filtering by specific depts, only count those
         if (filters.department && filters.department.length > 0) {
             if (filters.department.includes(dept)) {
+
                 deptCounts[dept] = (deptCounts[dept] || 0) + 1;
             }
         } else {
@@ -331,10 +349,11 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            profiles!employee_id (
+            employee_details!inner (
                 department
             )
         `)
+
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
     if (resError) return { success: false, error: resError.message };
@@ -347,9 +366,10 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
             if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
         if (filters.department && filters.department.length > 0) {
-            const dept = r.profiles?.department;
+            const dept = r.employee_details?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
+
         relevantIds.add(r.id);
     });
 
@@ -418,10 +438,11 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
             last_working_day, 
             created_at, 
             status,
-            profiles!employee_id (
+            employee_details!inner (
                 department
             )
         `)
+
         .in('status', ['completed', 'approved', 'verified', 'scheduled']);
 
     if (error) return { success: false, error: error.message };
@@ -439,9 +460,10 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
 
     resignations.forEach(r => {
         if (filters.department && filters.department.length > 0) {
-            const dept = (r as any).profiles?.department;
+            const dept = (r as any).employee_details?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
+
 
         const date = parseISO(r.last_working_day || r.created_at);
 

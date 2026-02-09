@@ -19,18 +19,39 @@ export default function InterviewsPage() {
 }
 
 async function InterviewsList() {
-    const { data: interviews, error } = await getAllInterviews();
+    // TEMPORARY: Static mock data to bypass fetch error {} as requested by USER
+    const mockInterviews = [
+        {
+            id: 'mock-1',
+            status: 'scheduled' as const,
+            created_at: new Date().toISOString(),
+            scheduled_interview_date: new Date(Date.now() + 86400000).toISOString(),
+            employee: {
+                id: 'emp-1',
+                full_name: 'Sarah Connor',
+                email: 's.connor@cyberdyne.com',
+                role: 'Resistance Lead',
+                department: 'Operations',
+                avatar_url: null
+            }
+        },
+        {
+            id: 'mock-2',
+            status: 'pending' as const,
+            created_at: new Date().toISOString(),
+            scheduled_interview_date: null,
+            employee: {
+                id: 'emp-2',
+                full_name: 'John Doe',
+                email: 'j.doe@example.com',
+                role: 'Senior Developer',
+                department: 'Engineering',
+                avatar_url: null
+            }
+        }
+    ];
 
-    if (error) {
-        return (
-            <div className="p-12 text-center rounded-xl border border-red-900/20 bg-red-900/5">
-                <h3 className="text-lg font-medium text-red-400">Unable to load interviews</h3>
-                <p className="text-red-400/60 mt-2">Please try refreshing the page.</p>
-            </div>
-        );
-    }
-
-    return <InterviewsTable data={interviews || []} />;
+    return <InterviewsTable data={mockInterviews} />;
 }
 
 function TableSkeleton() {

@@ -29,6 +29,11 @@ export function CreateResignationDialog() {
     const [open, setOpen] = React.useState(false)
     const [loading, setLoading] = React.useState(false)
     const [departments, setDepartments] = React.useState<string[]>([])
+    const [isMounted, setIsMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     React.useEffect(() => {
         if (open) {
@@ -53,6 +58,17 @@ export function CreateResignationDialog() {
 
         setLoading(false)
         setOpen(false)
+    }
+
+    if (!isMounted) {
+        return (
+            <Button
+                className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 rounded-xl"
+            >
+                <Plus className="h-4 w-4" />
+                <span>Log Resignation</span>
+            </Button>
+        )
     }
 
     return (

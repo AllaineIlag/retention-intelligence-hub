@@ -1,0 +1,75 @@
+﻿
+> retention-intelligence-hub@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.2 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn 
+more: https://nextjs.org/docs/messages/middleware-t
+o-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\sungj\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá T 
+   he "middle...leware-to-proxy:String) [], Remot  
+  eException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 21.3s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/dashboard/interview/schedule/page.tsx:33:
+29
+Type error: Type '{ employee: { [x: number]: { 
+full_name: any; department: any; } | { id: any; 
+email: any; role: any; }; length: number; 
+toString(): string; toLocaleString(): string; 
+toLocaleString(locales: string | string[], 
+options?: (NumberFormatOptions & 
+DateTimeFormatOptions) | undefined): string; ... 
+37 more ...; [Symbol.unscop...' is not assignable 
+to type 'Interview[]'.
+  Type '{ employee: { [x: number]: { full_name: 
+any; department: any; } | { id: any; email: any; 
+role: any; }; length: number; toString(): string; 
+toLocaleString(): string; toLocaleString(locales: 
+string | string[], options?: 
+Intl.NumberFormatOptions & 
+Intl.DateTimeFormatOptions): string; ... 37 more 
+...; [Symbol.unscopable...' is not assignable to 
+type 'Interview'.
+    Types of property 'employee' are incompatible.
+      Type '{ [x: number]: { full_name: any; 
+department: any; } | { id: any; email: any; role: 
+any; }; length: number; toString(): string; 
+toLocaleString(): string; toLocaleString(locales: 
+string | string[], options?: (NumberFormatOptions 
+& DateTimeFormatOptions) | undefined): string; ... 
+37 more ...; [Symbol.unscopables]: { .....' is 
+missing the following properties from type '{ id: 
+string; full_name: string | null; email: string | 
+null; role: string | null; department: string | 
+null; avatar_url?: string | null | undefined; }': 
+id, full_name, email, role, department
+
+[0m [90m 31 |[39m     }
+ [90m 32 |[39m
+[31m[1m>[22m[39m[90m 33 |[39m     
+[36mreturn[39m 
+[33m<[39m[33mInterviewsTable[39m 
+data[33m=[39m{interviews [33m||[39m []} 
+[33m/[39m[33m>[39m[33m;[39m
+ [90m    |[39m                             
+[31m[1m^[22m[39m
+ [90m 34 |[39m }
+ [90m 35 |[39m
+ [90m 36 |[39m [36mfunction[39m 
+[33mTableSkeleton[39m() {[0m
+Next.js build worker exited with code: 1 and 
+signal: null

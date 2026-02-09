@@ -21,7 +21,10 @@ export default function InviteUserCard() {
         e.preventDefault();
         if (!emails) return;
 
-        const emailList = emails.split(',').map(e => e.trim()).filter(e => e.length > 0);
+        const emailList = emails
+            .split(/[\n,]/)
+            .map(e => e.trim())
+            .filter(e => e.length > 0 && e.includes('@'));
 
         if (emailList.length === 0) {
             toast.error("Please enter at least one valid email.");

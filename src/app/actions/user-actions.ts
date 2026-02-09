@@ -72,9 +72,10 @@ export async function toggleUserPermission(targetUserId: string, field: 'can_exp
 
     // Update Permission
     const { error } = await supabase
-        .from('profiles')
+        .from('admin_details')
         .update({ [field]: value })
         .eq('id', targetUserId);
+
 
     if (error) {
         return { error: error.message };
@@ -91,13 +92,45 @@ export async function getTeamMembers() {
 
     const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+            *,
+            admin_details!inner (
+                full_name,
+                can_export_data,
+                email_notifications,
+                notification_frequency
+            )
+        `)
         .in('role', ['lead', 'interviewer'])
         .order('created_at', { ascending: false });
 
     if (error) return { error: error.message };
 
-    return { success: true, data: profiles };
+    // Flatten for UI if needed, or keep nested. Most UI expects flat.
+    const flattened = profiles?.map(p => ({
+        ...p,
+        ...p.admin_details
+    }));
+
+    return { success: true, data: flattened };
+
+}
+
+export async function getRecentInvites() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    const { data: invites, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('status', 'invited')
+        .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+
+    return { success: true, data: invites };
 }
 
 export async function exportResignations() {
@@ -111,26 +144,42 @@ export async function exportResignations() {
     // Check permissions
     const { data: profile } = await supabase
         .from('profiles')
-        .select('can_export_data, role')
+        .select(`
+            role,
+            admin_details (
+                can_export_data
+            )
+        `)
         .eq('id', user.id)
         .single();
+
 
     if (!profile) {
         return { error: 'Profile not found' };
     }
 
-    if (profile.role !== 'lead' && !profile.can_export_data) {
+    if (profile.role !== 'lead' && !(profile as any).admin_details?.can_export_data) {
         return { error: 'Export permission denied. Contact your administrator.' };
     }
+
 
     // Fetch Data
     const { data: resignations, error } = await supabase
         .from('resignations')
         .select(`
             *,
-            profiles:employee_id (full_name, department, role)
+            employee_details:employee_id (
+                full_name, 
+                department,
+                employee_number,
+                current_position,
+                date_hired,
+                immediate_superior,
+                resignation_date
+            )
         `)
         .order('created_at', { ascending: false });
+
 
     if (error) {
         return { error: error.message };

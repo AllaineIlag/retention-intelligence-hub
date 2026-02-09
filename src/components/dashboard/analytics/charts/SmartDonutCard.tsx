@@ -1,0 +1,152 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ChevronDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { getExitQuestionStats, TurnoverDataPoint } from "@/app/actions/analytics"
+import { endOfMonth, subDays, subMonths } from "date-fns"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+
+interface SmartDonutCardProps {
+    title: string
+    questionKey: string
+    unit?: string
+    initialData?: TurnoverDataPoint[]
+    className?: string
+}
+
+const COLORS = [
+    '#6366f1', // Indigo
+    '#10b981', // Emerald
+    '#f59e0b', // Amber
+    '#14b8a6', // Teal
+    '#8b5cf6', // Violet
+]
+
+export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData = [], className }: SmartDonutCardProps) {
+    const [data, setData] = useState<TurnoverDataPoint[]>(initialData)
+    const [mode, setMode] = useState<'7d' | '30d' | '3m'>('30d')
+    const [isLoading, setIsLoading] = useState(false)
+
+    // Initial fetch if no initial data
+    useEffect(() => {
+        if (initialData.length === 0) {
+            handleToggle('30d')
+        }
+    }, [])
+
+    const handleToggle = async (newMode: '7d' | '30d' | '3m') => {
+        if (newMode === mode && data.length > 0) return
+        setMode(newMode)
+        setIsLoading(true)
+
+        const today = new Date()
+        let startDate = subDays(today, 30)
+
+        if (newMode === '7d') startDate = subDays(today, 7)
+        else if (newMode === '3m') startDate = subMonths(today, 3)
+
+        const filters = {
+            startDate,
+            endDate: endOfMonth(today)
+        }
+
+        try {
+            const res = await getExitQuestionStats(filters)
+            if (res.success && res.data) {
+                const stats = res.data.find(s => s.question_key === questionKey)?.stats || []
+                setData(stats)
+            }
+        } catch (error) {
+            console.error(`Failed to fetch ${questionKey}`, error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const total = data.reduce((acc, curr) => acc + curr.value, 0)
+
+    return (
+        <Card className={cn("flex flex-col border-white/5 bg-white/[0.02] min-h-0 rounded-3xl shadow-sm hover:bg-white/[0.04] transition-colors duration-300 overflow-hidden relative", className)}>
+            {isLoading && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                </div>
+            )}
+            <CardHeader className="py-3 px-5 shrink-0 flex flex-row items-center justify-between border-b border-white/5 space-y-0">
+                <CardTitle className="text-sm font-medium text-zinc-100">{title}</CardTitle>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                        >
+                            {mode.toUpperCase()}
+                            <ChevronDown className="h-3 w-3" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[120px] border-white/10 bg-zinc-950">
+                        <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </CardHeader>
+            <CardContent className="flex flex-1 items-center pb-4 px-2 min-h-0 mt-4">
+                {/* Donut Chart (Left) */}
+                <div className="relative w-1/2 h-full min-h-[100px] flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius="65%"
+                                outerRadius="85%"
+                                paddingAngle={5}
+                                dataKey="value"
+                                stroke="none"
+                                cornerRadius={4}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip
+                                contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                                itemStyle={{ color: '#fff' }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-lg font-bold text-white leading-none">{total}</span>
+                        <span className="text-[10px] text-muted-foreground uppercase">{unit}</span>
+                    </div>
+                </div>
+
+                {/* Legend (Right) */}
+                <div className="w-1/2 flex flex-col justify-center gap-2 pl-2">
+                    {data.slice(0, 5).map((item, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <div
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12px] text-zinc-400 truncate" title={item.name}>{item.name}</span>
+                            </div>
+                        </div>
+                    ))}
+                    {data.length === 0 && (
+                        <span className="text-xs text-zinc-500 italic">No Data</span>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    )
+}

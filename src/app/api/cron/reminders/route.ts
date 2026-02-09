@@ -51,7 +51,7 @@ export async function GET(request: Request) {
             try {
                 // Send Email
                 const { error: emailError } = await resend.emails.send({
-                    from: 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                    from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
                     to: [resignation.profiles.email],
                     subject: 'Reminder: Upcoming Exit Interview',
                     react: ResignationReminderEmail({

@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { GlobalFilters } from '@/components/dashboard/global-filters';
 import { CreateResignationDialog } from '@/components/dashboard/create-resignation-dialog';
 import { NotificationBell } from '@/components/dashboard/notification-bell';
 
@@ -48,14 +47,6 @@ export default async function DashboardLayout({
                         </div>
 
                         <div className="flex items-center gap-4 md:gap-6">
-                            {/* Controls Group */}
-                            <div className="hidden md:flex items-center">
-                                <GlobalFilters />
-                            </div>
-
-                            {/* Separator */}
-                            <div className="hidden md:block h-6 w-px bg-white/10" />
-
                             {/* Actions Group */}
                             <div className="flex items-center gap-3">
                                 <NotificationBell />

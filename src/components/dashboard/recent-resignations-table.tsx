@@ -163,7 +163,7 @@ function StatusBadge({ status }: { status: string }) {
             color: 'text-amber-400',
             border: 'border-white/10',
             bg: 'bg-white/5',
-            label: 'In Process'
+            label: 'Pending Account'
         },
         scheduled: {
             icon: CalendarClock,

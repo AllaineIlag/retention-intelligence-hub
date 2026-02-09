@@ -20,7 +20,15 @@ export async function getProfile() {
 
     const { data: profile, error } = await supabase
         .from('profiles')
-        .select('full_name, email, role, email_notifications, notification_frequency')
+        .select(`
+            email, 
+            role,
+            admin_details (
+                full_name,
+                email_notifications,
+                notification_frequency
+            )
+        `)
         .eq('id', user.id)
         .single();
 
@@ -28,8 +36,17 @@ export async function getProfile() {
         return { error: error.message };
     }
 
-    return { success: true, data: profile as ProfileData };
+    const flattened: ProfileData = {
+        email: profile.email,
+        role: profile.role,
+        full_name: (profile as any).admin_details?.full_name || null,
+        email_notifications: (profile as any).admin_details?.email_notifications || false,
+        notification_frequency: (profile as any).admin_details?.notification_frequency || 'daily'
+    };
+
+    return { success: true, data: flattened };
 }
+
 
 export async function updateProfile(fullName: string) {
     const supabase = await createClient();
@@ -40,12 +57,13 @@ export async function updateProfile(fullName: string) {
     }
 
     const { error } = await supabase
-        .from('profiles')
+        .from('admin_details')
         .update({
             full_name: fullName,
             updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
+
 
     if (error) {
         return { error: error.message };
@@ -66,13 +84,14 @@ export async function updateNotificationPreferences(
     }
 
     const { error } = await supabase
-        .from('profiles')
+        .from('admin_details')
         .update({
             email_notifications: emailNotifications,
             notification_frequency: frequency,
             updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
+
 
     if (error) {
         return { error: error.message };

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useActionState, useEffect, useState, useTransition } from 'react';
-import { sendOtp, verifyOtp } from './actions';
+import { loginWithPassword, sendOtp, verifyOtp } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,10 +27,14 @@ const initialState: FormState = {
 };
 
 function LoginForm() {
-    const [state, formAction, isPending] = useActionState(sendOtp, initialState);
+    const [otpState, otpAction, isOtpPending] = useActionState(sendOtp, initialState);
+    const [passwordState, passwordAction, isPasswordPending] = useActionState(loginWithPassword, initialState);
+
     const [step, setStep] = useState<'email' | 'otp'>('email');
+    const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
+
     const [isVerifying, startVerify] = useTransition();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -45,10 +49,18 @@ function LoginForm() {
 
     // When sendOtp succeeds, move to OTP step
     useEffect(() => {
-        if (state.success && step === 'email') {
+        if (otpState.success && step === 'email') {
             setStep('otp');
         }
-    }, [state, step]);
+    }, [otpState, step]);
+
+    // Handle Password Login Success
+    useEffect(() => {
+        if (passwordState.success && passwordState.redirectUrl) {
+            router.push(passwordState.redirectUrl);
+        }
+    }, [passwordState, router]);
+
 
     const handleVerify = () => {
         if (!otp || otp.length !== 6) return;
@@ -71,7 +83,7 @@ function LoginForm() {
                         <Lock className="h-8 w-8 text-indigo-400" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl font-bold tracking-tight text-white">
+                <CardTitle className="2xl font-bold tracking-tight text-white">
                     {step === 'email' ? 'Welcome Back' : 'Enter One-Time Password'}
                 </CardTitle>
                 <CardDescription className="text-zinc-400">
@@ -82,50 +94,86 @@ function LoginForm() {
             </CardHeader>
             <CardContent>
                 {step === 'email' ? (
-                    <form action={formAction} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="name@company.com"
-                                required
-                                className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
+                    <div className="space-y-4">
+                        {/* Toggle Method */}
+                        <div className="flex justify-center space-x-4 text-sm mb-2">
+                            <button
+                                type="button"
+                                onClick={() => setLoginMethod('otp')}
+                                className={`pb-1 border-b-2 transition-colors ${loginMethod === 'otp' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                Send Code
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setLoginMethod('password')}
+                                className={`pb-1 border-b-2 transition-colors ${loginMethod === 'password' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-500 hover:text-zinc-300'}`}
+                            >
+                                Password
+                            </button>
                         </div>
 
-                        {(state.message || urlMessage) && (
-                            <Alert variant={state.success ? 'default' : 'destructive'}
-                                className={`border-none ${state.success ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                                {state.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                                <AlertTitle>{state.success ? 'Success' : 'Error'}</AlertTitle>
-                                <AlertDescription>
-                                    {state.message || urlMessage}
-                                </AlertDescription>
-                            </Alert>
-                        )}
+                        <form action={loginMethod === 'otp' ? otpAction : passwordAction} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="name@company.com"
+                                    required
+                                    className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
 
-                        <Button
-                            type="submit"
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 transition-all"
-                            disabled={isPending}
-                        >
-                            {isPending ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Sending Code...
-                                </>
-                            ) : (
-                                <>
-                                    Sign In
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </>
+                            {loginMethod === 'password' && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="password" className="text-zinc-300">Password</Label>
+                                    <Input
+                                        id="password"
+                                        name="password"
+                                        type="password"
+                                        placeholder="••••••••"
+                                        required
+                                        className="border-white/10 bg-white/5 text-white placeholder:text-zinc-500 focus:border-indigo-500/50 focus:ring-indigo-500/20"
+                                    />
+                                </div>
                             )}
-                        </Button>
-                    </form>
+
+                            {/* Error/Success Alerts */}
+                            {(otpState.message || passwordState.message || urlMessage) && (
+                                <Alert variant={(otpState.success || passwordState.success) ? 'default' : 'destructive'}
+                                    className={`border-none ${(otpState.success || passwordState.success) ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                                    {(otpState.success || passwordState.success) ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                                    <AlertTitle>{(otpState.success || passwordState.success) ? 'Success' : 'Error'}</AlertTitle>
+                                    <AlertDescription>
+                                        {otpState.message || passwordState.message || urlMessage}
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+
+
+                            <Button
+                                type="submit"
+                                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium h-10 transition-all"
+                                disabled={isOtpPending || isPasswordPending}
+                            >
+                                {(isOtpPending || isPasswordPending) ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        {loginMethod === 'otp' ? 'Sending Code...' : 'Signing In...'}
+                                    </>
+                                ) : (
+                                    <>
+                                        {loginMethod === 'otp' ? 'Send Code' : 'Sign In'}
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </>
+                                )}
+                            </Button>
+                        </form>
+                    </div>
                 ) : (
                     <div className="space-y-6">
                         <div className="flex justify-center">

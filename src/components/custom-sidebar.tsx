@@ -17,7 +17,10 @@ import {
     Menu,
     X,
     ClipboardCheck, // For Corrections
+    Database, // For Dev Tools
 } from 'lucide-react';
+
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
     DropdownMenu,
@@ -68,7 +71,8 @@ const navItems: NavItem[] = [
             { title: 'Corrections', url: '/dashboard/interview/corrections' },
         ],
     },
-    { title: 'Team', url: '/dashboard/team', icon: Users, roles: ['lead'] },
+    { title: 'Recruitment', url: '/dashboard/team/invite', icon: Users, roles: ['lead'] },
+    { title: 'Manage Team', url: '/dashboard/team/manage', icon: ShieldCheck, roles: ['lead'] },
     {
         title: 'Analytics',
         url: '/dashboard/analytics',
@@ -83,6 +87,7 @@ const navItems: NavItem[] = [
     // { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] }, // Moved to sub-menu
     { title: 'Settings', url: '/dashboard/settings', icon: Settings, roles: ['lead', 'interviewer'] },
     { title: 'System Audit', url: '/dashboard/audit', icon: ShieldCheck, roles: ['lead'] },
+    { title: 'Developer Tools', url: '/dashboard/dev/data-tools', icon: Database, roles: ['lead'] },
 ];
 
 const MOBILE_BREAKPOINT = 768;

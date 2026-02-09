@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { format, parseISO } from "date-fns"
+import { format, parseISO, startOfMonth, endOfMonth } from "date-fns"
 import { DateRange } from "react-day-picker"
 import { Building2 } from "lucide-react"
 
@@ -21,6 +21,7 @@ export function GlobalFilters() {
     const searchParams = useSearchParams()
 
     const [departments, setDepartments] = React.useState<string[]>([])
+    const [isMounted, setIsMounted] = React.useState(false)
 
     // Initialize from URL
     const from = searchParams.get("from")
@@ -36,12 +37,24 @@ export function GlobalFilters() {
     }, [from, to])
 
     React.useEffect(() => {
+        setIsMounted(true)
+
+        // Apply default filters if not present
+        if (!from || !to) {
+            const today = new Date()
+            const defaultRange = {
+                from: startOfMonth(today),
+                to: endOfMonth(today)
+            }
+            updateFilters(defaultRange, dept)
+        }
+
         getDepartments().then(res => {
             if (res.success && res.data) {
                 setDepartments(res.data)
             }
         })
-    }, [])
+    }, [from, to, dept]) // Dependencies added to ensure defaults are checked/applied
 
     const updateFilters = (newDate: DateRange | undefined, newDept: string | null) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -65,6 +78,10 @@ export function GlobalFilters() {
         }
 
         router.push(`?${params.toString()}`, { scroll: false })
+    }
+
+    if (!isMounted) {
+        return <div className="flex items-center gap-3 h-9 w-[450px]" /> // Placeholder to prevent layout shift
     }
 
     return (

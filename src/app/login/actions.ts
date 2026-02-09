@@ -57,6 +57,52 @@ export async function sendOtp(prevState: any, formData: FormData) {
     }
 }
 
+export async function loginWithPassword(prevState: any, formData: FormData) {
+    try {
+        const supabase = await createClient();
+        const email = formData.get('email') as string;
+        const password = formData.get('password') as string;
+
+        console.log('[Auth] Attempting Password Login for:', email);
+
+        if (!email || !password) {
+            return { success: false, message: 'Email and password are required' };
+        }
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) {
+            console.error('[Auth] Password Login Error:', error);
+            return { success: false, message: error.message };
+        }
+
+        if (data.session) {
+            // Check Role for Redirect
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                if (profile?.role === 'employee') {
+                    return { success: true, redirectUrl: '/exit-form' };
+                }
+            }
+            return { success: true, redirectUrl: '/dashboard' };
+        }
+
+        return { success: false, message: 'Login failed' };
+    } catch (error) {
+        console.error('[Auth] Unexpected Error:', error);
+        return { success: false, message: 'An unexpected error occurred.' };
+    }
+}
+
 export async function verifyOtp(email: string, token: string) {
     try {
         const supabase = await createClient();
@@ -98,3 +144,4 @@ export async function verifyOtp(email: string, token: string) {
         return { success: false, message: 'System error during verification.' };
     }
 }
+

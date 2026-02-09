@@ -18,30 +18,39 @@ export default async function ResignationPage({ params }: PageProps) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) redirect('/login');
 
-    // Fetch Resignation Details with Profile
+    // Fetch Resignation Details with Normalized Meta
     const { data: resignation, error } = await supabase
         .from('resignations')
         .select(`
-      *,
-      profiles:employee_id (
-        full_name,
-        email,
-        job_title,
-        department,
-        avatar_url
-      )
-    `)
+            *,
+            employee_details (
+                full_name,
+                current_position,
+                department,
+                employee_number,
+                date_hired,
+                immediate_superior,
+                resignation_date
+            ),
+            profiles (
+                email
+            )
+        `)
         .eq('id', id)
         .single();
+
 
     if (error || !resignation) {
         console.error("Resignation Load Error:", error);
         notFound();
     }
 
-    // Type assertion for Supabase generic return
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const profile = resignation.profiles as any;
+    // Map details for UI
+    const details = {
+        ...(resignation as any).employee_details,
+        ...(resignation as any).profiles,
+    };
+
 
     return (
         <div className="container max-w-6xl py-8 space-y-8 animate-in fade-in duration-500">
@@ -62,14 +71,14 @@ export default async function ResignationPage({ params }: PageProps) {
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                             <Avatar className="h-16 w-16 border-2 border-primary/10">
-                                <AvatarImage src={profile?.avatar_url} />
-                                <AvatarFallback className="text-lg bg-primary/5">{profile?.full_name?.charAt(0) || 'E'}</AvatarFallback>
+                                <AvatarImage src={details?.avatar_url} />
+                                <AvatarFallback className="text-lg bg-primary/5">{details?.full_name?.charAt(0) || 'E'}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <CardTitle>{profile?.full_name || 'Unknown Employee'}</CardTitle>
-                                <CardDescription className="text-base">{profile?.job_title} • {profile?.department}</CardDescription>
+                                <CardTitle>{details?.full_name || 'Unknown Employee'}</CardTitle>
+                                <CardDescription className="text-base">{details?.current_position} • {details?.department}</CardDescription>
                                 <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
-                                    <Badge variant="outline">{profile?.email}</Badge>
+                                    <Badge variant="outline">{details?.email}</Badge>
                                     <span>Submitted {formatDistanceToNow(new Date(resignation.created_at), { addSuffix: true })}</span>
                                 </div>
                             </div>
@@ -95,9 +104,10 @@ export default async function ResignationPage({ params }: PageProps) {
                 <div className="lg:col-span-1">
                     <ResignationOpsCard
                         resignation={resignation}
-                        employeeName={profile?.full_name || 'Employee'}
-                        employeeEmail={profile?.email || ''}
+                        employeeName={details?.full_name || 'Employee'}
+                        employeeEmail={details?.email || ''}
                     />
+
                 </div>
 
             </div>

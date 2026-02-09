@@ -1,0 +1,145 @@
+'use client';
+
+import { useState } from 'react';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { TurnoverDataPoint, getDepartmentBreakdown } from '@/app/actions/analytics';
+import { cn } from '@/lib/utils';
+import { CardFilter, FilterState } from '@/components/dashboard/card-filter';
+import { startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+
+interface DepartmentDistributionCardProps {
+    data: TurnoverDataPoint[];
+    className?: string;
+}
+
+export function DepartmentDistributionCard({ data: initialData, className }: DepartmentDistributionCardProps) {
+    const [data, setData] = useState<TurnoverDataPoint[]>(initialData);
+    const [isLoading, setIsLoading] = useState(false);
+    const [range, setRange] = useState("6m");
+
+    const handleRangeChange = async (value: string) => {
+        setRange(value);
+        setIsLoading(true);
+
+        const today = new Date();
+        let startDate = subMonths(today, 5); // Default 6m
+
+        if (value === '3m') {
+            startDate = subMonths(today, 2);
+        } else if (value === '12m') {
+            startDate = subMonths(today, 11);
+        } else if (value === 'ytd') {
+            startDate = startOfYear(today);
+        }
+
+        try {
+            const apiFilters = {
+                startDate: startOfMonth(startDate),
+                endDate: endOfMonth(today),
+                department: undefined
+            };
+
+            const response = await getDepartmentBreakdown(apiFilters);
+
+            if (response.success && response.data) {
+                setData(response.data.map((d, i) => ({
+                    ...d,
+                    fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#f59e0b'][i % 5]
+                })));
+            }
+        } catch (error) {
+            console.error("Failed to fetch department breakdown", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl relative overflow-hidden", className)}>
+            {isLoading && (
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+            )}
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <div>
+                    <CardTitle className="text-base font-medium tracking-tight">Department Breakdown</CardTitle>
+                    <CardDescription>
+                        Exits by department
+                    </CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Select value={range} onValueChange={handleRangeChange}>
+                        <SelectTrigger className="w-[140px] h-8 text-xs border-white/10 bg-white/5">
+                            <SelectValue placeholder="Select range" />
+                        </SelectTrigger>
+                        <SelectContent className="border-white/10 bg-zinc-950">
+                            <SelectItem value="3m">Last 3 Months</SelectItem>
+                            <SelectItem value="6m">Last 6 Months</SelectItem>
+                            <SelectItem value="ytd">Year to Date</SelectItem>
+                            <SelectItem value="12m">Last 12 Months</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardHeader>
+            <CardContent className="h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={data}
+                        layout="vertical"
+                        margin={{ left: 0, right: 20, top: 0, bottom: 0 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} horizontal={false} />
+                        <XAxis
+                            type="number"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            stroke="#a1a1aa"
+                            hide
+                        />
+                        <YAxis
+                            dataKey="name"
+                            type="category"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            stroke="#a1a1aa"
+                            width={100}
+                        />
+                        <Tooltip
+                            cursor={{ fill: 'white', opacity: 0.05 }}
+                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
+                            itemStyle={{ color: '#e4e4e7', fontSize: '12px' }}
+                        />
+                        <Bar
+                            dataKey="value"
+                            fill="#14b8a6"
+                            radius={[0, 4, 4, 0]}
+                            barSize={32}
+                            name="Exits"
+                            animationDuration={1000}
+                            background={{ fill: '#ffffff', opacity: 0.02, radius: 4 }}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+    );
+}

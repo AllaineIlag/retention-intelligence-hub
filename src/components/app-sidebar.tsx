@@ -41,9 +41,15 @@ const navItems: NavItem[] = [
         roles: ['lead', 'interviewer'],
     },
     {
-        title: 'Team',
-        url: '/dashboard/team',
+        title: 'Recruitment',
+        url: '/dashboard/team/invite',
         icon: Users,
+        roles: ['lead'],
+    },
+    {
+        title: 'Manage Team',
+        url: '/dashboard/team/manage',
+        icon: ShieldCheck,
         roles: ['lead'],
     },
     {

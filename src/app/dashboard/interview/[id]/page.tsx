@@ -11,6 +11,14 @@ export default async function InterviewPage({ params }: { params: { id: string }
     const { id } = await params;
     const { resignation, responses, error } = await getInterviewDetails(id);
 
+    // Map details for UI consistency
+    const details = resignation ? {
+        ...(resignation as any).employee_details,
+        ...(resignation as any).profiles
+    } : null;
+
+
+
     // Fetch current user role for anonymization
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -50,9 +58,10 @@ export default async function InterviewPage({ params }: { params: { id: string }
                         <UserCircle className="w-8 h-8 text-indigo-600" />
                         Interview: {
                             role === 'lead'
-                                ? (resignation.employee?.full_name || resignation.employee?.email)
-                                : (resignation.employee?.role ? `${resignation.employee.role} #${resignation.employee?.id?.slice(0, 8)}` : 'Employee')
+                                ? (details?.full_name || details?.email)
+                                : (details?.role ? `${details.role} #${(resignation as any).employee_id?.slice(0, 8)}` : 'Employee')
                         }
+
                     </h1>
                     {role !== 'lead' && (
                         <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
@@ -64,8 +73,9 @@ export default async function InterviewPage({ params }: { params: { id: string }
 
                 <div className="flex items-center gap-3">
                     <Badge variant="outline" className="text-slate-600 border-slate-300">
-                        {resignation.employee?.role || 'Employee'}
+                        {details?.role || 'Employee'}
                     </Badge>
+
                     <Badge className={`
             ${resignation.status === 'completed' ? 'bg-green-100 text-green-700 hover:bg-green-200' : ''}
             ${resignation.status === 'scheduled' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : ''}

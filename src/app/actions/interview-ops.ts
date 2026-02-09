@@ -7,15 +7,28 @@ import { revalidatePath } from 'next/cache';
 export async function getInterviewDetails(resignationId: string) {
     const supabase = await createClient();
 
-    // 1. Fetch Resignation + Employee Profile
+    // 1. Fetch Resignation + Employee Details
     const { data: resignation, error: resError } = await supabase
         .from('resignations')
         .select(`
-      *,
-      employee:profiles!resignations_employee_id_fkey (*)
-    `)
+            *,
+            employee_details (
+                full_name,
+                department,
+                employee_number,
+                current_position,
+                date_hired,
+                immediate_superior,
+                resignation_date
+            ),
+            profiles (
+                email,
+                role
+            )
+        `)
         .eq('id', resignationId)
         .single();
+
 
     if (resError) {
         console.error('Error fetching resignation:', resError);
@@ -176,27 +189,36 @@ export async function getAllInterviews() {
             created_at,
             scheduled_interview_date,
             exit_date,
-            employee:profiles (
-                id,
+            employee_details (
                 full_name,
-                email,
-                role,
                 department
+            ),
+            employee_profile:profiles (
+                id,
+                email,
+                role
             )
         `)
         .in('status', ['pending', 'scheduled'])
         .order('created_at', { ascending: false });
+
 
     if (error) {
         console.error('Error fetching interviews:', error);
         return { success: false, error: 'Failed to fetch interviews' };
     }
 
-    // Transform data to ensure employee is a single object (Supabase sometimes returns array for joins)
+    // Transform data to ensure employee is a single object
     const formattedInterviews = interviews?.map(interview => ({
         ...interview,
-        employee: Array.isArray(interview.employee) ? interview.employee[0] : interview.employee
+        employee: {
+            // @ts-ignore
+            ...interview.employee_details,
+            // @ts-ignore
+            ...interview.employee_profile
+        }
     }));
+
 
     return { success: true, data: formattedInterviews };
 }

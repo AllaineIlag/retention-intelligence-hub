@@ -6,31 +6,32 @@ import {
     getTurnoverTrends,
     getDepartmentBreakdown,
     getCountryStats,
-    getExitQuestionStats
+    getExitQuestionStats,
+    AnalyticsFilters // Ensure this is imported
 } from '@/app/actions/analytics';
 import { StatCards } from '@/components/dashboard/stat-cards';
 import { RecentResignationsTable } from '@/components/dashboard/recent-resignations-table';
-import { HeroTurnoverChart } from '@/components/dashboard/analytics/charts/HeroTurnoverChart';
-import { QuickWinsCharts } from '@/components/dashboard/analytics/charts/QuickWinsCharts';
-import { RingMetricCard } from '@/components/dashboard/analytics/charts/RingMetricCard';
-import { CountryPieChart } from '@/components/dashboard/analytics/charts/CountryPieChart';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TurnoverTrendCard } from '@/components/dashboard/analytics/charts/TurnoverTrendCard';
+import { DepartmentDistributionCard } from '@/components/dashboard/analytics/charts/DepartmentDistributionCard';
+import { TurnoverRateCard } from '@/components/dashboard/analytics/kpi/TurnoverRateCard';
+import { TopExitReasonCard } from '@/components/dashboard/analytics/kpi/TopExitReasonCard';
+import { PromoterScoreCard } from '@/components/dashboard/analytics/kpi/PromoterScoreCard';
+import { AvgTenureCard } from '@/components/dashboard/analytics/kpi/AvgTenureCard';
+import { SmartDonutCard } from '@/components/dashboard/analytics/charts/SmartDonutCard';
+import { DestinationExitsCard } from '@/components/dashboard/analytics/charts/DestinationExitsCard';
 
-import { parseISO } from 'date-fns';
-import { AnalyticsFilters } from '@/app/actions/analytics';
+import { parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
-export default async function DashboardPage({
-    searchParams
-}: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
-    const params = await searchParams;
 
-    // Extract Filters
+// Default Filters: Current Month
+// We no longer read from URL params as filtering is decentralized.
+export default async function DashboardPage() {
+    const today = new Date();
     const filters: AnalyticsFilters = {
-        startDate: params.from ? parseISO(params.from as string) : undefined,
-        endDate: params.to ? parseISO(params.to as string) : undefined,
-        department: params.dept ? [params.dept as string] : undefined,
+        startDate: startOfMonth(today),
+        endDate: endOfMonth(today),
+        department: undefined,
     };
 
     return (
@@ -95,45 +96,37 @@ async function KPISection({ filters }: { filters: AnalyticsFilters }) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-            <RingMetricCard
-                title="Turnover Rate"
-                value={`${summary.turnoverRate.toFixed(1)}%`}
-                subtext="Monthly Rate"
-                progress={Math.min((summary.turnoverRate / 3) * 100, 100)}
-                color={summary.turnoverRate > 2.2 ? '#f43f5e' : '#10b981'}
+            <TurnoverRateCard
+                initialRate={summary.turnoverRate}
             />
 
-            <RingMetricCard
-                title="Top Exit Reason"
-                value={summary.primaryDriver ? `${summary.primaryDriver.percentage}%` : '0%'}
-                subtext={summary.primaryDriver ? summary.primaryDriver.reason : 'No Data'}
-                progress={summary.primaryDriver ? summary.primaryDriver.percentage : 0}
-                color="#f59e0b"
+            <TopExitReasonCard
+                initialValue={summary.primaryDriver ? summary.primaryDriver.reason : 'No Data'}
+                initialPercent={summary.primaryDriver ? summary.primaryDriver.percentage : 0}
             />
 
-            <RingMetricCard
-                title="Would Recommend"
-                value={`${recPercent}%`}
-                subtext="Promoter Score"
-                progress={recPercent}
-                color={recPercent >= 50 ? '#10b981' : '#f43f5e'}
+            <PromoterScoreCard
+                initialPercent={recPercent}
             />
 
-            <RingMetricCard
-                title="Avg. Tenure"
-                value={`${summary.avgTenureMonths} mo`}
-                subtext="Length of Service"
-                progress={Math.min((summary.avgTenureMonths / 36) * 100, 100)}
-                color="#6366f1"
+            <AvgTenureCard
+                initialValue={summary.avgTenureMonths}
             />
         </div>
     );
 }
 
+
 async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
+    // For Trend Card, we want to show a 6-month history by default, regardless of the global filter
+    const trendFilters = {
+        ...filters,
+        startDate: subMonths(filters.startDate || new Date(), 5), // 5 months back + current month = 6 months
+    };
+
     const [deptRes, trendRes] = await Promise.all([
         getDepartmentBreakdown(filters),
-        getTurnoverTrends(filters)
+        getTurnoverTrends(trendFilters)
     ]);
 
     const deptData = deptRes.success ? deptRes.data?.map((d, i) => ({
@@ -144,10 +137,10 @@ async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
     const monthData = trendRes.success ? trendRes.data || [] : [];
 
     return (
-        <HeroTurnoverChart
-            deptData={deptData as any}
-            monthData={monthData as any}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <TurnoverTrendCard data={monthData as any} />
+            <DepartmentDistributionCard data={deptData as any} />
+        </div>
     );
 }
 
@@ -158,13 +151,38 @@ async function QuickWinsSection({ filters }: { filters: AnalyticsFilters }) {
     const getChartData = (key: string) => stats.find(s => s.question_key === key)?.stats || [];
 
     return (
-        <QuickWinsCharts
-            pullFactors={getChartData('reason_for_leaving')}
-            careerGrowth={getChartData('career_growth')}
-            payPerception={getChartData('rate_of_pay')}
-            benefits={getChartData('benefits')}
-            workload={getChartData('workload')}
-        />
+        <div className="flex flex-col gap-4 h-full min-h-0">
+            <SmartDonutCard
+                title="Key Pull Factors"
+                questionKey="reason_for_leaving"
+                initialData={getChartData('reason_for_leaving')}
+                className="flex-1"
+            />
+            <SmartDonutCard
+                title="Career Growth"
+                questionKey="career_growth"
+                initialData={getChartData('career_growth')}
+                className="flex-1"
+            />
+            <SmartDonutCard
+                title="Pay Perception"
+                questionKey="rate_of_pay"
+                initialData={getChartData('rate_of_pay')}
+                className="flex-1"
+            />
+            <SmartDonutCard
+                title="Feel About Benefits"
+                questionKey="benefits"
+                initialData={getChartData('benefits')}
+                className="flex-1"
+            />
+            <SmartDonutCard
+                title="Amount of Work"
+                questionKey="workload"
+                initialData={getChartData('workload')}
+                className="flex-1"
+            />
+        </div>
     );
 }
 
@@ -177,12 +195,9 @@ async function RecentResignationsSection({ filters }: { filters: AnalyticsFilter
 
 async function CountrySection({ filters }: { filters: AnalyticsFilters }) {
     const res = await getCountryStats(filters);
-    const data = res.success ? res.data?.map((d, i) => ({
-        ...d,
-        fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#64748b'][i % 5]
-    })) : [];
+    const data = res.success ? res.data || [] : [];
 
-    return <CountryPieChart data={data as any} />;
+    return <DestinationExitsCard initialData={data} />;
 }
 
 
