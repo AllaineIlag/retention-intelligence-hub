@@ -19,27 +19,24 @@ export function PageFilterBar() {
     const { pageFilter, setPageFilter, resetPageFilter } = usePageFilter();
 
     return (
-        <div className="flex items-center justify-between gap-4 p-2 mb-6 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-center gap-2 pl-2">
-                <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Page Filter</span>
-                <div className="flex items-center gap-1 ml-2">
-                    {FILTER_OPTIONS.map((opt) => (
-                        <Button
-                            key={opt.mode}
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setPageFilter(opt.mode)}
-                            className={cn(
-                                "h-8 px-3 text-xs rounded-xl transition-all duration-200",
-                                pageFilter === opt.mode
-                                    ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5 border border-transparent"
-                            )}
-                        >
-                            {opt.label}
-                        </Button>
-                    ))}
-                </div>
+        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300">
+            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/5">
+                {FILTER_OPTIONS.map((opt) => (
+                    <Button
+                        key={opt.mode}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPageFilter(opt.mode)}
+                        className={cn(
+                            "h-7 px-2.5 text-[10px] font-medium rounded-md transition-all duration-200",
+                            pageFilter === opt.mode
+                                ? "bg-indigo-500/20 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                        )}
+                    >
+                        {opt.label}
+                    </Button>
+                ))}
             </div>
 
             {pageFilter && (
@@ -47,10 +44,11 @@ export function PageFilterBar() {
                     variant="ghost"
                     size="sm"
                     onClick={resetPageFilter}
-                    className="h-8 px-3 text-xs text-zinc-500 hover:text-white hover:bg-white/5 rounded-xl transition-all duration-200 group"
+                    className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-md transition-all duration-200"
+                    title="Reset Filter"
                 >
-                    <X className="w-3.5 h-3.5 mr-1.5 transition-transform duration-200 group-hover:rotate-90" />
-                    Reset
+                    <X className="w-3.5 h-3.5" />
+                    <span className="sr-only">Reset</span>
                 </Button>
             )}
         </div>

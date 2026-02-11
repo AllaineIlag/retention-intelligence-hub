@@ -80,7 +80,19 @@ export default function PendingUsersTable() {
     }
 
     if (users.length === 0) {
-        return null; // Don't show if empty
+        return (
+            <Card className="border-white/5 bg-white/[0.02] mb-8">
+                <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <CheckCircle2 className="h-5 w-5" />
+                        <CardTitle className="text-lg">Pending Access Requests</CardTitle>
+                    </div>
+                    <CardDescription>
+                        No pending requests. All users are approved.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        );
     }
 
     return (

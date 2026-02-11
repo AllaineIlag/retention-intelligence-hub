@@ -133,6 +133,43 @@ export async function getRecentInvites() {
     return { success: true, data: invites };
 }
 
+export async function getRecentAccounts() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    // Check permissions
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    const { data: accounts, error } = await supabase
+        .from('profiles')
+        .select(`
+            *,
+            admin_details (
+                full_name
+            )
+        `)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (error) return { error: error.message };
+
+    // Flatten logic
+    const flattened = accounts?.map(p => ({
+        ...p,
+        full_name: p.admin_details?.full_name || 'Unknown'
+    }));
+
+    return { success: true, data: flattened };
+}
+
 export async function getPendingUserCount() {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();

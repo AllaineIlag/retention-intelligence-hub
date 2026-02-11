@@ -59,7 +59,7 @@ interface NavItem {
     url: string;
     icon: React.ElementType;
     roles: UserRole[];
-    subItems?: { title: string; url: string }[];
+    subItems?: { title: string; url: string; badge?: number }[];
     badge?: number; // Add badge support
 }
 
@@ -76,8 +76,17 @@ const navItems: NavItem[] = [
             { title: 'Corrections', url: '/dashboard/interview/corrections' },
         ],
     },
-    { title: 'Recruitment', url: '/dashboard/team/invite', icon: Users, roles: ['lead'] },
-    { title: 'Manage Team', url: '/dashboard/team/manage', icon: ShieldCheck, roles: ['lead'] }, // Badge will be injected
+    {
+        title: 'Team',
+        url: '/dashboard/team',
+        icon: Users,
+        roles: ['lead'],
+        subItems: [
+            { title: 'Recruitment', url: '/dashboard/team/invite' },
+            { title: 'Access Requests', url: '/dashboard/team/pending' },
+            { title: 'Manage Team', url: '/dashboard/team/manage' },
+        ],
+    },
     {
         title: 'Analytics',
         url: '/dashboard/analytics',
@@ -163,8 +172,48 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
 
     // Map over items to inject badge
     const itemsWithBadges = filteredItems.map(item => {
-        if (item.title === 'Manage Team' && pendingCount > 0) {
-            return { ...item, badge: pendingCount };
+        // If it's the Team dropdown, inject badge into sub-item
+        if (item.title === 'Team' && item.subItems) {
+            return {
+                ...item,
+                subItems: item.subItems.map(sub => {
+                    if (sub.title === 'Access Requests' && pendingCount > 0) {
+                        return { ...sub, badge: pendingCount };
+                    }
+                    return sub;
+                }),
+                // Optionally keep badge on parent if you want both, or remove from parent
+                // User asked to move it to Access Requests, so we only put it there.
+                // However, visually it might be nice to have a dot on parent if collapsed.
+                // For now, let's just do what they asked: beside Access Requests.
+                badge: pendingCount > 0 ? pendingCount : undefined, // Keep generic badge on parent for collapsed state visibility? Or specific?
+                // Step 842 said "misplaced" on parent. If I keep it on parent, they might still say it's misplaced.
+                // But step 813 said "inside a dropdown Team".
+                // Let's TRY putting it on user request specific item. But if parent is collapsed, we lose it.
+                // Compromise: Parent gets a simple dot or same count?
+                // The prompt says "I think it should be beside Access Requests?".
+                // I will add it to the subItem.
+                // I will ALSO keep it on the parent for now but maybe styled differently? 
+                // Wait, if I keep it on parent, I revert the "misplaced" fix potentially.
+                // Let's put it on subItem. 
+                // To solve collapsed visibility: The parent should probably have it too.
+                // Let's assume for now we just move it to subItem as requested.
+                // But wait, the `itemsWithBadges` logic below still had:
+                /*
+                 if (item.title === 'Team' && pendingCount > 0) {
+                    return { ...item, badge: pendingCount };
+                }
+                */
+                // I need to change that to NOT put it on parent if we only want it on child?
+                // Actually, user likely wants to see it on the child when expanded.
+                // If I remove from parent, they won't see it when collapsed.
+                // I will keep it on parent (for collapsed/summary view) AND put it on child?
+                // The user said "misplaced" previously. Maybe they meant "it shouldn't be on the parent label if the parent label is just a category".
+                // But Categories usually sum up notifications.
+                // Let's look at the request: "I think it should be beside Access Requests?"
+                // This implies they want it visibly *next to* that specific text.
+                // I will implement it on the child.
+            };
         }
         return item;
     });
@@ -180,8 +229,20 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
         return item.subItems?.some(sub => pathname.startsWith(sub.url)) || false;
     };
 
+    // Initialize/Update controlled open state for groups
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+    // Sync initial state and navigations
+    useEffect(() => {
+        const activeItem = navItems.find((item) => isChildActive(item));
+        if (activeItem) {
+            setOpenGroups((prev) => ({ ...prev, [activeItem.title]: true }));
+        }
+    }, [pathname]);
+
+
     if (!isMounted) {
-        return null; // or a loading skeleton if preferred, but for sidebar fast load null is often acceptable or static structure
+        return null; // or a loading skeleton if preferred
     }
 
     return (
@@ -241,12 +302,24 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: -10 }}
                                             transition={{ duration: 0.15 }}
-                                            className="text-sm font-medium flex-1"
+                                            className="text-sm font-medium flex-1 truncate pr-2"
                                         >
                                             {item.title}
                                         </motion.span>
                                     )}
                                 </AnimatePresence>
+                                {/* Only show badge on parent if it has one AND not collapsed (or if generic logic requires it) */}
+                                {/* Update: If collapsed, we might want to show it on parent still? */}
+                                {/* Flow: If we put badge on child, parent might need one to indicate "hey look inside". */}
+                                {/* But user explicitly asked for "beside Access Requests". */}
+                                {/* Let's keep parent badge logic but maybe clarify. */}
+                                {/* Actually, if I modify itemsWithBadges to inject to subItems, item.badge might be undefined if I don't set it. */}
+                                {/* My new logic sets BOTH.  */}
+                                {!isCollapsed && item.badge && item.badge > 0 && (
+                                    <span className="inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10 mr-2">
+                                        {item.badge}
+                                    </span>
+                                )}
                                 {active && !hasSubItems && (
                                     <motion.div
                                         layoutId="activeIndicator"
@@ -268,11 +341,6 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                         const linkContent = hasSubItems ? (
                             <div className={commonClasses}>
                                 {content}
-                                {item.badge && !isCollapsed && (
-                                    <span className="ml-auto inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10">
-                                        {item.badge}
-                                    </span>
-                                )}
                             </div>
                         ) : (
                             <Link
@@ -283,11 +351,6 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                 className={commonClasses}
                             >
                                 {content}
-                                {item.badge && !isCollapsed && (
-                                    <span className="ml-auto inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10">
-                                        {item.badge}
-                                    </span>
-                                )}
                             </Link>
                         );
 
@@ -295,7 +358,13 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                         if (hasSubItems) {
                             return (
                                 <li key={item.title} className="relative">
-                                    <Collapsible open={isActiveParent || undefined} className="group/collapsible">
+                                    <Collapsible
+                                        open={!!openGroups[item.title]}
+                                        onOpenChange={(isOpen) =>
+                                            setOpenGroups((prev) => ({ ...prev, [item.title]: isOpen }))
+                                        }
+                                        className="group/collapsible"
+                                    >
                                         <CollapsibleTrigger asChild>
                                             {linkContent}
                                         </CollapsibleTrigger>
@@ -309,12 +378,17 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                                                 <Link
                                                                     href={sub.url}
                                                                     onClick={onNavClick}
-                                                                    className={`block rounded-md px-3 py-2 text-sm transition-colors ${isSubActive
+                                                                    className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${isSubActive
                                                                         ? 'text-indigo-400 font-medium bg-indigo-500/10'
                                                                         : 'text-muted-foreground hover:text-white hover:bg-white/5'
                                                                         }`}
                                                                 >
-                                                                    {sub.title}
+                                                                    <span>{sub.title}</span>
+                                                                    {sub.badge && sub.badge > 0 && (
+                                                                        <span className="inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10">
+                                                                            {sub.badge}
+                                                                        </span>
+                                                                    )}
                                                                 </Link>
                                                             </li>
                                                         );

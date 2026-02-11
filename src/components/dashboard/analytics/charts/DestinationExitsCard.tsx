@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getCountryStats } from "@/app/actions/analytics"
-import { endOfMonth, subDays, subMonths } from "date-fns"
+import { endOfMonth, subDays, subMonths, startOfYear } from "date-fns"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { usePageFilter } from '@/components/dashboard/page-filter-context';
 
 interface DestinationExitsCardProps {
     initialData?: { name: string; value: number }[]
@@ -19,19 +20,39 @@ const COLORS = ['#14b8a6', '#10b981', '#6366f1', '#8b5cf6', '#f43f5e']
 
 export function DestinationExitsCard({ initialData = [], className }: DestinationExitsCardProps) {
     const [data, setData] = useState(initialData)
-    const [mode, setMode] = useState<'7d' | '30d' | '3m'>('30d')
+    const [mode, setMode] = useState<'7d' | '30d' | '3m' | '6m' | '12m' | 'ytd'>('30d')
     const [isLoading, setIsLoading] = useState(false)
+    const { pageFilter, version } = usePageFilter()
+    const lastVersionRef = useRef(version)
 
-    const handleToggle = async (newMode: '7d' | '30d' | '3m') => {
-        if (newMode === mode) return
+    // Sync with page-level filter
+    useEffect(() => {
+        if (version !== lastVersionRef.current) {
+            lastVersionRef.current = version
+            if (pageFilter) {
+                handleToggle(pageFilter, true)
+            } else {
+                handleToggle('30d', true)
+            }
+        }
+    }, [pageFilter, version])
+
+    const handleToggle = async (newMode: '7d' | '30d' | '3m' | '6m' | '12m' | 'ytd', force = false) => {
+        if (!force && newMode === mode) return
         setMode(newMode)
         setIsLoading(true)
 
         const today = new Date()
-        let startDate = subDays(today, 30)
+        let startDate: Date
 
-        if (newMode === '7d') startDate = subDays(today, 7)
-        else if (newMode === '3m') startDate = subMonths(today, 3)
+        switch (newMode) {
+            case '7d': startDate = subDays(today, 7); break
+            case '3m': startDate = subMonths(today, 3); break
+            case '6m': startDate = subMonths(today, 6); break
+            case '12m': startDate = subMonths(today, 12); break
+            case 'ytd': startDate = startOfYear(today); break
+            default: startDate = subDays(today, 30); break
+        }
 
         const filters = {
             startDate,
@@ -78,6 +99,9 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('6m')} className="text-xs">Last 6 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('12m')} className="text-xs">Last 12 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('ytd')} className="text-xs">Year to Date</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </CardHeader>

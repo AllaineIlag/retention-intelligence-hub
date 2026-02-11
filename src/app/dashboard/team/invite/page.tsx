@@ -1,6 +1,6 @@
-import InviteUserCard from '@/components/dashboard/team/InviteUserCard';
-import { RecentInvitesTable } from '@/components/dashboard/team/RecentInvitesTable';
-import { getRecentInvites } from '@/app/actions/user-actions';
+import UniversalLinkCard from '@/components/dashboard/team/UniversalLinkCard';
+import { RecentAccountsTable } from '@/components/dashboard/team/RecentAccountsTable';
+import { getRecentAccounts } from '@/app/actions/user-actions';
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -36,13 +36,13 @@ export default async function InvitePage() {
                 </h2>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                    <InviteUserCard />
+            <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+                <div className="w-full">
+                    <UniversalLinkCard />
                 </div>
-                <div className="col-span-1 md:col-span-2 lg:col-span-4">
+                <div className="w-full">
                     <Suspense fallback={<TableSkeleton />}>
-                        <InvitesList />
+                        <AccountsList />
                     </Suspense>
                 </div>
             </div>
@@ -50,9 +50,9 @@ export default async function InvitePage() {
     );
 }
 
-async function InvitesList() {
-    const { data: invites } = await getRecentInvites();
-    return <RecentInvitesTable invites={invites || []} />;
+async function AccountsList() {
+    const { data: accounts } = await getRecentAccounts();
+    return <RecentAccountsTable accounts={accounts || []} />;
 }
 
 function TableSkeleton() {

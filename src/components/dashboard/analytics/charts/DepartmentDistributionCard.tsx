@@ -32,7 +32,7 @@ interface DepartmentDistributionCardProps {
 export function DepartmentDistributionCard({ data: initialData, className }: DepartmentDistributionCardProps) {
     const [data, setData] = useState<TurnoverDataPoint[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
-    const [range, setRange] = useState("6m");
+    const [range, setRange] = useState("30d");
     const { pageFilter, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
@@ -43,13 +43,14 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
             if (pageFilter) {
                 handleRangeChange(pageFilter, true);
             } else {
-                handleRangeChange('6m', true);
+                handleRangeChange('30d', true);
             }
         }
     }, [pageFilter, version]);
 
     const handleRangeChange = async (value: string, force = false) => {
         if (!force && value === range) return;
+        setRange(value); // Fix: Always update local state when forced or changed
         setIsLoading(true);
 
         const today = new Date();
@@ -61,7 +62,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
             case '3m': startDate = subMonths(today, 3); break;
             case '12m': startDate = subMonths(today, 12); break;
             case 'ytd': startDate = startOfYear(today); break;
-            default: startDate = subMonths(today, 6); break; // 6m
+            default: startDate = subDays(today, 30); break; // 30d default
         }
 
         try {
