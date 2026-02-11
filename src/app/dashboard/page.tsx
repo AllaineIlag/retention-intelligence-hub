@@ -24,6 +24,9 @@ import { DestinationExitsCard } from '@/components/dashboard/analytics/charts/De
 import { parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 
+import { PageFilterProvider, usePageFilter } from '@/components/dashboard/page-filter-context';
+import { PageFilterBar } from '@/components/dashboard/page-filter-bar';
+
 // Default Filters: Current Month
 // We no longer read from URL params as filtering is decentralized.
 export default async function DashboardPage() {
@@ -35,43 +38,47 @@ export default async function DashboardPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-700 p-2">
-            {/* MAIN GRID */}
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
-                <div className="lg:col-span-3 space-y-6">
-                    <div className="w-full">
-                        <Suspense fallback={<StatsSkeleton />}>
-                            <KPISection filters={filters} />
-                        </Suspense>
-                    </div>
+        <PageFilterProvider>
+            <div className="space-y-6 animate-in fade-in duration-700 p-2">
+                <PageFilterBar />
 
-                    <div className="w-full">
-                        <Suspense fallback={<ChartSkeleton />}>
-                            <HeroSection filters={filters} />
-                        </Suspense>
-                    </div>
-
-                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
-                        <div className="lg:col-span-7">
-                            <Suspense fallback={<TableSkeleton />}>
-                                <RecentResignationsSection filters={filters} />
+                {/* MAIN GRID */}
+                <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
+                    <div className="lg:col-span-3 space-y-6">
+                        <div className="w-full">
+                            <Suspense fallback={<StatsSkeleton />}>
+                                <KPISection filters={filters} />
                             </Suspense>
                         </div>
-                        <div className="lg:col-span-3">
-                            <Suspense fallback={<WidgetSkeleton />}>
-                                <CountrySection filters={filters} />
+
+                        <div className="w-full">
+                            <Suspense fallback={<ChartSkeleton />}>
+                                <HeroSection filters={filters} />
                             </Suspense>
                         </div>
-                    </div>
-                </div>
 
-                <div className="lg:col-span-1 h-full">
-                    <Suspense fallback={<WidgetSkeleton />}>
-                        <QuickWinsSection filters={filters} />
-                    </Suspense>
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
+                            <div className="lg:col-span-7">
+                                <Suspense fallback={<TableSkeleton />}>
+                                    <RecentResignationsSection filters={filters} />
+                                </Suspense>
+                            </div>
+                            <div className="lg:col-span-3">
+                                <Suspense fallback={<WidgetSkeleton />}>
+                                    <CountrySection filters={filters} />
+                                </Suspense>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-1 h-full">
+                        <Suspense fallback={<WidgetSkeleton />}>
+                            <QuickWinsSection filters={filters} />
+                        </Suspense>
+                    </div>
                 </div>
             </div>
-        </div>
+        </PageFilterProvider>
     );
 }
 
@@ -90,7 +97,13 @@ async function KPISection({ filters }: { filters: AnalyticsFilters }) {
 
     let recPercent = 0;
     if (recStats && recStats.totalResponses > 0) {
-        const promoters = recStats.stats.find(s => s.name === 'Yes')?.value || 0;
+        const promoters = recStats.stats.reduce((acc, curr) => {
+            const score = parseInt(curr.name, 10);
+            if (!isNaN(score) && score >= 90) return acc + curr.value;
+            // Fallback for legacy binary data
+            if (curr.name === 'Yes') return acc + curr.value;
+            return acc;
+        }, 0);
         recPercent = Math.round((promoters / recStats.totalResponses) * 100);
     }
 

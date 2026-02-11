@@ -68,6 +68,7 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
                             variant="ghost"
                             size="sm"
                             className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                            suppressHydrationWarning
                         >
                             {mode.toUpperCase()}
                             <ChevronDown className="h-3 w-3" />

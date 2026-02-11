@@ -133,6 +133,100 @@ export async function getRecentInvites() {
     return { success: true, data: invites };
 }
 
+export async function getPendingUserCount() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return 0;
+
+    const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+    if (error) {
+        console.error('Error fetching pending count:', JSON.stringify(error, null, 2));
+        return 0;
+    }
+
+    return count || 0;
+}
+
+export async function getPendingUsers() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    // Check permissions
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    const { data: users, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+
+    return { success: true, data: users };
+}
+
+export async function approveUser(userId: string) {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    // Check permissions
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    // Update status in profiles
+    const { error } = await supabase
+        .from('profiles')
+        .update({ status: 'active' })
+        .eq('id', userId);
+
+    if (error) return { error: error.message };
+
+    return { success: true };
+}
+
+export async function rejectUser(userId: string) {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    // Check permissions
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    // Delete user from Auth (hard delete)
+    const { error } = await adminSupabase.auth.admin.deleteUser(userId);
+
+    if (error) return { error: error.message };
+
+    return { success: true };
+}
+
 export async function exportResignations() {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();

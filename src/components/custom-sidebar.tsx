@@ -48,6 +48,10 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 
+// Update navItems logic to handle dynamic badges (moved inside component for access to props, or pass badges as map)
+// Re-defining navItems inside component or accepting a prop to render badges.
+// Strategy: pass 'pendingCount' to SidebarInner and modify the loop.
+
 type UserRole = 'lead' | 'interviewer' | 'employee';
 
 interface NavItem {
@@ -56,6 +60,7 @@ interface NavItem {
     icon: React.ElementType;
     roles: UserRole[];
     subItems?: { title: string; url: string }[];
+    badge?: number; // Add badge support
 }
 
 const navItems: NavItem[] = [
@@ -72,7 +77,7 @@ const navItems: NavItem[] = [
         ],
     },
     { title: 'Recruitment', url: '/dashboard/team/invite', icon: Users, roles: ['lead'] },
-    { title: 'Manage Team', url: '/dashboard/team/manage', icon: ShieldCheck, roles: ['lead'] },
+    { title: 'Manage Team', url: '/dashboard/team/manage', icon: ShieldCheck, roles: ['lead'] }, // Badge will be injected
     {
         title: 'Analytics',
         url: '/dashboard/analytics',
@@ -148,12 +153,21 @@ interface SidebarContentProps {
     email: string;
     isCollapsed: boolean;
     onNavClick?: () => void;
+    pendingCount: number;
 }
 
-function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentProps) {
+function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: SidebarContentProps) {
     const pathname = usePathname();
     const filteredItems = navItems.filter((item) => item.roles.includes(role));
     const getInitials = (email: string) => email.substring(0, 2).toUpperCase();
+
+    // Map over items to inject badge
+    const itemsWithBadges = filteredItems.map(item => {
+        if (item.title === 'Manage Team' && pendingCount > 0) {
+            return { ...item, badge: pendingCount };
+        }
+        return item;
+    });
 
     // Fix hydration mismatch by only rendering Radix components on client
     const [isMounted, setIsMounted] = useState(false);
@@ -207,7 +221,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                     )}
                 </AnimatePresence>
                 <ul className="space-y-1">
-                    {filteredItems.map((item) => {
+                    {itemsWithBadges.map((item) => {
                         const Icon = item.icon;
                         const hasSubItems = item.subItems && item.subItems.length > 0;
                         const active = pathname === item.url || isChildActive(item);
@@ -254,6 +268,11 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                         const linkContent = hasSubItems ? (
                             <div className={commonClasses}>
                                 {content}
+                                {item.badge && !isCollapsed && (
+                                    <span className="ml-auto inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </div>
                         ) : (
                             <Link
@@ -264,6 +283,11 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
                                 className={commonClasses}
                             >
                                 {content}
+                                {item.badge && !isCollapsed && (
+                                    <span className="ml-auto inline-flex items-center justify-center rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-bold h-5 min-w-[20px] px-1 border border-amber-500/10">
+                                        {item.badge}
+                                    </span>
+                                )}
                             </Link>
                         );
 
@@ -363,9 +387,10 @@ function SidebarInner({ role, email, isCollapsed, onNavClick }: SidebarContentPr
 interface CustomSidebarProps {
     role: UserRole;
     email: string;
+    pendingCount?: number;
 }
 
-export function CustomSidebar({ role, email }: CustomSidebarProps) {
+export function CustomSidebar({ role, email, pendingCount = 0 }: CustomSidebarProps) {
     const { isCollapsed, isMobileOpen, isMobile, toggleSidebar, closeMobile } = useSidebarContext();
 
     const sidebarVariants = {
@@ -391,6 +416,7 @@ export function CustomSidebar({ role, email }: CustomSidebarProps) {
                             email={email}
                             isCollapsed={false}
                             onNavClick={closeMobile}
+                            pendingCount={pendingCount}
                         />
                     </div>
                 </SheetContent>
@@ -415,7 +441,7 @@ export function CustomSidebar({ role, email }: CustomSidebarProps) {
                 {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
             </button>
 
-            <SidebarInner role={role} email={email} isCollapsed={isCollapsed} />
+            <SidebarInner role={role} email={email} isCollapsed={isCollapsed} pendingCount={pendingCount} />
         </motion.aside>
     );
 }

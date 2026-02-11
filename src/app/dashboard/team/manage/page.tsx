@@ -1,4 +1,5 @@
 import TeamMembersTable from '@/components/dashboard/team/TeamMembersTable';
+import PendingUsersTable from '@/components/dashboard/team/PendingUsersTable';
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -32,7 +33,8 @@ export default async function ManagePage() {
                 </h2>
             </div>
 
-            <div className="w-full">
+            <div className="w-full space-y-8">
+                <PendingUsersTable />
                 <TeamMembersTable />
             </div>
         </div>

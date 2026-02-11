@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -29,20 +30,107 @@ export async function GET(request: Request) {
 
             if (user) {
                 try {
+                    // CHECK FOR INVITE COOKIE
+                    const cookieStore = await cookies();
+                    const inviteSlug = cookieStore.get('pending_invite_slug')?.value;
+
+                    if (inviteSlug) {
+                        // Consume the cookie
+                        cookieStore.delete('pending_invite_slug');
+                        console.log('[Gatekeeper] Processing Invite Slug:', inviteSlug, 'for user:', user.email);
+
+                        if (inviteSlug === 'hr-team') {
+                            // HR/Interviewer Invite -> Create as Pending Interviewer
+                            await supabase.from('profiles').upsert({
+                                id: user.id,
+                                email: user.email,
+                                full_name: user.user_metadata.full_name || user.email?.split('@')[0],
+                                avatar_url: user.user_metadata.avatar_url,
+                                role: 'interviewer',
+                                status: 'pending'
+                            });
+                            return NextResponse.redirect(`${baseUrl}/dashboard`);
+                        }
+
+                        if (inviteSlug === 'exit-process') {
+                            // Employee Invite -> Check against Resignations (Exit Case)
+                            const { data: resignation } = await supabase
+                                .from('resignations')
+                                .select('id')
+                                .eq('personal_email', user.email)
+                                .single();
+
+                            if (resignation) {
+                                console.log('[Gatekeeper] Exit Case Found. Linking User:', user.id, 'to Resignation:', resignation.id);
+                                // Link User to Resignation
+                                await supabase
+                                    .from('resignations')
+                                    .update({ employee_id: user.id })
+                                    .eq('id', resignation.id);
+
+                                // Create Active Employee Profile
+                                await supabase.from('profiles').upsert({
+                                    id: user.id,
+                                    email: user.email,
+                                    full_name: user.user_metadata.full_name || user.email?.split('@')[0],
+                                    avatar_url: user.user_metadata.avatar_url,
+                                    role: 'employee',
+                                    status: 'active'
+                                });
+                                return NextResponse.redirect(`${baseUrl}/exit-form`);
+                            } else {
+                                console.warn('[Gatekeeper] No Exit Case found for:', user.email);
+                                // No matching case found
+                                return NextResponse.redirect(`${baseUrl}/join/no-case-found`);
+                            }
+                        }
+                    }
+
+                    // EXISTING LOGIC (Fallback for direct logins)
+                    // Check if profile exists
                     const { data: profile, error: profileError } = await supabase
                         .from('profiles')
-                        .select('role')
+                        .select('role, id')
                         .eq('id', user.id)
                         .single();
 
-                    if (profileError || !profile) {
-                        console.error('Auth Callback Error: Profile not found for user', user.id);
-                        return NextResponse.redirect(`${baseUrl}/login?message=Profile not found. Please contact support.`);
+                    if (profileError && profileError.code === 'PGRST116') {
+                        // Profile does not exist - Create new 'pending' profile (Default Gatekeeper Logic)
+                        console.log('[Gatekeeper] New user detected (No Invite). Creating pending profile for:', user.email);
+
+                        const { error: insertError } = await supabase
+                            .from('profiles')
+                            .insert([
+                                {
+                                    id: user.id,
+                                    email: user.email,
+                                    full_name: user.user_metadata.full_name || user.email?.split('@')[0],
+                                    avatar_url: user.user_metadata.avatar_url,
+                                    role: 'employee', // Default to employee
+                                    status: 'pending' // Default to pending until HR activation
+                                }
+                            ]);
+
+                        if (insertError) {
+                            console.error('[Gatekeeper] Profile creation failed:', insertError);
+                            return NextResponse.redirect(`${baseUrl}/login?message=Account creation failed.`);
+                        }
+
+                        // Default redirection for new users
+                        return NextResponse.redirect(`${baseUrl}/exit-form`);
+                    } else if (profile) {
+                        // Profile exists - Check Role
+                        if (profile.role === 'employee') {
+                            return NextResponse.redirect(`${baseUrl}/exit-form`);
+                        }
+                        // Interviewer/Admin/Lead
+                        return NextResponse.redirect(`${baseUrl}/dashboard`);
+                    } else {
+                        // Unexpected error fetching profile
+                        console.error('[Gatekeeper] Profile fetch error:', profileError);
+                        return NextResponse.redirect(`${baseUrl}/login?message=Profile access error.`);
                     }
 
-                    if (profile.role === 'employee') {
-                        return NextResponse.redirect(`${baseUrl}/exit-form`);
-                    }
                 } catch (err) {
                     console.error('Auth Callback Unexpected Error:', err);
                     return NextResponse.redirect(`${baseUrl}/login?message=System error during login.`);

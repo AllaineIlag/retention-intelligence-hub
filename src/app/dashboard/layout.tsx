@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { CreateResignationDialog } from '@/components/dashboard/create-resignation-dialog';
 import { NotificationBell } from '@/components/dashboard/notification-bell';
+import { getPendingUserCount } from '@/app/actions/user-actions';
 
 export default async function DashboardLayout({
     children,
@@ -22,6 +23,9 @@ export default async function DashboardLayout({
     }
 
     // Fetch user role from profiles table
+    // Optimizing by parallelizing with user count if needed, but role is needed first for redirects.
+    // Actually, can fetch both. But count is only relevant for lead.
+
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -35,10 +39,20 @@ export default async function DashboardLayout({
         redirect('/exit-form');
     }
 
+    // Fetch pending count only for leads
+    let pendingCount = 0;
+    if (role === 'lead') {
+        try {
+            pendingCount = await getPendingUserCount();
+        } catch (err) {
+            console.error('Failed to load pending users count:', err);
+        }
+    }
+
     return (
         <CustomSidebarProvider>
             <div className="flex h-screen overflow-hidden bg-background" suppressHydrationWarning>
-                <CustomSidebar role={role} email={user.email || 'Unknown'} />
+                <CustomSidebar role={role} email={user.email || 'Unknown'} pendingCount={pendingCount} />
                 <div className="flex flex-1 flex-col overflow-hidden">
                     <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6 bg-[#0f0f11]/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-300">
                         <div className="flex items-center gap-4">

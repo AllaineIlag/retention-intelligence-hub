@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     BarChart,
     Bar,
@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { TurnoverDataPoint, getDepartmentBreakdown } from '@/app/actions/analytics';
 import { cn } from '@/lib/utils';
 import { CardFilter, FilterState } from '@/components/dashboard/card-filter';
-import { startOfMonth, endOfMonth, subMonths, startOfYear } from 'date-fns';
+import { startOfMonth, endOfMonth, subDays, subMonths, startOfYear } from 'date-fns';
 import {
     Select,
     SelectContent,
@@ -22,6 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { usePageFilter } from '@/components/dashboard/page-filter-context';
 
 interface DepartmentDistributionCardProps {
     data: TurnoverDataPoint[];
@@ -32,20 +33,35 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
     const [data, setData] = useState<TurnoverDataPoint[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [range, setRange] = useState("6m");
+    const { pageFilter, version } = usePageFilter();
+    const lastVersionRef = useRef(version);
 
-    const handleRangeChange = async (value: string) => {
-        setRange(value);
+    // Sync with page-level filter
+    useEffect(() => {
+        if (version !== lastVersionRef.current) {
+            lastVersionRef.current = version;
+            if (pageFilter) {
+                handleRangeChange(pageFilter, true);
+            } else {
+                handleRangeChange('6m', true);
+            }
+        }
+    }, [pageFilter, version]);
+
+    const handleRangeChange = async (value: string, force = false) => {
+        if (!force && value === range) return;
         setIsLoading(true);
 
         const today = new Date();
-        let startDate = subMonths(today, 5); // Default 6m
+        let startDate: Date;
 
-        if (value === '3m') {
-            startDate = subMonths(today, 2);
-        } else if (value === '12m') {
-            startDate = subMonths(today, 11);
-        } else if (value === 'ytd') {
-            startDate = startOfYear(today);
+        switch (value) {
+            case '7d': startDate = subDays(today, 7); break;
+            case '30d': startDate = subDays(today, 30); break;
+            case '3m': startDate = subMonths(today, 3); break;
+            case '12m': startDate = subMonths(today, 12); break;
+            case 'ytd': startDate = startOfYear(today); break;
+            default: startDate = subMonths(today, 6); break; // 6m
         }
 
         try {
@@ -90,10 +106,12 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                             <SelectValue placeholder="Select range" />
                         </SelectTrigger>
                         <SelectContent className="border-white/10 bg-zinc-950">
+                            <SelectItem value="7d">Last 7 Days</SelectItem>
+                            <SelectItem value="30d">Last 30 Days</SelectItem>
                             <SelectItem value="3m">Last 3 Months</SelectItem>
                             <SelectItem value="6m">Last 6 Months</SelectItem>
-                            <SelectItem value="ytd">Year to Date</SelectItem>
                             <SelectItem value="12m">Last 12 Months</SelectItem>
+                            <SelectItem value="ytd">Year to Date</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

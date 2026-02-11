@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { getExitQuestionStats } from "@/app/actions/analytics"
-import { endOfMonth, subDays, subMonths } from "date-fns"
+import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 
 interface PromoterScoreCardProps {
@@ -17,19 +18,39 @@ interface PromoterScoreCardProps {
 
 export function PromoterScoreCard({ initialPercent = 0, className }: PromoterScoreCardProps) {
     const [percent, setPercent] = useState(initialPercent)
-    const [mode, setMode] = useState<'7d' | '30d' | '3m'>('30d')
+    const [mode, setMode] = useState<'7d' | '30d' | '3m' | '6m' | '12m' | 'ytd'>('30d')
     const [isLoading, setIsLoading] = useState(false)
+    const { pageFilter, version } = usePageFilter()
+    const lastVersionRef = useRef(version)
 
-    const handleToggle = async (newMode: '7d' | '30d' | '3m') => {
-        if (newMode === mode) return
+    // Sync with page-level filter
+    useEffect(() => {
+        if (version !== lastVersionRef.current) {
+            lastVersionRef.current = version
+            if (pageFilter) {
+                handleToggle(pageFilter, true)
+            } else {
+                handleToggle('30d', true)
+            }
+        }
+    }, [pageFilter, version])
+
+    const handleToggle = async (newMode: '7d' | '30d' | '3m' | '6m' | '12m' | 'ytd', force = false) => {
+        if (!force && newMode === mode) return;
         setMode(newMode)
         setIsLoading(true)
 
         const today = new Date()
-        let startDate = subDays(today, 30)
+        let startDate: Date
 
-        if (newMode === '7d') startDate = subDays(today, 7)
-        else if (newMode === '3m') startDate = subMonths(today, 3)
+        switch (newMode) {
+            case '7d': startDate = subDays(today, 7); break
+            case '3m': startDate = subMonths(today, 3); break
+            case '6m': startDate = subMonths(today, 6); break
+            case '12m': startDate = subMonths(today, 12); break
+            case 'ytd': startDate = startOfYear(today); break
+            default: startDate = subDays(today, 30); break
+        }
 
         const filters = {
             startDate,
@@ -41,8 +62,16 @@ export function PromoterScoreCard({ initialPercent = 0, className }: PromoterSco
             if (res.success && res.data) {
                 const recStats = res.data.find(s => s.question_key === 'recommendation')
                 if (recStats && recStats.totalResponses > 0) {
-                    const promoters = recStats.stats.find(s => s.name === 'Yes')?.value || 0
-                    setPercent(Math.round((promoters / recStats.totalResponses) * 100))
+                    const promotersCount = recStats.stats.reduce((acc, curr) => {
+                        const score = parseInt(curr.name, 10)
+                        if (!isNaN(score) && score >= 90) {
+                            return acc + curr.value
+                        }
+                        if (curr.name === 'Yes') return acc + curr.value
+                        return acc
+                    }, 0)
+
+                    setPercent(Math.round((promotersCount / recStats.totalResponses) * 100))
                 } else {
                     setPercent(0)
                 }
@@ -55,9 +84,14 @@ export function PromoterScoreCard({ initialPercent = 0, className }: PromoterSco
     }
 
     const getLabel = () => {
-        if (mode === '7d') return 'Last 7 Days'
-        if (mode === '3m') return 'Last 3 Months'
-        return 'Last 30 Days'
+        switch (mode) {
+            case '7d': return 'Last 7 Days'
+            case '3m': return 'Last 3 Months'
+            case '6m': return 'Last 6 Months'
+            case '12m': return 'Last 12 Months'
+            case 'ytd': return 'Year to Date'
+            default: return 'Last 30 Days'
+        }
     }
 
     const color = percent >= 50 ? '#10b981' : '#f43f5e'
@@ -75,7 +109,7 @@ export function PromoterScoreCard({ initialPercent = 0, className }: PromoterSco
             )}
             <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground line-clamp-1">
-                    Would Recommend
+                    Recommend ✔️
                 </h3>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -83,15 +117,19 @@ export function PromoterScoreCard({ initialPercent = 0, className }: PromoterSco
                             variant="ghost"
                             size="sm"
                             className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                            suppressHydrationWarning
                         >
                             {mode.toUpperCase()}
                             <ChevronDown className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[120px] border-white/10 bg-zinc-950">
+                    <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('6m')} className="text-xs">Last 6 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('12m')} className="text-xs">Last 12 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggle('ytd')} className="text-xs">Year to Date</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </CardHeader>
