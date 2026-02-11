@@ -45,20 +45,20 @@ export function WorkloadScatter({ data, className }: WorkloadScatterProps) {
                                     type="number" dataKey="workloadScore" name="Workload"
                                     domain={[0.5, 5.5]}
                                     ticks={[1, 2, 3, 4, 5]}
-                                    tickFormatter={(v: number) => WORKLOAD_LABELS[v] || String(v)}
+                                    tickFormatter={(v: any) => WORKLOAD_LABELS[v] || String(v)}
                                     tick={{ fill: '#a1a1aa', fontSize: 10 }} axisLine={false} tickLine={false}
                                 />
                                 <YAxis
                                     type="number" dataKey="recommendationScore" name="Recommendation"
                                     domain={[0, 100]}
                                     tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false}
-                                    tickFormatter={(v: number) => `${v}`}
+                                    tickFormatter={(v: any) => `${v}`}
                                 />
                                 <ZAxis range={[50, 50]} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: 'rgba(0,0,0,0.85)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
                                     itemStyle={{ fontSize: '11px', color: '#fff' }}
-                                    formatter={(value: number, name: string) => {
+                                    formatter={(value: any, name: any) => {
                                         if (name === 'Workload') return WORKLOAD_LABELS[value] || value;
                                         if (name === 'Recommendation') return `${value}/100`;
                                         return value;

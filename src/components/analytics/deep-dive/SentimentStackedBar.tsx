@@ -53,7 +53,7 @@ export function SentimentStackedBar({ data, className }: SentimentStackedBarProp
                                 <Tooltip
                                     contentStyle={{ backgroundColor: 'rgba(0,0,0,0.85)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
                                     itemStyle={{ fontSize: '11px' }}
-                                    formatter={(value: number) => `${value}%`}
+                                    formatter={(value: any) => `${value}%`}
                                 />
                                 <Legend
                                     iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}

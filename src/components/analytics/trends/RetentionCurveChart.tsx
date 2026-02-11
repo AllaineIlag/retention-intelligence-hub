@@ -52,7 +52,7 @@ export function RetentionCurveChart({ data, className }: RetentionCurveProps) {
                                 }}
                                 itemStyle={{ color: '#fff', fontSize: '12px' }}
                                 labelStyle={{ color: '#a1a1aa', fontSize: '11px' }}
-                                formatter={(value: number) => [`${value.toFixed(1)}%`, 'Retention']}
+                                formatter={(value: any) => [`${Number(value).toFixed(1)}%`, 'Retention']}
                                 cursor={{ stroke: '#444' }}
                             />
                             <Line

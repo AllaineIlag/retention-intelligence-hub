@@ -44,7 +44,7 @@ export function DestinationDonut({ data, className }: DestinationDonutProps) {
                                     stroke="none"
                                     cornerRadius={4}
                                     paddingAngle={2}
-                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    label={({ name, percent }: any) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                                 >
                                     {data.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -58,7 +58,7 @@ export function DestinationDonut({ data, className }: DestinationDonutProps) {
                                         backdropFilter: 'blur(8px)',
                                     }}
                                     itemStyle={{ color: '#fff', fontSize: '12px' }}
-                                    formatter={(value: number) => [`${value} employees (${total > 0 ? Math.round((value / total) * 100) : 0}%)`, '']}
+                                    formatter={(value: any) => [`${value} employees (${total > 0 ? Math.round((Number(value) / total) * 100) : 0}%)`, '']}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
