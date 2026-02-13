@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { resend } from '@/lib/email';
 import ResignationAckEmail from '@/emails/ResignationAckEmail';
 import ResignationApprovalEmail from '@/emails/ResignationApprovalEmail';

@@ -183,9 +183,6 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                 }),
                 // Optionally keep badge on parent if you want both, or remove from parent
                 // User: "Move badge to Access Requests" -> Now "Recruitment"
-                badge: pendingCount > 0 ? pendingCount : undefined,
-                // However, visually it might be nice to have a dot on parent if collapsed.
-                // For now, let's just do what they asked: beside Access Requests.
                 badge: pendingCount > 0 ? pendingCount : undefined, // Keep generic badge on parent for collapsed state visibility? Or specific?
                 // Step 842 said "misplaced" on parent. If I keep it on parent, they might still say it's misplaced.
                 // But step 813 said "inside a dropdown Team".

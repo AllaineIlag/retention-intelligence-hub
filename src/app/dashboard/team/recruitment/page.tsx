@@ -5,6 +5,7 @@ import PendingUsersTable from '@/components/dashboard/team/PendingUsersTable';
 import { RecentAccountsTable } from '@/components/dashboard/team/RecentAccountsTable';
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { getRecentAccounts } from '@/app/actions/user-actions';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function RecruitmentPage() {
         .single();
 
     const role = profile?.role;
+    const { data: accounts } = await getRecentAccounts();
 
     if (role !== 'lead') {
         return (
@@ -63,7 +65,7 @@ export default async function RecruitmentPage() {
 
                 {/* Right Column: Roster (60% - 3/5 cols) */}
                 <div className="lg:col-span-3 flex flex-col h-full">
-                    <RecentAccountsTable />
+                    <RecentAccountsTable accounts={accounts || []} />
                 </div>
             </div>
         </div>

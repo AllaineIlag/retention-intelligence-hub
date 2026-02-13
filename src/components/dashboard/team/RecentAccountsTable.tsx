@@ -25,29 +25,21 @@ interface RecentAccount {
     role: string | null;
     created_at: string;
     status: string | null;
-    avatar_url: string | null;
+    avatar_url?: string | null;
 }
 
-export function RecentAccountsTable() {
-    const [accounts, setAccounts] = useState<RecentAccount[]>([]);
-    const [loading, setLoading] = useState(true);
+interface RecentAccountsTableProps {
+    accounts: RecentAccount[];
+}
+
+export function RecentAccountsTable({ accounts: initialAccounts }: RecentAccountsTableProps) {
+    const [accounts, setAccounts] = useState<RecentAccount[]>(initialAccounts);
     const [processing, setProcessing] = useState<string | null>(null);
     const router = useRouter();
 
-    const fetchAccounts = async () => {
-        setLoading(true);
-        // We'll need to import getRecentAccounts from user-actions
-        const { getRecentAccounts } = await import('@/app/actions/user-actions');
-        const result = await getRecentAccounts();
-        if (result.success && result.data) {
-            setAccounts(result.data as RecentAccount[]);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        fetchAccounts();
-    }, []);
+        setAccounts(initialAccounts);
+    }, [initialAccounts]);
 
     const handleApprove = async (userId: string) => {
         setProcessing(userId);
@@ -79,9 +71,7 @@ export function RecentAccountsTable() {
         setProcessing(null);
     };
 
-    if (loading) {
-        return <div className="p-4 text-center text-muted-foreground animate-pulse text-xs">Loading roster...</div>;
-    }
+
 
     if (!accounts || accounts.length === 0) {
         return (
