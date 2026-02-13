@@ -130,8 +130,8 @@ function LoginForm() {
                         )}
 
                         {urlMessage && (
-                            <Alert variant="destructive" className="bg-red-500/10 text-red-400 border-none p-2">
-                                <AlertCircle className="h-4 w-4" />
+                            <Alert className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20 p-2">
+                                <AlertCircle className="h-4 w-4 text-indigo-400" />
                                 <AlertDescription className="ml-2 text-xs">{urlMessage}</AlertDescription>
                             </Alert>
                         )}

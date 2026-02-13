@@ -41,15 +41,35 @@ export async function updateSession(request: NextRequest) {
         !user &&
         !request.nextUrl.pathname.startsWith('/login') &&
         !request.nextUrl.pathname.startsWith('/auth') &&
+        !request.nextUrl.pathname.startsWith('/join') &&
+        !request.nextUrl.pathname.startsWith('/pending') &&
         request.nextUrl.pathname !== '/'
     ) {
-        // no user, potentially respond by redirecting the user to the login page
+        // no user, redirect to login with context message
         const url = request.nextUrl.clone();
         url.pathname = '/login';
+        url.searchParams.set('message', 'Please sign in to continue');
         return NextResponse.redirect(url);
     }
 
-    // RBAC Enforcement handle redirects to /dashboard if role restricted below
+    // RBAC: Redirect pending users away from dashboard
+    if (
+        user &&
+        request.nextUrl.pathname.startsWith('/dashboard')
+    ) {
+        // Quick check: fetch profile status from Supabase
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.status === 'pending') {
+            const url = request.nextUrl.clone();
+            url.pathname = '/pending';
+            return NextResponse.redirect(url);
+        }
+    }
 
     return supabaseResponse;
 }

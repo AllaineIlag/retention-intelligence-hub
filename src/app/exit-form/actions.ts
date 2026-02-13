@@ -56,7 +56,7 @@ export interface Question {
 }
 
 // Get or create resignation for current user
-export async function getOrCreateResignation() {
+export async function getResignation() {
     const supabase = await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -69,7 +69,7 @@ export async function getOrCreateResignation() {
         .from('resignations')
         .select('*')
         .eq('employee_id', user.id)
-        .eq('status', 'pending')
+        .in('status', ['pending', 'scheduled', 'locked']) // Check relevant statuses
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -82,18 +82,7 @@ export async function getOrCreateResignation() {
         return { success: true, data: existing };
     }
 
-    // Create new resignation
-    const { data: newResignation, error: insertError } = await supabase
-        .from('resignations')
-        .insert({ employee_id: user.id, status: 'pending' })
-        .select()
-        .single();
-
-    if (insertError) {
-        return { success: false, error: insertError.message };
-    }
-
-    return { success: true, data: newResignation };
+    return { success: false, error: 'No active resignation case found. Please contact HR.' };
 }
 
 // Get exit response (Actually returns the Form Snapshot from Resignation)

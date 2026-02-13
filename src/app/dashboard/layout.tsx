@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { CreateResignationDialog } from '@/components/dashboard/create-resignation-dialog';
 import { NotificationBell } from '@/components/dashboard/notification-bell';
-import { getPendingUserCount } from '@/app/actions/user-actions';
+
 import { PageFilterProvider } from '@/components/dashboard/page-filter-context';
 import { NavPageFilter } from '@/components/dashboard/nav-page-filter';
 
@@ -41,13 +41,18 @@ export default async function DashboardLayout({
         redirect('/exit-form');
     }
 
-    // Fetch pending count only for leads
+    // Fetch pending count only for leads (Direct query for performance)
     let pendingCount = 0;
     if (role === 'lead') {
-        try {
-            pendingCount = await getPendingUserCount();
-        } catch (err) {
-            console.error('Failed to load pending users count:', err);
+        const { count, error } = await supabase
+            .from('profiles')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'pending');
+
+        if (!error) {
+            pendingCount = count || 0;
+        } else {
+            console.error('Failed to load pending users count:', error);
         }
     }
 

@@ -82,8 +82,7 @@ const navItems: NavItem[] = [
         icon: Users,
         roles: ['lead'],
         subItems: [
-            { title: 'Recruitment', url: '/dashboard/team/invite' },
-            { title: 'Access Requests', url: '/dashboard/team/pending' },
+            { title: 'Recruitment', url: '/dashboard/team/recruitment' },
             { title: 'Manage Team', url: '/dashboard/team/manage' },
         ],
     },
@@ -177,13 +176,14 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
             return {
                 ...item,
                 subItems: item.subItems.map(sub => {
-                    if (sub.title === 'Access Requests' && pendingCount > 0) {
+                    if (sub.title === 'Recruitment' && pendingCount > 0) {
                         return { ...sub, badge: pendingCount };
                     }
                     return sub;
                 }),
                 // Optionally keep badge on parent if you want both, or remove from parent
-                // User asked to move it to Access Requests, so we only put it there.
+                // User: "Move badge to Access Requests" -> Now "Recruitment"
+                badge: pendingCount > 0 ? pendingCount : undefined,
                 // However, visually it might be nice to have a dot on parent if collapsed.
                 // For now, let's just do what they asked: beside Access Requests.
                 badge: pendingCount > 0 ? pendingCount : undefined, // Keep generic badge on parent for collapsed state visibility? Or specific?

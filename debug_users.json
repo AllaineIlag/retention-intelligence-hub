@@ -1,0 +1,292 @@
+[
+  {
+    "id": "66e48e42-1b5f-4335-be11-f8ff9ff57397",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "pending_user_1770827036903@example.com",
+    "email_confirmed_at": "2026-02-11T16:23:56.89441Z",
+    "phone": "",
+    "confirmed_at": "2026-02-11T16:23:56.89441Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Pending Recruit",
+      "role": "interviewer"
+    },
+    "identities": null,
+    "created_at": "2026-02-11T16:23:56.888052Z",
+    "updated_at": "2026-02-11T16:23:56.895046Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "0e40f71e-04c1-4f38-9657-f6bd4b0afd81",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "pending_user_1770827005840@example.com",
+    "email_confirmed_at": "2026-02-11T16:23:26.16681Z",
+    "phone": "",
+    "confirmed_at": "2026-02-11T16:23:26.16681Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Pending Recruit"
+    },
+    "identities": null,
+    "created_at": "2026-02-11T16:23:26.078802Z",
+    "updated_at": "2026-02-11T16:23:26.167724Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "0b42fccd-4bae-4e4a-9ca7-b50bb998a3a2",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "jamessmythe2000@gmail.com",
+    "email_confirmed_at": "2026-02-10T20:40:58.883998Z",
+    "phone": "",
+    "confirmed_at": "2026-02-10T20:40:58.883998Z",
+    "last_sign_in_at": "2026-02-12T18:12:23.955586Z",
+    "app_metadata": {
+      "provider": "google",
+      "providers": [
+        "google"
+      ]
+    },
+    "user_metadata": {
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLc3-DsqnEsX58SnZUX3sJzfP7TwLZiQVQbBoXGkRz9mpBfYQ=s96-c",
+      "email": "jamessmythe2000@gmail.com",
+      "email_verified": true,
+      "full_name": "James Smythe",
+      "iss": "https://accounts.google.com",
+      "name": "James Smythe",
+      "phone_verified": false,
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocLc3-DsqnEsX58SnZUX3sJzfP7TwLZiQVQbBoXGkRz9mpBfYQ=s96-c",
+      "provider_id": "111503128467225837560",
+      "role": "interviewer",
+      "sub": "111503128467225837560"
+    },
+    "identities": null,
+    "created_at": "2026-02-10T20:40:58.83338Z",
+    "updated_at": "2026-02-13T12:23:28.948301Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "3f88de16-ed5a-40d7-b8d5-3c644b09cae0",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "demo-employee-1770650492314@example.com",
+    "email_confirmed_at": "2026-02-09T15:21:32.507965Z",
+    "phone": "",
+    "confirmed_at": "2026-02-09T15:21:32.507965Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Demo Employee"
+    },
+    "identities": null,
+    "created_at": "2026-02-09T15:21:32.505422Z",
+    "updated_at": "2026-02-09T15:21:32.508717Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "055470ac-0abe-48e0-80f8-a35e1c6ec7f3",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "demo-employee-1770650445778@example.com",
+    "email_confirmed_at": "2026-02-09T15:20:46.332072Z",
+    "phone": "",
+    "confirmed_at": "2026-02-09T15:20:46.332072Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Demo Employee"
+    },
+    "identities": null,
+    "created_at": "2026-02-09T15:20:46.30829Z",
+    "updated_at": "2026-02-09T15:20:46.333027Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "20afa648-87fa-4f88-baa6-72a297dece1f",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "benjaminbrowning2001@gmail.com",
+    "email_confirmed_at": "2026-02-09T13:33:19.669287Z",
+    "phone": "",
+    "confirmed_at": "2026-02-09T13:33:19.669287Z",
+    "last_sign_in_at": "2026-02-09T14:49:49.066121Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Benjamin Browning",
+      "role": "lead"
+    },
+    "identities": null,
+    "created_at": "2026-02-09T13:33:19.597365Z",
+    "updated_at": "2026-02-09T14:49:49.097697Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "e3be8f2c-3331-48e2-af61-22d6718a80cd",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "quintojonalyn01741@gmail.com",
+    "email_confirmed_at": "2026-02-08T21:48:14.895281Z",
+    "phone": "",
+    "confirmed_at": "2026-02-08T21:48:14.895281Z",
+    "recovery_sent_at": "2026-02-08T22:33:52.563928Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Jonalyn Quinto",
+      "role": "lead"
+    },
+    "identities": null,
+    "created_at": "2026-02-08T21:48:14.891445Z",
+    "updated_at": "2026-02-08T22:33:54.743957Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "17373e2a-79d1-4092-9398-be8602423850",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "baritmarvin03224@gmail.com",
+    "email_confirmed_at": "2026-02-08T21:48:13.936172Z",
+    "phone": "",
+    "confirmed_at": "2026-02-08T21:48:13.936172Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {
+      "email_verified": true,
+      "full_name": "Marvin Barit",
+      "role": "lead"
+    },
+    "identities": null,
+    "created_at": "2026-02-08T21:48:13.909234Z",
+    "updated_at": "2026-02-08T21:48:13.937043Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "fc828470-5838-480c-a238-81a00c6fd3df",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "sungjinwoo1515@gmail.com",
+    "email_confirmed_at": "2026-02-09T13:24:33.075494Z",
+    "phone": "",
+    "confirmed_at": "2026-02-09T13:24:33.075494Z",
+    "last_sign_in_at": "2026-02-08T19:54:06.112324Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email",
+        "google"
+      ]
+    },
+    "user_metadata": {
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocKGUiG4d1W33vFNws-N7x_sXdCE2_5DOLcpe-oO0rknA8JCD0U=s96-c",
+      "email": "sungjinwoo1515@gmail.com",
+      "email_verified": true,
+      "full_name": "Ilag, Allaine Benedict C.",
+      "iss": "https://accounts.google.com",
+      "name": "Ilag, Allaine Benedict C.",
+      "phone_verified": false,
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocKGUiG4d1W33vFNws-N7x_sXdCE2_5DOLcpe-oO0rknA8JCD0U=s96-c",
+      "provider_id": "111014006006365329514",
+      "role": "lead",
+      "sub": "111014006006365329514"
+    },
+    "identities": null,
+    "created_at": "2026-02-08T17:19:49.317406Z",
+    "updated_at": "2026-02-11T19:25:51.244765Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "e1f993fb-abe1-4d8c-85ba-b252164883e6",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "allainebenedictilag@yahoo.com",
+    "email_confirmed_at": "2026-02-07T11:33:51.541679Z",
+    "phone": "",
+    "confirmed_at": "2026-02-07T11:33:51.541679Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email"
+      ]
+    },
+    "user_metadata": {},
+    "identities": null,
+    "created_at": "2026-02-07T11:33:51.541679Z",
+    "updated_at": "2026-02-07T11:33:51.541679Z",
+    "is_anonymous": false
+  },
+  {
+    "id": "fb19db0e-e5ed-49a6-81f6-51cdb47769d3",
+    "aud": "authenticated",
+    "role": "authenticated",
+    "email": "ilagallainebenedict01380@gmail.com",
+    "email_confirmed_at": "2026-01-21T10:50:47.577124Z",
+    "phone": "",
+    "confirmation_sent_at": "2026-01-21T10:47:30.166004Z",
+    "confirmed_at": "2026-01-21T10:50:47.577124Z",
+    "recovery_sent_at": "2026-02-09T22:38:35.826366Z",
+    "last_sign_in_at": "2026-02-13T13:19:49.360184Z",
+    "app_metadata": {
+      "provider": "email",
+      "providers": [
+        "email",
+        "google"
+      ]
+    },
+    "user_metadata": {
+      "avatar_url": "https://lh3.googleusercontent.com/a/ACg8ocLWmDFqb1q5dnBihIF_MmlWGVDP1bFEqG9eb9hLA4hFn_1Y0ro=s96-c",
+      "email": "ilagallainebenedict01380@gmail.com",
+      "email_verified": true,
+      "full_name": "Ilag, Allaine Benedict C.",
+      "iss": "https://accounts.google.com",
+      "name": "Ilag, Allaine Benedict C.",
+      "phone_verified": false,
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocLWmDFqb1q5dnBihIF_MmlWGVDP1bFEqG9eb9hLA4hFn_1Y0ro=s96-c",
+      "provider_id": "113154035018307247850",
+      "role": "lead",
+      "sub": "113154035018307247850"
+    },
+    "identities": null,
+    "created_at": "2026-01-21T10:47:30.125479Z",
+    "updated_at": "2026-02-13T13:19:49.414996Z",
+    "is_anonymous": false
+  }
+]

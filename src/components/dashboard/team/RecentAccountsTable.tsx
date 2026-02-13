@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { Mail, Clock, User, Shield, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { approveUser, rejectUser } from '@/app/actions/user-actions';
 import { useRouter } from 'next/navigation';
@@ -28,14 +28,26 @@ interface RecentAccount {
     avatar_url: string | null;
 }
 
-interface RecentAccountsTableProps {
-    accounts: RecentAccount[];
-}
-
-export function RecentAccountsTable({ accounts: initialAccounts }: RecentAccountsTableProps) {
-    const [accounts, setAccounts] = useState<RecentAccount[]>(initialAccounts);
+export function RecentAccountsTable() {
+    const [accounts, setAccounts] = useState<RecentAccount[]>([]);
+    const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState<string | null>(null);
     const router = useRouter();
+
+    const fetchAccounts = async () => {
+        setLoading(true);
+        // We'll need to import getRecentAccounts from user-actions
+        const { getRecentAccounts } = await import('@/app/actions/user-actions');
+        const result = await getRecentAccounts();
+        if (result.success && result.data) {
+            setAccounts(result.data as RecentAccount[]);
+        }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchAccounts();
+    }, []);
 
     const handleApprove = async (userId: string) => {
         setProcessing(userId);
@@ -66,6 +78,10 @@ export function RecentAccountsTable({ accounts: initialAccounts }: RecentAccount
         }
         setProcessing(null);
     };
+
+    if (loading) {
+        return <div className="p-4 text-center text-muted-foreground animate-pulse text-xs">Loading roster...</div>;
+    }
 
     if (!accounts || accounts.length === 0) {
         return (

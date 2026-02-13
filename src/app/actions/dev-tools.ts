@@ -16,30 +16,32 @@ function getAdminClient() {
     );
 }
 
-export async function seedData(monthsBack: number = 3) {
+export interface SeedConfig {
+    headcount: number;
+    attritionRate: number; // monthly %
+    volatility: number;    // ± variance
+    sentimentScore: number; // 0-100
+    monthsBack: number;    // Time span
+    ratios: {
+        completed: number;
+        cancelled: number;
+    };
+}
+
+export async function seedData(config: SeedConfig) {
     try {
         const supabase = getAdminClient();
+        const SIMULATION_DOMAIN = '@sim.retention.com';
 
-        // 1. Check existing employee population
-        let { data: employeeProfiles } = await supabase
+        // 1. Ensure minimal population (profiles + employee_details)
+        const { count: currentCount } = await supabase
             .from('profiles')
-            .select(`
-                id, 
-                role,
-                employee_details!inner (
-                    full_name,
-                    department
-                )
-            `)
+            .select('*', { count: 'exact', head: true })
             .eq('role', 'employee');
 
-        // 2. Generate mock population if insufficient (Mock Recruitment)
-        const RESIGNATION_TARGET = 100 * monthsBack;
-        const MIN_POPULATION = Math.max(RESIGNATION_TARGET + 50, 150); // Ensure some stay active
-
-        if (!employeeProfiles || employeeProfiles.length < MIN_POPULATION) {
-            const needed = MIN_POPULATION - (employeeProfiles?.length || 0);
-            console.log(`Insufficient population (${employeeProfiles?.length || 0}). Recruiting ${needed} mock employees...`);
+        if ((currentCount || 0) < config.headcount) {
+            const needed = config.headcount - (currentCount || 0);
+            console.log(`[DevTools] Generating ${needed} additional mock employees...`);
 
             const departments = ['Engineering', 'Product', 'Sales', 'Marketing', 'Customer Success', 'HR', 'Operations'];
 
@@ -47,189 +49,135 @@ export async function seedData(monthsBack: number = 3) {
                 const newId = uuidv4();
                 const firstName = faker.person.firstName();
                 const lastName = faker.person.lastName();
-                const fullName = `${firstName} ${lastName}`;
-                const email = faker.internet.email({ firstName, lastName, provider: 'mock.co' }).toLowerCase();
+                const email = `${firstName}.${lastName}.${i}${SIMULATION_DOMAIN}`.toLowerCase();
 
-                // Insert Profile
-                const { error: pError } = await supabase
-                    .from('profiles')
-                    .insert({
-                        id: newId,
-                        email: email,
-                        role: 'employee'
-                    });
+                await supabase.from('profiles').insert({
+                    id: newId,
+                    email,
+                    role: 'employee'
+                });
 
-                if (pError) {
-                    console.error('Failed to create mock profile:', pError.message);
-                    continue;
-                }
-
-                // Insert Employee Details
-                const { error: dError } = await supabase
-                    .from('employee_details')
-                    .insert({
-                        id: newId,
-                        employee_number: `MOCK-${faker.string.alphanumeric(6).toUpperCase()}`,
-                        full_name: fullName,
-                        department: faker.helpers.arrayElement(departments),
-                        current_position: faker.person.jobTitle(),
-                        date_hired: faker.date.past({ years: 5 }).toISOString().split('T')[0],
-                        immediate_superior: faker.person.fullName()
-                    });
-
-                if (dError) {
-                    console.error('Failed to create mock employee details:', dError.message);
-                }
+                await supabase.from('employee_details').insert({
+                    id: newId,
+                    employee_number: `SIM-${faker.string.alphanumeric(6).toUpperCase()}`,
+                    full_name: `${firstName} ${lastName}`,
+                    department: faker.helpers.arrayElement(departments),
+                    current_position: faker.person.jobTitle(),
+                    date_hired: faker.date.past({ years: 5 }).toISOString().split('T')[0],
+                    immediate_superior: faker.person.fullName()
+                });
             }
-
-            // Refresh population list
-            const { data: refreshedProfiles } = await supabase
-                .from('profiles')
-                .select(`
-                    id, 
-                    role,
-                    employee_details!inner (
-                        full_name,
-                        department
-                    )
-                `)
-                .eq('role', 'employee');
-
-            employeeProfiles = refreshedProfiles;
         }
 
-        if (!employeeProfiles || employeeProfiles.length === 0) {
-            throw new Error('Failed to generate mock population.');
-        }
+        // 2. Fetch all employees for selection
+        const { data: allEmployees } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('role', 'employee');
 
-        const allProfiles = employeeProfiles;
+        if (!allEmployees) throw new Error('No employees available for seeding.');
 
+        // 3. Simulation Logic
+        const { data: questionData } = await supabase.from('questions').select('id, question_key, category');
 
+        const resignations = [];
+        const allResponses: any[] = [];
+        const questionnaireResults: any[] = [];
 
+        const now = new Date();
+        const startSimulation = new Date(now.getFullYear(), now.getMonth() - config.monthsBack, 1);
 
+        const baseExits = (config.headcount * (config.attritionRate / 100));
+        let employeePool = [...allEmployees].sort(() => 0.5 - Math.random());
 
+        for (let m = 0; m < config.monthsBack; m++) {
+            const monthDate = new Date(startSimulation.getFullYear(), startSimulation.getMonth() + m, 1);
+            const variance = (Math.random() * 2 - 1) * config.volatility;
+            const monthlyExitableCount = Math.max(1, Math.round(baseExits + (baseExits * variance)));
 
-        // 4. Generate Resignations
-        // (RESIGNATION_TARGET already defined and calculated in Recruitment phase)
-        const statuses = ['pending', 'scheduled', 'verified', 'completed', 'approved', 'declined'];
+            for (let i = 0; i < monthlyExitableCount; i++) {
+                if (employeePool.length === 0) break;
+                const employee = employeePool.pop()!;
 
+                const resignationDate = faker.date.between({
+                    from: monthDate,
+                    to: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+                });
 
-        console.log(`Generating ~${RESIGNATION_TARGET} resignations over ${monthsBack} months...`);
-        const resignationsToInsert = [];
+                const rand = Math.random() * 100;
+                let status: 'pending' | 'scheduled' | 'completed' | 'cancelled' = 'completed';
+                if (rand < config.ratios.completed) status = 'completed';
+                else if (rand < config.ratios.completed + config.ratios.cancelled) status = 'cancelled';
+                else status = Math.random() > 0.5 ? 'scheduled' : 'pending';
 
-        // Shuffle profiles to pick random employees
-        const shuffledProfiles = [...allProfiles].sort(() => 0.5 - Math.random());
-        // Allow potentially more resignations than unique profiles if monthsBack is huge? 
-        // 5000 profiles, 100/month = 1200/year. So unique profiles should suffice for now.
-        const selectedProfiles = shuffledProfiles.slice(0, RESIGNATION_TARGET);
+                const resId = uuidv4();
+                resignations.push({
+                    id: resId,
+                    employee_id: employee.id,
+                    status,
+                    reason: `[MOCK_DATA] ${faker.lorem.sentence()}`,
+                    created_at: resignationDate.toISOString(),
+                    last_working_day: new Date(resignationDate.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                });
 
-        for (const profile of selectedProfiles) {
-            const details = (profile as any).employee_details;
-            const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-            const daysBack = monthsBack * 30;
-            const randomDate = faker.date.recent({ days: daysBack });
+                if (status === 'completed' || status === 'scheduled') {
+                    const isPositive = (Math.random() * 100) < config.sentimentScore;
 
-            resignationsToInsert.push({
-                employee_id: profile.id,
-                status: randomStatus,
-                last_working_day: new Date(randomDate.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(), // +2 weeks
-                // Tagging data with specific prefix for safe deletion
-                reason: `[MOCK_DATA] ${faker.lorem.sentence()}`,
-                created_at: randomDate.toISOString(),
-                updated_at: randomDate.toISOString()
-            });
-        }
+                    questionData?.forEach(q => {
+                        let val: string | null = null;
 
+                        // Categories for sentiment mapping
+                        if (q.category === 'compensation' || q.category === 'growth' || q.category === 'culture' || q.category === 'workload') {
+                            const level = isPositive ? faker.helpers.arrayElement(['Good', 'Excellent', 'Satisfactory']) : faker.helpers.arrayElement(['Poor', 'Fair', 'Very heavy']);
+                            val = level;
+                        }
 
-        // Batch insert resignations if large
-        const RESIGNATION_BATCH_SIZE = 500;
-        let insertedResignations: any[] = [];
+                        if (q.question_key === 'recommendation') {
+                            val = (isPositive ? faker.number.int({ min: 70, max: 100 }) : faker.number.int({ min: 0, max: 40 })).toString();
+                        }
 
-        for (let i = 0; i < resignationsToInsert.length; i += RESIGNATION_BATCH_SIZE) {
-            const batch = resignationsToInsert.slice(i, i + RESIGNATION_BATCH_SIZE);
-            const { data: insertedBatch, error: resError } = await supabase
-                .from('resignations')
-                .insert(batch)
-                .select();
-
-            if (resError) throw new Error('Failed to batch insert resignations: ' + resError.message);
-            if (insertedBatch) insertedResignations = [...insertedResignations, ...insertedBatch];
-        }
-
-        // 4. Generate Exit Responses & Results for completed/verified
-        if (insertedResignations.length > 0) {
-            const responsesToInsert = [];
-            const resultsToInsert = [];
-            const { data: questions } = await supabase.from('questions').select('id, question_key');
-
-            if (questions) {
-                for (const res of insertedResignations) {
-                    if (['completed', 'verified'].includes(res.status)) {
-                        // Responses (Free-text/Detailed)
-                        for (const q of questions) {
-                            responsesToInsert.push({
-                                resignation_id: res.id,
-                                question_id: q.id,
-                                response_text: faker.lorem.paragraph(),
-                                created_at: res.created_at
+                        if (val) {
+                            questionnaireResults.push({
+                                resignation_id: resId,
+                                question_key: q.question_key,
+                                response_value: val,
+                                created_at: resignationDate.toISOString()
                             });
                         }
 
-                        // Exit Questionnaire Results (Categorical responses for charts)
-                        const standardReasons = ['Career Growth', 'Compensation', 'Management', 'Work-Life Balance'];
-                        const growthLevels = ['Poor', 'Fair', 'Satisfactory', 'Excellent'];
-                        const payLevels = ['Very low', 'Uncompetitive', 'Average', 'Competitive', 'High'];
-                        const benefitLevels = ['None', 'Poor', 'Average', 'Good', 'Exceptional'];
-                        const workloadLevels = ['Very heavy', 'Heavy', 'Manageable', 'Moderate', 'Light'];
-                        const countries = ['USA', 'Canada', 'Australia', 'UAE', 'Singapore', 'UK'];
-
-                        const results = [
-                            { key: 'reason_for_leaving', val: faker.helpers.arrayElement(standardReasons) },
-                            { key: 'recommendation', val: faker.number.int({ min: 0, max: 100 }).toString() },
-                            { key: 'career_growth', val: faker.helpers.arrayElement(growthLevels) },
-                            { key: 'rate_of_pay', val: faker.helpers.arrayElement(payLevels) },
-                            { key: 'benefits', val: faker.helpers.arrayElement(benefitLevels) },
-                            { key: 'workload', val: faker.helpers.arrayElement(workloadLevels) },
-                            { key: 'reason_for_leaving_country', val: faker.helpers.arrayElement(countries) }
-                        ];
-
-                        for (const r of results) {
-                            resultsToInsert.push({
-                                resignation_id: res.id,
-                                question_key: r.key,
-                                response_value: r.val,
-                                created_at: res.created_at
-                            });
-                        }
-
-
-                    }
+                        allResponses.push({
+                            resignation_id: resId,
+                            question_id: q.id,
+                            response_text: isPositive ? faker.lorem.sentence() : faker.lorem.paragraph(),
+                            created_at: resignationDate.toISOString()
+                        });
+                    });
                 }
             }
+        }
 
-            if (responsesToInsert.length > 0) {
-                const RESPONSE_BATCH_SIZE = 500;
-                for (let i = 0; i < responsesToInsert.length; i += RESPONSE_BATCH_SIZE) {
-                    const batch = responsesToInsert.slice(i, i + RESPONSE_BATCH_SIZE);
-                    const { error } = await supabase.from('exit_responses').insert(batch);
-                    if (error) console.error('Failed to batch insert responses:', error.message);
-                }
-            }
+        // 4. Batch Insert
+        const BATCH_SIZE = 500;
+        for (let i = 0; i < resignations.length; i += BATCH_SIZE) {
+            await supabase.from('resignations').insert(resignations.slice(i, i + BATCH_SIZE));
+        }
 
-            if (resultsToInsert.length > 0) {
-                const { error } = await supabase.from('exit_questionnaire_results').insert(resultsToInsert);
-                if (error) console.error('Failed to insert questionnaire results:', error.message);
-            }
+        for (let i = 0; i < allResponses.length; i += BATCH_SIZE) {
+            await supabase.from('exit_responses').insert(allResponses.slice(i, i + BATCH_SIZE));
+        }
+
+        for (let i = 0; i < questionnaireResults.length; i += BATCH_SIZE) {
+            await supabase.from('exit_questionnaire_results').insert(questionnaireResults.slice(i, i + BATCH_SIZE));
         }
 
         revalidatePath('/dashboard');
         return { success: true };
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        console.error('Seed Error:', error);
-        return { success: false, error: errorMessage };
+        console.error('[DevTools] Seed Error:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
 }
+
 
 export async function clearData() {
     try {
@@ -237,37 +185,82 @@ export async function clearData() {
 
         console.log('Initiating Protocol Scouring...');
 
-        // 1. Phase 1: Personnel Scouring
-        // Target all profiles with the '@mock.co' signature.
-        // This will automatically cascade to 'employee_details', 'resignations', 'exit_responses', etc.
-        const { error: pError } = await supabase
+        // 1. Identify Targets
+        // We target both the new simulation domain and any legacy mock data
+        // Using separate queries to ensure robustness against OR filter syntax edge cases
+        const { data: simProfiles, error: simError } = await supabase
             .from('profiles')
-            .delete()
+            .select('id')
+            .ilike('email', '%@sim.retention.com');
+
+        if (simError) throw new Error('Simulation target fetch failed: ' + simError.message);
+
+        const { data: mockProfiles, error: mockError } = await supabase
+            .from('profiles')
+            .select('id')
             .ilike('email', '%@mock.co');
 
-        if (pError) {
-            console.error('Personnel Scouring failed:', pError.message);
-            throw new Error('Failed to purge mock personnel: ' + pError.message);
+        if (mockError) throw new Error('Legacy target fetch failed: ' + mockError.message);
+
+        const profiles = [...(simProfiles || []), ...(mockProfiles || [])];
+
+        if (!profiles || profiles.length === 0) {
+            return { success: true, message: 'No simulated targets found.' };
         }
 
-        // 2. Phase 2: Logistical Scouring (Residual)
-        // Scuttle any remaining resignations tagged with [MOCK_DATA] that might be attached 
-        // to real/whitelisted profiles during testing.
-        const { error: resError } = await supabase
+        // Deduplicate IDs just in case
+        const profileIds = Array.from(new Set(profiles.map(p => p.id)));
+        console.log(`[Scour] Identified ${profileIds.length} personnel targets.`);
+
+        // 2. Identify Linked Resignations (for cascade)
+        // We need resignation IDs to clear responses
+        const { data: resignations, error: resFetchError } = await supabase
             .from('resignations')
-            .delete()
-            .ilike('reason', '[MOCK_DATA]%');
+            .select('id')
+            .in('employee_id', profileIds);
 
-        if (resError) {
-            console.error('Logistical Scouring failed:', resError.message);
-            throw new Error('Failed to scuttle residual mock data: ' + resError.message);
+        const resignationIds = resignations?.map(r => r.id) || [];
+        console.log(`[Scour] Identified ${resignationIds.length} resignation records.`);
+
+        // Helper for batched deletion
+        const batchDelete = async (table: string, column: string, ids: string[]) => {
+            if (ids.length === 0) return;
+            const BATCH_SIZE = 50; // Reduced from 1000 to prevent 400 Bad Request (URL/Payload limit)
+            for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+                const batch = ids.slice(i, i + BATCH_SIZE);
+                const { error } = await supabase.from(table).delete().in(column, batch);
+                if (error) throw new Error(`Failed to purge ${table}: ${error.code} - ${error.message}`);
+            }
+        };
+
+        // 3. Execution Phase (Manual Cascade)
+        // Order: Intelligence -> State -> Identity
+
+        // A. Intelligence (Responses)
+        if (resignationIds.length > 0) {
+            await batchDelete('exit_questionnaire_results', 'resignation_id', resignationIds);
+            await batchDelete('exit_responses', 'resignation_id', resignationIds);
+            console.log('[Scour] Intelligence sectors cleared.');
         }
 
-        console.log('Protocol Scouring successful. Sectors cleared.');
+        // B. State (Resignations & Details)
+        if (profileIds.length > 0) {
+            await batchDelete('resignations', 'employee_id', profileIds); // Delete resignations first
+            await batchDelete('employee_details', 'id', profileIds);      // Then details (FK is id)
+            console.log('[Scour] State records cleared.');
+        }
+
+        // C. Identity (Profiles)
+        if (profileIds.length > 0) {
+            await batchDelete('profiles', 'id', profileIds);
+            console.log('[Scour] Identity records neutralized.');
+        }
+
+        // 4. Cleanup Residuals (Legacy)
+        await supabase.from('resignations').delete().ilike('reason', '[MOCK_DATA]%');
 
         revalidatePath('/dashboard');
-        return { success: true };
-
+        return { success: true, count: profileIds.length };
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

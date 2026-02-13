@@ -1,5 +1,5 @@
 import TeamMembersTable from '@/components/dashboard/team/TeamMembersTable';
-import PendingUsersTable from '@/components/dashboard/team/PendingUsersTable';
+
 import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';

@@ -3,6 +3,58 @@
 import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { resend } from '@/lib/email';
+import ResignationScheduledEmail from '@/emails/ResignationScheduledEmail';
+
+// Schedule Interview (Step 3)
+export async function scheduleInterview(resignationId: string, scheduleDate: Date) {
+    const supabase = await createClient();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+    // 1. Update Resignation
+    const { data: resignation, error: updateError } = await supabase
+        .from('resignations')
+        .update({
+            status: 'scheduled',
+            scheduled_interview_date: scheduleDate.toISOString(),
+        })
+        .eq('id', resignationId)
+        .select(`
+            *,
+             employee_details (
+                full_name
+            ),
+            profiles (
+                email
+            )
+        `)
+        .single();
+
+    if (updateError) {
+        return { success: false, error: updateError.message };
+    }
+
+    // 2. Send Invitation Email (Email 2)
+    if (resignation?.profiles?.email) {
+        try {
+            await resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@mail.retentionhub.cloud>',
+                to: [(resignation as any).profiles.email],
+                subject: 'Exit Interview Scheduled & Action Required',
+                react: ResignationScheduledEmail({
+                    employeeName: (resignation as any).employee_details?.full_name || 'Employee',
+                    interviewDate: scheduleDate.toISOString(),
+                    actionUrl: `${siteUrl}/login`
+                }),
+            });
+        } catch (emailError) {
+            console.error('Email Error:', emailError);
+        }
+    }
+
+    revalidatePath('/dashboard/interview');
+    return { success: true };
+}
 
 export async function getInterviewDetails(resignationId: string) {
     const supabase = await createClient();
@@ -193,7 +245,7 @@ export async function getAllInterviews() {
                 full_name,
                 department
             ),
-            employee_profile:profiles (
+            profiles (
                 id,
                 email,
                 role
@@ -204,7 +256,8 @@ export async function getAllInterviews() {
 
 
     if (error) {
-        console.error('Error fetching interviews:', error);
+        console.error('Error fetching interviews detailed:', JSON.stringify(error, null, 2));
+        console.error('Error fetching interviews raw:', error);
         return { success: false, error: 'Failed to fetch interviews' };
     }
 
@@ -215,7 +268,7 @@ export async function getAllInterviews() {
             // @ts-ignore
             ...interview.employee_details,
             // @ts-ignore
-            ...interview.employee_profile
+            ...interview.profiles
         }
     }));
 

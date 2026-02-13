@@ -15,41 +15,7 @@ const adminSupabase = createAdminClient(
     }
 );
 
-export async function inviteInterviewer(email: string, fullName: string) {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-        return { error: 'Unauthorized' };
-    }
-
-    // Check if requester is Lead
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'lead') {
-        return { error: 'Insufficient permissions' };
-    }
-
-    // Use Admin Client to Invite User
-    const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
-        data: {
-            role: 'interviewer',
-            status: 'invited',
-            full_name: fullName
-        }
-    });
-
-    if (error) {
-        console.error('Invite Error:', error);
-        return { error: error.message };
-    }
-
-    return { success: true, user: data.user };
-}
 
 export async function toggleUserPermission(targetUserId: string, field: 'can_export_data', value: boolean) {
     const supabase = await createClient();
@@ -122,15 +88,16 @@ export async function getRecentInvites() {
 
     if (authError || !user) return { error: 'Unauthorized' };
 
-    const { data: invites, error } = await supabase
+    // Simplified: Now we can just query profiles directly since full_name/avatar_url are in the schema
+    const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('status', 'invited')
+        .eq('status', 'pending') // Changed from 'invited' to 'pending'
         .order('created_at', { ascending: false });
 
-    if (error) return { error: error.message };
+    if (error) return { error: error.message }; // Changed from `return []` to `return { error: error.message }` for consistency
 
-    return { success: true, data: invites };
+    return { success: true, data: profiles }; // Changed from `return profiles` to `return { success: true, data: profiles }` for consistency
 }
 
 export async function getRecentAccounts() {
@@ -170,24 +137,7 @@ export async function getRecentAccounts() {
     return { success: true, data: flattened };
 }
 
-export async function getPendingUserCount() {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) return 0;
-
-    const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
-    if (error) {
-        console.error('Error fetching pending count:', JSON.stringify(error, null, 2));
-        return 0;
-    }
-
-    return count || 0;
-}
 
 export async function getPendingUsers() {
     const supabase = await createClient();
@@ -206,13 +156,25 @@ export async function getPendingUsers() {
 
     const { data: users, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, role, status, created_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
     if (error) return { error: error.message };
 
-    return { success: true, data: users };
+    // Enrich with auth.users metadata for display names/avatars
+    const enrichedUsers = await Promise.all(
+        (users || []).map(async (p) => {
+            const { data: { user: authUser } } = await adminSupabase.auth.admin.getUserById(p.id);
+            return {
+                ...p,
+                full_name: authUser?.user_metadata?.full_name || p.email?.split('@')[0] || 'Unknown',
+                avatar_url: authUser?.user_metadata?.avatar_url || null,
+            };
+        })
+    );
+
+    return { success: true, data: enrichedUsers };
 }
 
 export async function approveUser(userId: string) {
@@ -230,6 +192,17 @@ export async function approveUser(userId: string) {
 
     if (profile?.role !== 'lead') return { error: 'Unauthorized' };
 
+    // Get the target user's info from auth (not profiles, which lacks full_name)
+    // Get the target user's info directly from profiles
+    const { data: targetUser } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', userId)
+        .single();
+
+    const targetEmail = targetUser?.email;
+    const targetName = targetUser?.full_name;
+
     // Update status in profiles
     const { error } = await supabase
         .from('profiles')
@@ -237,6 +210,52 @@ export async function approveUser(userId: string) {
         .eq('id', userId);
 
     if (error) return { error: error.message };
+
+    // Send approval email via Resend
+    if (targetEmail) {
+        try {
+            const { Resend } = await import('resend');
+            const resend = new Resend(process.env.RESEND_API_KEY);
+
+            const siteUrl = process.env.DOMAIN_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.retentionhub.cloud';
+
+            await resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                to: targetEmail,
+                subject: 'Access Approved — Retention Intelligence Hub',
+                html: `
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+                        <div style="background: #0f0f11; border-radius: 16px; padding: 40px; border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <div style="display: inline-block; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2)); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                    <span style="font-size: 24px;">✅</span>
+                                </div>
+                            </div>
+                            <h1 style="color: #ffffff; font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 12px 0;">
+                                Access Approved
+                            </h1>
+                            <p style="color: #a1a1aa; font-size: 14px; text-align: center; line-height: 1.6; margin: 0 0 32px 0;">
+                                Hi ${targetName || 'there'},<br/>
+                                Your access to the Retention Intelligence Hub has been approved. You can now sign in and access the dashboard.
+                            </p>
+                            <div style="text-align: center;">
+                                <a href="${siteUrl}/dashboard" style="display: inline-block; background: #6366f1; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; font-size: 14px;">
+                                    Sign In Now
+                                </a>
+                            </div>
+                            <p style="color: #52525b; font-size: 12px; text-align: center; margin-top: 32px;">
+                                Retention Intelligence Hub
+                            </p>
+                        </div>
+                    </div>
+                `,
+            });
+            console.log('[Gatekeeper] Approval email sent to:', targetEmail);
+        } catch (emailErr) {
+            // Don't fail the approval if email fails — log and continue
+            console.error('[Gatekeeper] Failed to send approval email:', emailErr);
+        }
+    }
 
     return { success: true };
 }

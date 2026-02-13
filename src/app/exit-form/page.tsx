@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import {
-    getOrCreateResignation,
+    getResignation, // Updated import
     getExitResponse,
     getUserProfile,
     getQuestions
@@ -21,13 +21,21 @@ export default async function ExitFormPage() {
 
     // Fetch all necessary data parallel for speed (The Gloious Evolution)
     const [resignationRes, profileRes, questionsRes] = await Promise.all([
-        getOrCreateResignation(),
+        getResignation(), // Updated call
         getUserProfile(),
         getQuestions()
     ]);
 
     if (!resignationRes.success || !resignationRes.data) {
-        return <div>Error loading resignation record: {resignationRes.error}</div>;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background text-zinc-400">
+                <div className="text-center space-y-4">
+                    <h1 className="text-2xl font-bold text-white">No Active Exit Process</h1>
+                    <p>{resignationRes.error || "You do not have an assigned resignation case."}</p>
+                    <p className="text-sm">Please contact your HR representative if you believe this is an error.</p>
+                </div>
+            </div>
+        );
     }
 
     const resignationId = resignationRes.data.id;

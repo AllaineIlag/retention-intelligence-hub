@@ -41,7 +41,7 @@ export async function GET(request: Request) {
 
                         if (inviteSlug === 'hr-team') {
                             // HR/Interviewer Invite -> Create as Pending Interviewer
-                            await supabase.from('profiles').upsert({
+                            const { error: upsertError } = await supabase.from('profiles').upsert({
                                 id: user.id,
                                 email: user.email,
                                 full_name: user.user_metadata.full_name || user.email?.split('@')[0],
@@ -49,7 +49,13 @@ export async function GET(request: Request) {
                                 role: 'interviewer',
                                 status: 'pending'
                             });
-                            return NextResponse.redirect(`${baseUrl}/dashboard`);
+
+                            if (upsertError) {
+                                console.error('[Gatekeeper] Profile upsert failed:', upsertError);
+                                return NextResponse.redirect(`${baseUrl}/login?message=Account creation failed.`);
+                            }
+
+                            return NextResponse.redirect(`${baseUrl}/pending`);
                         }
 
                         if (inviteSlug === 'exit-process') {
@@ -72,8 +78,6 @@ export async function GET(request: Request) {
                                 await supabase.from('profiles').upsert({
                                     id: user.id,
                                     email: user.email,
-                                    full_name: user.user_metadata.full_name || user.email?.split('@')[0],
-                                    avatar_url: user.user_metadata.avatar_url,
                                     role: 'employee',
                                     status: 'active'
                                 });
@@ -90,7 +94,7 @@ export async function GET(request: Request) {
                     // Check if profile exists
                     const { data: profile, error: profileError } = await supabase
                         .from('profiles')
-                        .select('role, id')
+                        .select('role, id, status')
                         .eq('id', user.id)
                         .single();
 
@@ -116,14 +120,17 @@ export async function GET(request: Request) {
                             return NextResponse.redirect(`${baseUrl}/login?message=Account creation failed.`);
                         }
 
-                        // Default redirection for new users
-                        return NextResponse.redirect(`${baseUrl}/exit-form`);
+                        // Default redirection for new users without invite
+                        return NextResponse.redirect(`${baseUrl}/pending`);
                     } else if (profile) {
-                        // Profile exists - Check Role
+                        // Profile exists - Check Status first, then Role
+                        if (profile.status === 'pending') {
+                            return NextResponse.redirect(`${baseUrl}/pending`);
+                        }
                         if (profile.role === 'employee') {
                             return NextResponse.redirect(`${baseUrl}/exit-form`);
                         }
-                        // Interviewer/Admin/Lead
+                        // Interviewer/Admin/Lead (active)
                         return NextResponse.redirect(`${baseUrl}/dashboard`);
                     } else {
                         // Unexpected error fetching profile
