@@ -30,13 +30,16 @@ export async function GET(request: Request) {
 
             if (user) {
                 try {
-                    // CHECK FOR INVITE COOKIE
+                    // CHECK FOR INVITE COOKIE OR URL PARAM
                     const cookieStore = await cookies();
-                    const inviteSlug = cookieStore.get('pending_invite_slug')?.value;
+                    const cookieSlug = cookieStore.get('pending_invite_slug')?.value;
+                    const urlSlug = searchParams.get('invite_type'); // More reliable than cookie
+
+                    const inviteSlug = urlSlug || cookieSlug;
 
                     if (inviteSlug) {
-                        // Consume the cookie
-                        cookieStore.delete('pending_invite_slug');
+                        // Consume the cookie if it exists
+                        if (cookieSlug) cookieStore.delete('pending_invite_slug');
                         console.log('[Gatekeeper] Processing Invite Slug:', inviteSlug, 'for user:', user.email);
 
                         if (inviteSlug === 'hr-team') {

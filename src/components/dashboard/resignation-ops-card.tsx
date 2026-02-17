@@ -6,7 +6,9 @@ import {
     CheckCircle2,
     XCircle,
     Clock,
+    ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
@@ -38,12 +40,11 @@ import { verifyResignation, approveResignation, declineResignation } from "@/app
 interface ResignationOpsProps {
     resignation: {
         id: string;
-        status: string; // 'pending' | 'verified' | 'scheduled' | 'approved' | 'declined' | 'completed'
+        status: string; // 'pending_exit_form' | 'pending_interview' | 'scheduled' | 'completed' | 'cancelled' | 'locked'
         last_working_day?: string | null;
         scheduled_interview_date?: string | null;
         created_at: string;
         employee_id: string;
-        reason?: string;
     };
     employeeName: string;
     employeeEmail: string;
@@ -64,12 +65,12 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
     // Computed Status Color
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
-            case 'pending': return 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20';
-            case 'verified': return 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20';
-            case 'approved':
+            case 'pending_exit_form': return 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20';
+            case 'pending_interview': return 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20';
             case 'scheduled': return 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20';
             case 'completed': return 'bg-green-500/10 text-green-500 hover:bg-green-500/20';
-            case 'declined': return 'bg-red-500/10 text-red-500 hover:bg-red-500/20';
+            case 'cancelled': return 'bg-red-500/10 text-red-500 hover:bg-red-500/20';
+            case 'locked': return 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20';
             default: return 'bg-muted text-muted-foreground';
         }
     };
@@ -134,15 +135,15 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
                         <CardDescription>Manage resignation Lifecycle</CardDescription>
                     </div>
                     <Badge className={cn("capitalize px-3 py-1", getStatusColor(resignation.status))}>
-                        {resignation.status}
+                        {resignation.status.replace(/_/g, ' ')}
                     </Badge>
                 </div>
             </CardHeader>
             <Separator />
             <CardContent className="pt-6 space-y-6">
 
-                {/* Step 1: Verification (Only if Pending) */}
-                {resignation.status === 'pending' && (
+                {/* Step 1: Verification (Visible if Pending or Interview Ready but NOT Verified yet) */}
+                {(resignation.status === 'pending_exit_form' || resignation.status === 'pending_interview') && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
                         <div className="flex items-center gap-2 text-primary font-medium">
                             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">1</div>
@@ -172,8 +173,8 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
                     </div>
                 )}
 
-                {/* Step 2: Scheduling (Only if Verified) */}
-                {resignation.status === 'verified' && (
+                {/* Step 2: Scheduling (Only if Pending Interview - Lead verifies then schedules) */}
+                {resignation.status === 'pending_interview' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
                         <div className="flex items-center gap-2 text-primary font-medium">
                             <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">2</div>
@@ -208,7 +209,7 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
                 )}
 
                 {/* Read Only Views for Completed Steps */}
-                {(resignation.status === 'scheduled' || resignation.status === 'approved' || resignation.status === 'completed') && (
+                {(resignation.status === 'scheduled' || resignation.status === 'completed') && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-3 p-3 rounded-md bg-green-500/10 text-green-600 border border-green-500/20">
                             <CheckCircle2 className="h-5 w-5" />
@@ -222,14 +223,21 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
                             <Clock className="h-4 w-4" />
                             <span>Last Working Day: {resignation.last_working_day ? format(new Date(resignation.last_working_day), 'PPP') : 'N/A'}</span>
                         </div>
+
+                        <Button className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20" asChild>
+                            <Link href={`/dashboard/interview/${resignation.id}`}>
+                                <ExternalLink className="w-4 h-4" />
+                                Launch Live Interview Protocol
+                            </Link>
+                        </Button>
                     </div>
                 )}
 
-                {resignation.status === 'declined' && (
+                {resignation.status === 'cancelled' && (
                     <div className="flex items-center gap-3 p-3 rounded-md bg-red-500/10 text-red-600 border border-red-500/20">
                         <XCircle className="h-5 w-5" />
                         <div className="text-sm">
-                            <p className="font-semibold">Resignation Declined</p>
+                            <p className="font-semibold">Resignation Cancelled</p>
                             <p className="opacity-90">Employee has been notified to contact HR.</p>
                         </div>
                     </div>
@@ -237,8 +245,8 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
 
             </CardContent>
 
-            {/* Footer Actions (Decline is always available unless completed) */}
-            {resignation.status !== 'completed' && resignation.status !== 'declined' && (
+            {/* Footer Actions (Decline is always available unless completed or cancelled) */}
+            {resignation.status !== 'completed' && resignation.status !== 'cancelled' && (
                 <CardFooter className="bg-muted/30 pt-4">
                     <Dialog open={showDeclineDialog} onOpenChange={setShowDeclineDialog}>
                         <DialogTrigger asChild>

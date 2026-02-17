@@ -33,7 +33,7 @@ export type Database = {
         }
         Relationships: []
       }
-      exit_responses: {
+      exit_questionnaires_result: {
         Row: {
           created_at: string
           id: string
@@ -142,24 +142,24 @@ export type Database = {
           employee_id: string
           exit_date: string | null
           id: string
-          reason: string | null
           status: Database["public"]["Enums"]["resignation_status"] | null
+          last_working_day: string | null
         }
         Insert: {
           created_at?: string | null
           employee_id: string
           exit_date?: string | null
           id?: string
-          reason?: string | null
           status?: Database["public"]["Enums"]["resignation_status"] | null
+          last_working_day?: string | null
         }
         Update: {
           created_at?: string | null
           employee_id?: string
           exit_date?: string | null
           id?: string
-          reason?: string | null
           status?: Database["public"]["Enums"]["resignation_status"] | null
+          last_working_day?: string | null
         }
         Relationships: [
           {
@@ -190,7 +190,7 @@ export type Database = {
       | "compensation"
       | "workload"
       | "growth"
-      resignation_status: "pending" | "scheduled" | "completed" | "cancelled"
+      resignation_status: "pending_exit_form" | "pending_interview" | "scheduled" | "completed" | "cancelled" | "locked"
     }
     CompositeTypes: {
       [_ in never]: never

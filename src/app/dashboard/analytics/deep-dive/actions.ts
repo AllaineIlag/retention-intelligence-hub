@@ -126,7 +126,7 @@ export async function getDeepDiveMetrics(): Promise<DeepDiveMetrics> {
         immediate_superior
       )
     `)
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (resError || !resignations?.length) return defaults;
 
@@ -141,7 +141,7 @@ export async function getDeepDiveMetrics(): Promise<DeepDiveMetrics> {
 
     // 2. Fetch all responses for these resignations
     const { data: results, error: resultsError } = await supabase
-        .from('exit_questionnaire_results')
+        .from('exit_interview_results')
         .select('resignation_id, question_key, response_value')
         .in('resignation_id', resignationIds)
         .in('question_key', ['rate_of_pay', 'benefits', 'career_growth', 'workload', 'recommendation']);

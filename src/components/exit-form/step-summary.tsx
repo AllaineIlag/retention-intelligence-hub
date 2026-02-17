@@ -22,7 +22,7 @@ import { CheckCircle2, Edit2, Loader2, Send } from "lucide-react";
 interface StepSummaryProps {
     details: EmployeeDetails;
     responses: QuestionnaireResponses;
-    onEdit: (stepId: 'info' | 'questions' | 'terms') => void;
+    onEdit: (stepId: 'info' | 'questions' | 'terms', questionIndex?: number) => void;
     onSubmit: () => void;
     isSubmitting: boolean;
     readOnly?: boolean;
@@ -65,7 +65,7 @@ export function StepSummary({
                 {/* Section 1: Employee Information */}
                 <Card>
                     <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Employee Information" editTarget="info" onEdit={onEdit} readOnly={readOnly} />
+                        <SectionHeader title="Employee Information" onEdit={() => onEdit('info')} readOnly={readOnly} />
                     </CardHeader>
                     <CardContent className="pt-6">
                         <InfoItem label="Full Name" value={details.employee_name} />
@@ -74,18 +74,23 @@ export function StepSummary({
                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
                         <InfoItem label="Position (Hired)" value={details.position_when_hired} />
                         <InfoItem label="Current Position" value={details.current_position} />
-                        <InfoItem label="Department / Supervisor" value={details.department_supervisor} />
+                        <InfoItem label="Department" value={details.department} />
+                        <InfoItem label="Business Unit" value={details.business_unit} />
+                        <InfoItem label="Supervisor" value={details.intermediate_supervisor} />
                     </CardContent>
                 </Card>
 
                 {/* Section 2: Questionnaire Responses */}
                 <Card>
                     <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Questionnaire Responses" editTarget="questions" onEdit={onEdit} readOnly={readOnly} />
+                        <SectionHeader title="Questionnaire Responses" onEdit={() => onEdit('questions')} readOnly={readOnly} />
                     </CardHeader>
                     <CardContent className="pt-6 space-y-6">
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-semibold text-primary/80">Reason for Leaving</h4>
+                        <div className="space-y-3 relative group">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-primary/80">Reason for Leaving</h4>
+                                {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 0)}><Edit2 className="w-3 h-3" /></Button>}
+                            </div>
                             <div className="pl-4 border-l-2 border-primary/20 space-y-2">
                                 <div className="text-sm">
                                     <span className="font-medium">Primary Reason:</span>
@@ -107,8 +112,11 @@ export function StepSummary({
                         </div>
 
                         {(responses.why_more_desirable?.length || 0) > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-primary/80">New Opportunity</h4>
+                            <div className="space-y-3 relative group">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-semibold text-primary/80">New Opportunity</h4>
+                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 1)}><Edit2 className="w-3 h-3" /></Button>}
+                                </div>
                                 <div className="pl-4 border-l-2 border-primary/20 space-y-2">
                                     <div className="text-sm">
                                         <span className="font-medium">Why Desirable:</span>
@@ -130,16 +138,22 @@ export function StepSummary({
                         )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-primary/80">Work Experience</h4>
+                            <div className="space-y-3 relative group">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-semibold text-primary/80">Work Experience</h4>
+                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 2)}><Edit2 className="w-3 h-3" /></Button>}
+                                </div>
                                 <div className="pl-4 border-l-2 border-primary/20 space-y-2">
                                     <div className="text-sm"><span className="font-medium text-muted-foreground">Career Growth:</span> {responses.career_growth}</div>
                                     <div className="text-sm"><span className="font-medium text-muted-foreground">Rate of Pay:</span> {responses.rate_of_pay}</div>
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-primary/80">Environment</h4>
+                            <div className="space-y-3 relative group">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-sm font-semibold text-primary/80">Environment</h4>
+                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 4)}><Edit2 className="w-3 h-3" /></Button>}
+                                </div>
                                 <div className="pl-4 border-l-2 border-primary/20 space-y-2">
                                     <div className="text-sm">
                                         <span className="font-medium text-muted-foreground">Benefits:</span> {responses.benefits}
@@ -153,8 +167,11 @@ export function StepSummary({
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-semibold text-primary/80">Final Thoughts</h4>
+                        <div className="space-y-3 relative group">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-primary/80">Final Thoughts</h4>
+                                {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 6)}><Edit2 className="w-3 h-3" /></Button>}
+                            </div>
                             <div className="pl-4 border-l-2 border-primary/20 space-y-2">
                                 <div className="text-sm">
                                     <span className="font-medium text-muted-foreground">Recommend Company?</span>
@@ -240,13 +257,11 @@ export function StepSummary({
 
 const SectionHeader = ({
     title,
-    editTarget,
     onEdit,
     readOnly
 }: {
     title: string;
-    editTarget: 'info' | 'questions' | 'terms';
-    onEdit: (stepId: 'info' | 'questions' | 'terms') => void;
+    onEdit: () => void;
     readOnly?: boolean;
 }) => (
     <div className="flex items-center justify-between mb-4">
@@ -258,7 +273,7 @@ const SectionHeader = ({
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground hover:text-primary"
-                onClick={() => onEdit(editTarget)}
+                onClick={onEdit}
             >
                 <Edit2 className="w-4 h-4 mr-1" />
                 Edit

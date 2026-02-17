@@ -42,7 +42,7 @@ export type Database = {
                 }
                 Relationships: []
             }
-            exit_questionnaire_results: {
+            exit_interview_results: {
                 Row: {
                     comment: string | null
                     created_at: string | null
@@ -72,7 +72,7 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "exit_questionnaire_results_resignation_id_fkey"
+                        foreignKeyName: "exit_interview_results_resignation_id_fkey"
                         columns: ["resignation_id"]
                         isOneToOne: false
                         referencedRelation: "resignations"
@@ -80,7 +80,7 @@ export type Database = {
                     },
                 ]
             }
-            exit_responses: {
+            exit_questionnaires_result: {
                 Row: {
                     corrected_answer: string | null
                     created_at: string
@@ -125,14 +125,14 @@ export type Database = {
                 }
                 Relationships: [
                     {
-                        foreignKeyName: "exit_responses_question_id_fkey"
+                        foreignKeyName: "exit_questionnaires_result_question_id_fkey"
                         columns: ["question_id"]
                         isOneToOne: false
                         referencedRelation: "questions"
                         referencedColumns: ["id"]
                     },
                     {
-                        foreignKeyName: "exit_responses_resignation_id_fkey"
+                        foreignKeyName: "exit_questionnaires_result_resignation_id_fkey"
                         columns: ["resignation_id"]
                         isOneToOne: false
                         referencedRelation: "resignations"
@@ -286,13 +286,12 @@ export type Database = {
                 "growth"
             ]
             resignation_status: [
-                "pending",
+                "pending_exit_form",
+                "pending_interview",
                 "scheduled",
                 "completed",
                 "cancelled",
-                "verified",
-                "approved",
-                "declined"
+                "locked"
             ]
         }
         CompositeTypes: {

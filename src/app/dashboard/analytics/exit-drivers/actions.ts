@@ -84,7 +84,7 @@ export async function getExitDriverMetrics(): Promise<ExitDriverMetrics> {
     const { data: resignations, error: resError } = await supabase
         .from('resignations')
         .select('id')
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (resError || !resignations?.length) return defaults;
 
@@ -93,7 +93,7 @@ export async function getExitDriverMetrics(): Promise<ExitDriverMetrics> {
 
     // 2. Fetch all exit questionnaire results for these resignations
     const { data: results, error: resultsError } = await supabase
-        .from('exit_questionnaire_results')
+        .from('exit_interview_results')
         .select('question_key, response_value')
         .in('resignation_id', resignationIds);
 

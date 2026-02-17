@@ -32,3 +32,18 @@
 - [2026-02-10T00:48:15] [VIKTOR]: Repairs complete. Purged 8 orphan records. Corrected FK constraints. Join path stabilized. Scouting confirms fix.
 - [2026-02-10T00:50:21] [SWAIN]: Deployment failed. Build blocked by missing dependencies (UUID). Runtime blocked by schema cache desync. Re-evaluating strategy.
 - [2026-02-13T23:30:00] [SWAIN]: Alert. 'PGRST200' error persists. Schema cache mismatch or constraint failure confirmed. Delegating to Team Zaun for deep-dive diagnostics and server restart.
+- [2026-02-16T10:30:00] [SWAIN]: Analysis complete for Exit Form Data Loss. Root cause: Missing `questions` seed data causing `saveExitForm` to silently drop answers. Schema clarified. Delegating to Team Zaun/Piltover for fix.
+- [2026-02-16T10:35:00] [SWAIN]: Directive received. Populating questions database via Zaun methods (Direct Script/MCP). Executing Phase 2.
+- [2026-02-16T10:45:00] [VIKTOR]: Questions table seeded successfully. 7 core metrics populated. Linkage to Exit Form established. Data loss vector sealed.
+- [2026-02-16T10:50:00] [SWAIN]: Phase 2 authorized. Executing clean-up protocol. Stripping legacy `reason` column from codebase and schema.
+- [2026-02-16T11:00:00] [VIKTOR]: Codebase scrubbed. 'reason' column references removed from UI, Seeds, and Types. Migration file 08 ready for deployment.
+- [2026-02-16T11:05:00] [VIKTOR]: SQL Script Audit complete. `02_delete_resignations.sql` patched to use email-based targeting. `05_seed_resignations.sql` optimized. All systems green for schema update.
+- [2026-02-16T11:10:00] [SWAIN]: Protocol correction. Relocated schema migration scripts to `scripts/migrations/` to preserve seed sequence integrity.
+- [2026-02-16T15:30:00] [SWAIN]: Operation Glass Truth Phase 5 Complete. Status columns and 'Active/History' tabs implemented in Interviewer Dashboard. Visibility issues resolved.
+- [2026-02-17T01:10:00] [SWAIN]: Bug fixed. `submitExitForm` logic patched to prevent premature 'completion' of cases. Resignation flow preserved for Interviewer review.
+- [2026-02-17T02:20:00] [SWAIN]: New Directive. Initiating 'Operation Broken Lock'. Transitioning resignation workflow from 'Hybrid' to 'Phased' State Machine (`pending_exit_form` -> `pending_interview`).
+
+
+
+
+

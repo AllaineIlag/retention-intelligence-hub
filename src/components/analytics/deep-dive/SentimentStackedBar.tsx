@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
 import { cn } from "@/lib/utils"
@@ -30,7 +31,7 @@ export function SentimentStackedBar({ data, className }: SentimentStackedBarProp
     });
 
     return (
-        <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border border-white/5 bg-white/[0.02] shadow-sm rounded-3xl relative overflow-hidden", className)}>
             <CardHeader className="pb-2">
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Sentiment Distribution

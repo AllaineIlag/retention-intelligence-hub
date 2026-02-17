@@ -52,7 +52,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
                 department
             )
         `)
-        .in('status', ['completed', 'approved', 'verified', 'scheduled'])
+        .eq('status', 'completed')
         .returns<ResignationWithDetails[]>();
 
 
@@ -116,7 +116,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
 
     if (resignationIds.length > 0) {
         const { data: reasons } = await supabase
-            .from('exit_questionnaire_results')
+            .from('exit_interview_results')
             .select('response_value')
             .in('resignation_id', resignationIds)
             .eq('question_key', 'reason_for_leaving');
@@ -180,7 +180,7 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
             )
         `)
 
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (resError) return { success: false, error: resError.message };
 
@@ -202,7 +202,7 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
     if (relevantIds.size === 0) return { success: true, data: [] };
 
     const { data: results, error: resultsError } = await supabase
-        .from('exit_questionnaire_results')
+        .from('exit_interview_results')
         .select('response_value')
         .in('resignation_id', Array.from(relevantIds))
         .eq('question_key', 'reason_for_leaving_country');
@@ -239,7 +239,7 @@ export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
                 department
             )
         `)
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (error) return { success: false, error: error.message };
 
@@ -298,7 +298,7 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
                 department
             )
         `)
-        .in('status', ['completed', 'approved', 'verified', 'scheduled'])
+        .eq('status', 'completed')
         .returns<ResignationWithDetails[]>();
 
 
@@ -354,7 +354,7 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
             )
         `)
 
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (resError) return { success: false, error: resError.message };
 
@@ -378,7 +378,7 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
     }
 
     const { data: results, error: resultsError } = await supabase
-        .from('exit_questionnaire_results')
+        .from('exit_interview_results')
         .select('*')
         .in('resignation_id', Array.from(relevantIds));
 
@@ -443,7 +443,7 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
             )
         `)
 
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (error) return { success: false, error: error.message };
 

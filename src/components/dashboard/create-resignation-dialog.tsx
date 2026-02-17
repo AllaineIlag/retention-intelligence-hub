@@ -69,23 +69,19 @@ export function CreateResignationDialog() {
 
     // ... logic below in replacement content
 
+    if (!isMounted) return null
+
     return <CreateResignationDialogContent open={open} setOpen={setOpen} />
 }
 
 import { createResignation } from "@/app/actions/resignation-ops"
+import { DEPARTMENTS, BUSINESS_UNITS, INTERMEDIATE_SUPERVISORS } from "@/constants/enums"
 
 function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setOpen: (o: boolean) => void }) {
     const [loading, setLoading] = React.useState(false)
-    const [departments, setDepartments] = React.useState<string[]>([])
     const [selectedDept, setSelectedDept] = React.useState<string>("")
-
-    React.useEffect(() => {
-        if (open) {
-            getDepartments().then(res => {
-                if (res.success && res.data) setDepartments(res.data)
-            })
-        }
-    }, [open])
+    const [selectedBU, setSelectedBU] = React.useState<string>("")
+    const [selectedSupervisor, setSelectedSupervisor] = React.useState<string>("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -96,8 +92,8 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
         const email = formData.get('email') as string
         const lwd = formData.get('lastWorkingDay') as string
 
-        if (!selectedDept) {
-            toast.error("Please select a department")
+        if (!selectedDept || !selectedBU || !selectedSupervisor) {
+            toast.error("Please fill in all required fields")
             setLoading(false)
             return
         }
@@ -106,13 +102,21 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
             name,
             email,
             department: selectedDept,
+            businessUnit: selectedBU,
+            intermediateSupervisor: selectedSupervisor,
             lastWorkingDay: new Date(lwd)
         })
 
         if (res.success) {
-            toast.success("Resignation workflow initiated", {
-                description: "The employee has been invited via email."
-            })
+            if (res.emailError) {
+                toast.warning("Case logged, but email failed", {
+                    description: `Resignation recorded in database, but invitation email could not be sent: ${res.emailErrorMessage}`
+                })
+            } else {
+                toast.success("Resignation workflow initiated", {
+                    description: "The employee has been invited via email."
+                })
+            }
             setOpen(false)
         } else {
             toast.error("Failed to initiate workflow", {
@@ -133,7 +137,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     <span>Log Resignation</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] border-white/10 bg-[#0f0f11] text-white">
+            <DialogContent className="sm:max-w-[500px] border-white/10 bg-[#0f0f11] text-white">
                 <DialogHeader>
                     <DialogTitle>Log New Resignation</DialogTitle>
                     <DialogDescription className="text-zinc-400">
@@ -141,29 +145,60 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-zinc-300">Employee Name</Label>
-                        <Input id="name" name="name" placeholder="John Doe" className="border-white/10 bg-white/5 text-white" required />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name" className="text-zinc-300">Employee Name</Label>
+                            <Input id="name" name="name" placeholder="John Doe" className="border-white/10 bg-white/5 text-white" required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="email" className="text-zinc-300">Work Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="border-white/10 bg-white/5 text-white" required />
+                        </div>
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-zinc-300">Work Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="john@company.com" className="border-white/10 bg-white/5 text-white" required />
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="department" className="text-zinc-300">Department</Label>
+                            <Select value={selectedDept} onValueChange={setSelectedDept} required>
+                                <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                                    <SelectValue placeholder="Select Dept" />
+                                </SelectTrigger>
+                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                    {DEPARTMENTS.map((d) => (
+                                        <SelectItem key={d} value={d}>{d}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="businessUnit" className="text-zinc-300">Business Unit</Label>
+                            <Select value={selectedBU} onValueChange={setSelectedBU} required>
+                                <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                                    <SelectValue placeholder="Select BU" />
+                                </SelectTrigger>
+                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                    {BUSINESS_UNITS.map((bu) => (
+                                        <SelectItem key={bu} value={bu}>{bu}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
+
                     <div className="grid gap-2">
-                        <Label htmlFor="department" className="text-zinc-300">Department</Label>
-                        <Select value={selectedDept} onValueChange={setSelectedDept} required>
+                        <Label htmlFor="supervisor" className="text-zinc-300">Intermediate Supervisor</Label>
+                        <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor} required>
                             <SelectTrigger className="border-white/10 bg-white/5 text-white">
-                                <SelectValue placeholder="Select department" />
+                                <SelectValue placeholder="Select Supervisor" />
                             </SelectTrigger>
                             <SelectContent className="border-white/10 bg-[#18181b] text-white">
-                                {departments.map((d) => (
-                                    <SelectItem key={d} value={d}>
-                                        {d}
-                                    </SelectItem>
+                                {INTERMEDIATE_SUPERVISORS.map((s) => (
+                                    <SelectItem key={s} value={s}>{s}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="lastWorkingDay" className="text-zinc-300">Last Working Day</Label>
                         <Input id="lastWorkingDay" name="lastWorkingDay" type="date" className="border-white/10 bg-white/5 text-white" required />

@@ -51,9 +51,9 @@ export default async function RecruitmentPage() {
                 <p className="text-muted-foreground">Manage your interviewers and pending requests.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-full">
-                {/* Left Column: Actions & Gatekeeping (40% - 2/5 cols) */}
-                <div className="lg:col-span-2 flex flex-col gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+                {/* Left Column: Actions & Gatekeeping (50%) */}
+                <div className="flex flex-col gap-8">
                     <section>
                         <InviteUserCard />
                     </section>
@@ -63,8 +63,8 @@ export default async function RecruitmentPage() {
                     </section>
                 </div>
 
-                {/* Right Column: Roster (60% - 3/5 cols) */}
-                <div className="lg:col-span-3 flex flex-col h-full">
+                {/* Right Column: Roster (50%) */}
+                <div className="flex flex-col h-full">
                     <RecentAccountsTable accounts={accounts || []} />
                 </div>
             </div>

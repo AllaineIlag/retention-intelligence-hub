@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { resend } from '@/lib/email';
+import { EMAIL_CONFIG } from '@/constants/enums';
 import ResignationScheduledEmail from '@/emails/ResignationScheduledEmail';
 
 // Schedule Interview (Step 3)
@@ -38,7 +39,7 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
     if (resignation?.profiles?.email) {
         try {
             await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@mail.retentionhub.cloud>',
+                from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                 to: [(resignation as any).profiles.email],
                 subject: 'Exit Interview Scheduled & Action Required',
                 react: ResignationScheduledEmail({
@@ -90,7 +91,7 @@ export async function getInterviewDetails(resignationId: string) {
     // 2. Fetch Exit Responses + Questions
     // We left join questions to get the text
     const { data: responses, error: respError } = await supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
       *,
       question:questions (*)
@@ -103,10 +104,66 @@ export async function getInterviewDetails(resignationId: string) {
         return { error: 'Failed to fetch responses' };
     }
 
+    // 3. Fetch Verified Results (Analytics Data)
+    // This is the "Truth" that the interviewer edits.
+    const { data: verifiedResults, error: verError } = await supabase
+        .from('exit_interview_results')
+        .select('*')
+        .eq('resignation_id', resignationId);
+
+    if (verError) {
+        console.error('Error fetching verified results:', verError);
+        // We don't block the UI, just return empty array
+    }
+
     return {
         resignation,
-        responses,
+        responses, // Raw (Left Side)
+        verifiedResults: verifiedResults || [] // Verified (Right Side)
     };
+}
+
+export async function saveVerifiedAnswer(
+    resignationId: string,
+    questionKey: string,
+    value: any // JSONB
+) {
+    const supabase = await createClient();
+
+    // Guard: Block edits after finalization
+    const { data: resignation, error: checkError } = await supabase
+        .from('resignations')
+        .select('status')
+        .eq('id', resignationId)
+        .single();
+
+    if (checkError || !resignation) {
+        return { success: false, error: 'Resignation not found' };
+    }
+
+    if (resignation.status === 'completed') {
+        return { success: false, error: 'This interview is finalized and cannot be edited.' };
+    }
+
+    // Upsert the verified answer
+    const { error } = await supabase
+        .from('exit_interview_results')
+        .upsert({
+            resignation_id: resignationId,
+            question_key: questionKey,
+            response_value: value,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'resignation_id,question_key'
+        });
+
+    if (error) {
+        console.error('Error saving verified answer:', error);
+        return { success: false, error: 'Failed to save verified answer' };
+    }
+
+    revalidatePath(`/dashboard/interview/${resignationId}`);
+    return { success: true };
 }
 
 export async function saveCorrection(
@@ -154,7 +211,7 @@ export async function saveCorrection(
 
     // Let's get the current row first, and check resignation status
     const { data: current, error: fetchError } = await supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             *,
             resignation:resignations (
@@ -194,7 +251,7 @@ export async function saveCorrection(
     }
 
     const { error } = await supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .update(updatePayload)
         .eq('id', responseId);
 
@@ -240,7 +297,7 @@ export async function getAllInterviews() {
             status,
             created_at,
             scheduled_interview_date,
-            exit_date,
+            last_working_day,
             employee_details (
                 full_name,
                 department
@@ -251,7 +308,8 @@ export async function getAllInterviews() {
                 role
             )
         `)
-        .in('status', ['pending', 'scheduled'])
+        // Fetch ALL statuses so we can segment them on the client (Active vs History)
+        // .in('status', ['pending', 'scheduled']) <-- REMOVED LIMITATION
         .order('created_at', { ascending: false });
 
 
@@ -274,4 +332,31 @@ export async function getAllInterviews() {
 
 
     return { success: true, data: formattedInterviews };
+}
+
+export async function getInterviewerDashboard() {
+    const supabase = await createClient();
+
+    // Fetch ALL relevant cases for the interviewer
+    // They need to see:
+    // 1. Scheduled (Today/Upcoming) -> 'scheduled' or 'approved' (depending on nomenclature, but usually 'scheduled')
+    // 2. Pending Verification -> 'pending' (HR Verification)
+    // 3. Ready for Scheduling -> 'verified'
+
+    const { data: allCases, error } = await supabase
+        .from('resignations')
+        .select(`
+            *,
+            employee_details ( full_name, current_position, department, employee_number ),
+            profiles ( email )
+        `)
+        .in('status', ['pending_interview'])
+        .order('scheduled_interview_date', { ascending: true, nullsFirst: false }); // Put scheduled ones first-ish? No, sort by date for scheduled.
+
+    if (error) {
+        console.error('Error fetching interviewer dashboard:', error);
+        return { success: false, error: 'Failed to fetch dashboard data' };
+    }
+
+    return { success: true, data: allCases };
 }

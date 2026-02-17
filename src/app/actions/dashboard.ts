@@ -53,7 +53,7 @@ export async function getDashboardStats(filters: AnalyticsFilters = {}) {
                 department
             )
         `, { count: 'exact', head: true })
-        .in('status', ['pending', 'scheduled']);
+        .in('status', ['pending_exit_form', 'pending_interview', 'scheduled']);
 
     if (filters.department && filters.department.length > 0) {
         resignationsQuery = resignationsQuery.in('employee_details.department', filters.department);
@@ -75,7 +75,7 @@ export async function getDashboardStats(filters: AnalyticsFilters = {}) {
                 department
             )
         `, { count: 'exact', head: true })
-        .in('status', ['completed', 'approved', 'verified', 'scheduled']);
+        .eq('status', 'completed');
 
     if (filters.startDate) {
         exitsQuery = exitsQuery.gte('created_at', filters.startDate.toISOString());
@@ -102,7 +102,7 @@ export async function getDashboardStats(filters: AnalyticsFilters = {}) {
 
     // 4. Misunderstood Questions Count (Filtered)
     let correctionQuery = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             id,
             resignations!inner (
@@ -142,7 +142,7 @@ export async function getMisunderstoodQuestions(filters: AnalyticsFilters = {}):
     const supabase = await createClient();
 
     let query = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             original_answer, 
             corrected_answer, 
@@ -207,7 +207,7 @@ export async function getDetailedExitStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     let query = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             questionnaire_responses, 
             created_at,
@@ -399,7 +399,7 @@ export async function getRecommendationStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     let query = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             questionnaire_responses, 
             created_at,
@@ -452,7 +452,7 @@ export async function getCareerGrowthStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     let query = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             questionnaire_responses, 
             created_at,
@@ -514,7 +514,7 @@ export async function getRateOfPayStats(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
     let query = supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             questionnaire_responses, 
             created_at,

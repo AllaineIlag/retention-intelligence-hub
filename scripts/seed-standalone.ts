@@ -1,9 +1,19 @@
-'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import { revalidatePath } from 'next/cache';
 import { v4 as uuidv4 } from 'uuid';
 import { faker } from '@faker-js/faker';
+import fs from 'fs';
+import path from 'path';
+import * as dotenv from 'dotenv'; // Ensure dotenv is handled
+
+// Load .env.local manually
+const envPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(envPath)) {
+    const envConfig = dotenv.parse(fs.readFileSync(envPath));
+    for (const k in envConfig) {
+        process.env[k] = envConfig[k];
+    }
+}
 
 // Helper to get admin client
 function getAdminClient() {
@@ -78,7 +88,15 @@ export async function seedData(config: SeedConfig) {
         if (!allEmployees) throw new Error('No employees available for seeding.');
 
         // 3. Simulation Logic
-        const { data: questionData } = await supabase.from('questions').select('id, question_key, category');
+        // Select category as well now
+        const { data: questionData, error: qError } = await supabase.from('questions').select('id, question_key, category');
+
+        if (qError) {
+            console.error('Error fetching questions:', qError);
+            throw new Error(`Failed to fetch questions: ${qError.message}`);
+        }
+
+        console.log(`Fetched ${questionData?.length} questions.`);
 
         const resignations = [];
         const allResponses: any[] = [];
@@ -115,7 +133,6 @@ export async function seedData(config: SeedConfig) {
                     id: resId,
                     employee_id: employee.id,
                     status,
-                    reason: `[MOCK_DATA] ${faker.lorem.sentence()}`,
                     created_at: resignationDate.toISOString(),
                     last_working_day: new Date(resignationDate.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString(),
                 });
@@ -156,6 +173,10 @@ export async function seedData(config: SeedConfig) {
             }
         }
 
+        console.log(`Generated ${resignations.length} resignations.`);
+        console.log(`Generated ${allResponses.length} exit responses.`);
+        console.log(`Generated ${questionnaireResults.length} questionnaire results.`);
+
         // 4. Batch Insert
         const BATCH_SIZE = 500;
         for (let i = 0; i < resignations.length; i += BATCH_SIZE) {
@@ -170,7 +191,7 @@ export async function seedData(config: SeedConfig) {
             await supabase.from('exit_questionnaire_results').insert(questionnaireResults.slice(i, i + BATCH_SIZE));
         }
 
-        revalidatePath('/dashboard');
+        // revalidatePath('/dashboard'); // Removed for standalone script
         return { success: true };
     } catch (error) {
         console.error('[DevTools] Seed Error:', error);
@@ -178,93 +199,22 @@ export async function seedData(config: SeedConfig) {
     }
 }
 
-
-export async function clearData() {
-    try {
-        const supabase = getAdminClient();
-
-        console.log('Initiating Protocol Scouring...');
-
-        // 1. Identify Targets
-        // We target both the new simulation domain and any legacy mock data
-        // Using separate queries to ensure robustness against OR filter syntax edge cases
-        const { data: simProfiles, error: simError } = await supabase
-            .from('profiles')
-            .select('id')
-            .ilike('email', '%@sim.retention.com');
-
-        if (simError) throw new Error('Simulation target fetch failed: ' + simError.message);
-
-        const { data: mockProfiles, error: mockError } = await supabase
-            .from('profiles')
-            .select('id')
-            .ilike('email', '%@mock.co');
-
-        if (mockError) throw new Error('Legacy target fetch failed: ' + mockError.message);
-
-        const profiles = [...(simProfiles || []), ...(mockProfiles || [])];
-
-        if (!profiles || profiles.length === 0) {
-            return { success: true, message: 'No simulated targets found.' };
+async function main() {
+    console.log('Starting standalone seed...');
+    const config: SeedConfig = {
+        headcount: 50,
+        attritionRate: 5,
+        volatility: 0.2,
+        sentimentScore: 70,
+        monthsBack: 6,
+        ratios: {
+            completed: 80,
+            cancelled: 10
         }
+    };
 
-        // Deduplicate IDs just in case
-        const profileIds = Array.from(new Set(profiles.map(p => p.id)));
-        console.log(`[Scour] Identified ${profileIds.length} personnel targets.`);
-
-        // 2. Identify Linked Resignations (for cascade)
-        // We need resignation IDs to clear responses
-        const { data: resignations, error: resFetchError } = await supabase
-            .from('resignations')
-            .select('id')
-            .in('employee_id', profileIds);
-
-        const resignationIds = resignations?.map(r => r.id) || [];
-        console.log(`[Scour] Identified ${resignationIds.length} resignation records.`);
-
-        // Helper for batched deletion
-        const batchDelete = async (table: string, column: string, ids: string[]) => {
-            if (ids.length === 0) return;
-            const BATCH_SIZE = 50; // Reduced from 1000 to prevent 400 Bad Request (URL/Payload limit)
-            for (let i = 0; i < ids.length; i += BATCH_SIZE) {
-                const batch = ids.slice(i, i + BATCH_SIZE);
-                const { error } = await supabase.from(table).delete().in(column, batch);
-                if (error) throw new Error(`Failed to purge ${table}: ${error.code} - ${error.message}`);
-            }
-        };
-
-        // 3. Execution Phase (Manual Cascade)
-        // Order: Intelligence -> State -> Identity
-
-        // A. Intelligence (Responses)
-        if (resignationIds.length > 0) {
-            await batchDelete('exit_questionnaire_results', 'resignation_id', resignationIds);
-            await batchDelete('exit_responses', 'resignation_id', resignationIds);
-            console.log('[Scour] Intelligence sectors cleared.');
-        }
-
-        // B. State (Resignations & Details)
-        if (profileIds.length > 0) {
-            await batchDelete('resignations', 'employee_id', profileIds); // Delete resignations first
-            await batchDelete('employee_details', 'id', profileIds);      // Then details (FK is id)
-            console.log('[Scour] State records cleared.');
-        }
-
-        // C. Identity (Profiles)
-        if (profileIds.length > 0) {
-            await batchDelete('profiles', 'id', profileIds);
-            console.log('[Scour] Identity records neutralized.');
-        }
-
-        // 4. Cleanup Residuals (Legacy)
-        await supabase.from('resignations').delete().ilike('reason', '[MOCK_DATA]%');
-
-        revalidatePath('/dashboard');
-        return { success: true, count: profileIds.length };
-
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-        console.error('Clear Error:', error);
-        return { success: false, error: errorMessage };
-    }
+    await seedData(config);
+    console.log('Seed verify complete.');
 }
+
+main().catch(console.error);

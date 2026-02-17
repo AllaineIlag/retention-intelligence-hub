@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { EMAIL_CONFIG } from '@/constants/enums';
 
 // Initialize Admin Client for User Management (Service Role)
 const adminSupabase = createAdminClient(
@@ -123,6 +124,8 @@ export async function getRecentAccounts() {
                 full_name
             )
         `)
+        .neq('status', 'pending') // Exclude pending users (they have their own table)
+        .eq('role', 'interviewer') // Only show interviewers (exclude leads/employees)
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -220,7 +223,7 @@ export async function approveUser(userId: string) {
             const siteUrl = process.env.DOMAIN_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.retentionhub.cloud';
 
             await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                 to: targetEmail,
                 subject: 'Access Approved — Retention Intelligence Hub',
                 html: `

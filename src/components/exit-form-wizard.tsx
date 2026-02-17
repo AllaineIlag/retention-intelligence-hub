@@ -48,10 +48,16 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import { COUNTRIES } from "@/lib/countries";
+import {
+  DEPARTMENTS,
+  BUSINESS_UNITS,
+  INTERMEDIATE_SUPERVISORS,
+  POSITIONS
+} from '@/constants/enums';
 
 interface ExitFormWizardProps {
   user: { id: string; email?: string } | null;
-  resignation: { id: string; exit_date: string; status: string };
+  resignation: { id: string; exit_date: string; status: string; last_working_day?: string };
   profile: { full_name: string } | null;
   questions: Question[];
   initialResponse: {
@@ -68,36 +74,7 @@ const STEPS = [
   { id: 'summary', title: 'Summary' },
 ];
 
-const POSITIONS = [
-  "Software Engineer",
-  "Senior Software Engineer",
-  "Tech Lead",
-  "Product Manager",
-  "UI/UX Designer",
-  "QA Engineer",
-  "Marketing Manager",
-  "HR Representative",
-  "Operations Specialist"
-];
 
-const DEPARTMENTS = [
-  "Engineering",
-  "Product",
-  "Design",
-  "Marketing",
-  "Human Resources",
-  "Operations",
-  "Sales",
-  "Executive Staff"
-];
-
-const SUPERVISORS = [
-  "Swain (Eng Lead)",
-  "Katarina (Frontend Lead)",
-  "Nasus (Data Lead)",
-  "Viktor (Backend Lead)",
-  "Jhin (Design Lead)"
-];
 
 const QUESTIONNAIRE_STEPS_COUNT = 7;
 
@@ -124,9 +101,11 @@ export function ExitFormWizard({
     date_hired: initialResponse?.employee_details?.date_hired || '',
     position_when_hired: initialResponse?.employee_details?.position_when_hired || '',
     current_position: initialResponse?.employee_details?.current_position || '',
-    department_supervisor: initialResponse?.employee_details?.department_supervisor || '',
+
+    business_unit: initialResponse?.employee_details?.business_unit || '',
+    intermediate_supervisor: initialResponse?.employee_details?.intermediate_supervisor || '',
     department: initialResponse?.employee_details?.department || '',
-    date_of_resignation: initialResponse?.employee_details?.date_of_resignation || resignation?.exit_date || '',
+    date_of_resignation: initialResponse?.employee_details?.date_of_resignation || resignation?.last_working_day || '',
   });
 
   const [responses, setResponses] = useState<QuestionnaireResponses>({
@@ -158,13 +137,17 @@ export function ExitFormWizard({
   const handleAutoSave = useCallback(async (newDetails: EmployeeDetails | null, newResponses: QuestionnaireResponses | null) => {
     setIsSaving(true);
     try {
+      // ALWAYS send the full payload to support DELETE + INSERT strategy
+      // Use the new value if provided, otherwise fallback to current state
       const payload: {
         resignation_id: string;
-        employee_details?: EmployeeDetails;
-        questionnaire_responses?: QuestionnaireResponses;
-      } = { resignation_id: resignation.id };
-      if (newDetails) payload.employee_details = newDetails;
-      if (newResponses) payload.questionnaire_responses = newResponses;
+        employee_details: EmployeeDetails;
+        questionnaire_responses: QuestionnaireResponses;
+      } = {
+        resignation_id: resignation.id,
+        employee_details: newDetails ?? details,
+        questionnaire_responses: newResponses ?? responses
+      };
 
       const result = await saveExitForm(payload);
       if (!result.success) {
@@ -175,7 +158,9 @@ export function ExitFormWizard({
     } finally {
       setIsSaving(false);
     }
-  }, [resignation.id]);
+  }, [resignation.id, details, responses]); // Add dependencies to ensure we have latest state
+
+
 
   const updateDetail = (field: keyof EmployeeDetails, value: string) => {
     const newDetails = { ...details, [field]: value };
@@ -230,7 +215,9 @@ export function ExitFormWizard({
         'date_of_resignation',
         'position_when_hired',
         'current_position',
-        'department_supervisor'
+        'department',
+        'business_unit',
+        'intermediate_supervisor',
       ];
       return requiredFields.every(field => !!details[field]);
     }
@@ -460,6 +447,7 @@ export function ExitFormWizard({
                     date={details.date_of_resignation ? new Date(details.date_of_resignation) : undefined}
                     onChange={(date) => updateDetail('date_of_resignation', date?.toISOString() || '')}
                     placeholder="Pick resignation date"
+                    disabled={true}
                   />
 
                   <Field>
@@ -492,28 +480,47 @@ export function ExitFormWizard({
                     </Select>
                   </Field>
 
-                  <Field className="md:col-span-2">
-                    <FieldLabel htmlFor="supervisor">Department / Immediate Superior</FieldLabel>
+                  <Field>
+                    <FieldLabel htmlFor="department">Department</FieldLabel>
                     <Select
-                      value={details.department_supervisor}
-                      onValueChange={(val) => updateDetail('department_supervisor', val)}
+                      value={details.department}
+                      onValueChange={(val) => updateDetail('department', val)}
                     >
-                      <SelectTrigger id="supervisor">
-                        <SelectValue placeholder="Select superior" />
+                      <SelectTrigger id="department">
+                        <SelectValue placeholder="Select department" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-[15rem]">
-                        {DEPARTMENTS.map(dept => (
-                          <React.Fragment key={dept}>
-                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sticky top-0 bg-popover z-10">
-                              {dept}
-                            </div>
-                            {SUPERVISORS.map(sup => (
-                              <SelectItem key={`${dept}-${sup}`} value={`${dept} - ${sup}`}>
-                                {sup}
-                              </SelectItem>
-                            ))}
-                          </React.Fragment>
-                        ))}
+                      <SelectContent>
+                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="business_unit">Business Unit</FieldLabel>
+                    <Select
+                      value={details.business_unit}
+                      onValueChange={(val) => updateDetail('business_unit', val)}
+                    >
+                      <SelectTrigger id="business_unit">
+                        <SelectValue placeholder="Select business unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BUSINESS_UNITS.map(bu => <SelectItem key={bu} value={bu}>{bu}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="intermediate_supervisor">Department/Immediate Supervisor</FieldLabel>
+                    <Select
+                      value={details.intermediate_supervisor}
+                      onValueChange={(val) => updateDetail('intermediate_supervisor', val)}
+                    >
+                      <SelectTrigger id="intermediate_supervisor">
+                        <SelectValue placeholder="Select supervisor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {INTERMEDIATE_SUPERVISORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -814,7 +821,6 @@ export function ExitFormWizard({
                           className={`w-32 h-32 rounded-2xl flex-col gap-3 text-xl ${responses.recommendation === "No" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground border-destructive" : ""}`}
                           onClick={() => updateResponse({ recommendation: "No" })}
                         >
-                          {/* Keep icon simple */}
                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-circle"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
                           No
                         </Button>
@@ -833,7 +839,6 @@ export function ExitFormWizard({
                       )}
                     </div>
                   )}
-
                 </div>
               )}
 
@@ -849,7 +854,6 @@ export function ExitFormWizard({
                       className="p-6 rounded-xl border bg-muted/20 shadow-inner space-y-4 max-h-[400px] overflow-y-auto scroll-smooth"
                       onScroll={(e) => {
                         const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-                        // Buffer of 5px to ensure it triggers easily on different zoom levels
                         if (scrollHeight - scrollTop <= clientHeight + 5) {
                           setCanAcceptTerms(true);
                         }
@@ -943,12 +947,12 @@ export function ExitFormWizard({
                 <StepSummary
                   details={details}
                   responses={responses}
-                  onEdit={(target) => {
+                  onEdit={(target, index) => {
                     setIsEditingFromSummary(true);
                     if (target === 'info') setCurrentStep(0);
                     if (target === 'questions') {
                       setCurrentStep(1);
-                      setQuestionnaireStep(0);
+                      setQuestionnaireStep(index ?? 0);
                     }
                     if (target === 'terms') setCurrentStep(2);
                   }}
@@ -994,7 +998,6 @@ export function ExitFormWizard({
             </motion.div>
           </AnimatePresence>
         </CardContent>
-
 
         {currentStep !== 3 && (
           <CardFooter className="flex flex-col-reverse sm:flex-row sm:justify-between gap-4 border-t bg-muted/20 p-6 card-footer-controls">

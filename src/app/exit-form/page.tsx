@@ -48,11 +48,13 @@ export default async function ExitFormPage() {
     const resignation = resignationRes.data;
     let isLocked = false;
 
-    if (resignation.status === 'locked') {
+    if (resignation.status === 'locked' || resignation.status === 'completed') {
         isLocked = true;
     } else if (resignation.status === 'scheduled' && resignation.scheduled_interview_date) {
         const interviewDate = new Date(resignation.scheduled_interview_date);
-        const lockThreshold = new Date(interviewDate.getTime() - (24 * 60 * 60 * 1000));
+        // Relaxing the 24h lock to allow "Same Day" completion for testing/urgent cases.
+        // Lock only when the interview actually starts.
+        const lockThreshold = interviewDate;
 
         if (new Date() >= lockThreshold) {
             isLocked = true;

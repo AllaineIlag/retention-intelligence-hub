@@ -1,5 +1,7 @@
 'use client'
 
+
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { cn } from "@/lib/utils"

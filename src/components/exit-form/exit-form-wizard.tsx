@@ -76,7 +76,7 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                             date_hired: employeeDetails.dateHired,
                             position_when_hired: employeeDetails.positionHired,
                             current_position: employeeDetails.position,
-                            department_supervisor: employeeDetails.supervisor,
+                            intermediate_supervisor: employeeDetails.supervisor,
                             department: employeeDetails.department,
                             date_of_resignation: resignation.exit_date
                         } as any // Allow partial save or use appropriate type assertion for transient fields
@@ -98,7 +98,7 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                     await saveExitForm({
                         resignation_id: resignation.id,
                         questionnaire_responses: {
-                            reason_for_leaving: resignation.reason ? [resignation.reason] : [],
+                            reason_for_leaving: responses['reason_for_leaving']?.responseText ? [responses['reason_for_leaving'].responseText] : [],
                             career_growth: responses['career_growth']?.responseText,
                             rate_of_pay: responses['rate_of_pay']?.responseText,
                             benefits: responses['benefits']?.responseText,
@@ -142,12 +142,13 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
                         date_hired: employeeDetails.dateHired,
                         position_when_hired: employeeDetails.positionHired,
                         current_position: employeeDetails.position,
-                        department_supervisor: employeeDetails.supervisor,
+                        intermediate_supervisor: employeeDetails.supervisor,
+                        business_unit: '', // Defaulting to empty as it's not captured in wizard yet
                         department: employeeDetails.department,
                         date_of_resignation: resignation.exit_date || ''
                     },
                     questionnaire_responses: {
-                        reason_for_leaving: resignation.reason ? [resignation.reason] : [],
+                        reason_for_leaving: responses['reason_for_leaving']?.responseText ? [responses['reason_for_leaving'].responseText] : [],
                         career_growth: responses['career_growth']?.responseText,
                         rate_of_pay: responses['rate_of_pay']?.responseText,
                         benefits: responses['benefits']?.responseText,
@@ -213,8 +214,8 @@ export function ExitFormWizard({ resignation: initialResignation, referenceData,
 
             {currentStep === 2 && (
                 <StepQuestionnaire
-                    resignationReason={resignation.reason}
-                    onReasonChange={(val) => updateResignation({ reason: val })}
+                    resignationReason={responses['reason_for_leaving']?.responseText || null}
+                    onReasonChange={(val) => updateResponse('reason_for_leaving', { responseText: val })}
                     questions={questions}
                     responses={responses}
                     onResponseChange={updateResponse}

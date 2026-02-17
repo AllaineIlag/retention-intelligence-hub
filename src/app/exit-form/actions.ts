@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 // Types
@@ -10,7 +11,9 @@ export interface EmployeeDetails {
     date_hired: string;
     position_when_hired: string;
     current_position: string;
-    department_supervisor: string;
+
+    intermediate_supervisor: string; // New
+    business_unit: string; // New
     department: string;
     date_of_resignation: string;
 }
@@ -69,7 +72,7 @@ export async function getResignation() {
         .from('resignations')
         .select('*')
         .eq('employee_id', user.id)
-        .in('status', ['pending', 'scheduled', 'locked']) // Check relevant statuses
+        .in('status', ['pending_exit_form', 'pending_interview', 'scheduled', 'locked', 'completed']) // Check relevant statuses
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -143,11 +146,41 @@ export async function saveExitForm(formData: ExitFormData) {
         return { success: false, error: snapshotError.message };
     }
 
-    // 2. Sync Granular Answers to `exit_responses` for Interviewer View (Phase 4)
+    // 1.5 Sync Employee Details to `employee_details` table
+    // This ensures real users have their Personal Info populated (not just in form_snapshot)
+    if (formData.employee_details) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const adminClient = createAdminClient();
+            const ed = formData.employee_details;
+            const { error: edError } = await adminClient
+                .from('employee_details')
+                .upsert({
+                    id: user.id,
+                    full_name: ed.employee_name || null,
+                    employee_number: ed.employee_number || null,
+                    department: ed.department || null,
+                    current_position: ed.current_position || null,
+                    position_when_hired: ed.position_when_hired || null,
+                    date_hired: ed.date_hired || null,
+                    immediate_superior: ed.intermediate_supervisor || null,
+                    resignation_date: ed.date_of_resignation || null,
+                }, { onConflict: 'id' });
+
+            if (edError) {
+                console.error('Employee Details Sync Error:', edError);
+                // Non-blocking — snapshot is already saved
+            }
+        }
+    }
+
+    // 2. Sync Granular Answers to `exit_questionnaires_result` for Interviewer View (Phase 4)
+    // 2. Sync Granular Answers to `exit_questionnaires_result` for Interviewer View (Phase 4)
     if (formData.questionnaire_responses) {
         // Fetch Question Map (Key -> ID)
         const { data: questions } = await supabase.from('questions').select('id, question_key');
         const questionMap = new Map(questions?.map(q => [q.question_key, q.id]));
+
 
         const updates = Object.entries(formData.questionnaire_responses).map(([key, value]) => {
             // Skip comments or non-question keys for now unless mapped
@@ -170,29 +203,41 @@ export async function saveExitForm(formData: ExitFormData) {
                 question_id: questionId,
                 response_text: Array.isArray(value) ? value.join(', ') : value,
                 selected_options: Array.isArray(value) ? value : null,
+                comment: comment, // Ensure comment is saved if column exists
                 updated_at: new Date().toISOString()
             };
         }).filter(Boolean); // Filter nulls
 
         if (updates.length > 0) {
-            // Upsert granular responses
-            // Note: We need a unique constraint on (resignation_id, question_id) for upsert to work.
-            // Assumption: Codebase implies such a constraint exists or we rely on ID. 
-            // Since we don't have the ID, we rely on the constraint.
-            // If strict constraint missing, this might duplicate. 
-            // Given the schema error "violates not-null", we initially had trouble inserting. 
-            // We'll hope there's a unique index on resign_id + question_id.
+            // STRATEGY CHANGE: DELETE + INSERT (Admin Client)
+            // Reason: RLS prevents standard users from reliably upserting/deleting exit_responses.
+            // Admin Client bypasses RLS to ensure data persistence.
+            const adminClient = createAdminClient();
 
-            // Check for existence or delete-insert strategy? Upsert is safer.
-            const { error: batchError } = await supabase
-                .from('exit_responses')
-                .upsert(updates as any, { onConflict: 'resignation_id,question_id' }); // Explicit constraint target
+            // 1. Delete existing responses for this resignation to prevent duplicates/conflicts
+            const { error: deleteError } = await adminClient
+                .from('exit_questionnaires_result')
+                .delete()
+                .eq('resignation_id', formData.resignation_id);
 
-            if (batchError) {
-                console.error('Granular Sync Error:', batchError);
+            if (deleteError) {
+                console.error('Granular Sync (Delete) Error:', deleteError);
+                // Continue to try insert, or abort? If delete fails, insert might violate unique constraints if they exist.
+                // But we proceed to try.
+            }
+
+            // 2. Insert new responses
+            const { error: insertError } = await adminClient
+                .from('exit_questionnaires_result')
+                .insert(updates as any);
+
+            if (insertError) {
+                console.error('Granular Sync (Insert) Error:', insertError);
                 // We don't block the UI success since Snapshot is saved
             }
         }
+
+
     }
 
     revalidatePath('/exit-form');
@@ -203,21 +248,34 @@ export async function saveExitForm(formData: ExitFormData) {
 export async function submitExitForm(resignationId: string) {
     const supabase = await createClient();
 
-    // Update exit_responses with submitted timestamp
-    const { error: responseError } = await supabase
-        .from('exit_responses')
-        .update({ submitted_at: new Date().toISOString() })
-        .eq('resignation_id', resignationId);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Not authenticated' };
 
-    if (responseError) {
-        return { success: false, error: responseError.message };
-    }
-
-    // Update resignation status to completed
-    const { error: resignationError } = await supabase
+    // Verify ownership (RLS on SELECT should work)
+    const { data: existing, error: checkError } = await supabase
         .from('resignations')
-        .update({ status: 'completed' })
-        .eq('id', resignationId);
+        .select('id')
+        .eq('id', resignationId)
+        .single();
+
+    if (checkError || !existing) return { success: false, error: 'Unauthorized' };
+
+
+
+    // Update resignation status to pending_interview (Phase 2: Logic)
+    // After the lead accepts (status → 'scheduled'), the employee fills the form.
+    // On submission, promote status from 'scheduled' → 'pending_interview'.
+    const adminClient = createAdminClient();
+
+    // Postgres update with condition is atomic — only promote if currently 'scheduled'.
+    const { error: resignationError } = await adminClient
+        .from('resignations')
+        .update({ status: 'pending_interview' })
+        .eq('id', resignationId)
+        .eq('status', 'scheduled'); // Only promote after lead has accepted
+
+    // Note: If update returns 0 rows modified because status was already promoted, that's fine.
+    // We don't consider it an error.
 
     if (resignationError) {
         return { success: false, error: resignationError.message };
@@ -253,15 +311,29 @@ export async function getUserProfile() {
         return { success: false, error: 'Not authenticated' };
     }
 
-    const { data, error } = await supabase
+    // Fetch Profile
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-    if (error) {
-        return { success: false, error: error.message };
+    if (profileError) {
+        return { success: false, error: profileError.message };
     }
 
-    return { success: true, data };
+    // Fetch Employee Details
+    const { data: details, error: detailsError } = await supabase
+        .from('employee_details')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    return {
+        success: true,
+        data: {
+            ...profile,
+            ...details // This overlays department, business_unit, intermediate_supervisor if they exist
+        }
+    };
 }

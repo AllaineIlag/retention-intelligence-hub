@@ -94,7 +94,7 @@ export async function getCorrectionHistory() {
     const supabase = await createClient();
 
     const { data: corrections, error } = await supabase
-        .from('exit_responses')
+        .from('exit_questionnaires_result')
         .select(`
             id,
             resignation_id,

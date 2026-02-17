@@ -86,7 +86,7 @@ export function StepReview({ resignation, responses, questions, employeeDetails 
                         <Label className="text-xs font-medium text-muted-foreground uppercase">Primary Reason for Leaving</Label>
                         <div className="mt-1">
                             <Badge variant="secondary" className="text-base px-3 py-1">
-                                {resignation.reason || "Not specified"}
+                                {responses['reason_for_leaving']?.responseText || "Not specified"}
                             </Badge>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ import ResignationApprovalEmail from '@/emails/ResignationApprovalEmail';
 import ResignationDeclineEmail from '@/emails/ResignationDeclineEmail';
 import { format } from 'date-fns';
 import { revalidatePath } from 'next/cache';
+import { EMAIL_CONFIG } from '@/constants/enums';
 
 // Verify Resignation (Step 2)
 export async function verifyResignation(resignationId: string, lastWorkingDay: Date) {
@@ -17,7 +18,7 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
     const { data: resignation, error: updateError } = await supabase
         .from('resignations')
         .update({
-            status: 'verified',
+            status: 'pending_interview', // 'verified' is not a valid ENUM. Keep as pending_interview until scheduled.
             last_working_day: lastWorkingDay.toISOString(),
         })
         .eq('id', resignationId)
@@ -42,7 +43,7 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
     if (resignation?.profiles?.email) {
         try {
             await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                 to: [(resignation as any).profiles.email],
                 subject: 'Resignation Notice Received',
                 react: ResignationAckEmail({ employeeName: (resignation as any).employee_details.full_name }),
@@ -88,7 +89,7 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
     if (resignation?.profiles?.email) {
         try {
             await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                 to: [(resignation as any).profiles.email],
                 subject: 'Exit Interview Scheduled',
                 react: ResignationApprovalEmail({
@@ -113,10 +114,8 @@ export async function declineResignation(resignationId: string) {
     const { data: resignation, error: updateError } = await supabase
         .from('resignations')
         .update({
-            status: 'declined', // Note: Enums might need update if 'declined' is not valid, checking database.types... 'cancelled' is there. 'declined' is not. Let's use 'cancelled' for now or 'completed' with note? The code previously used 'declined'. I will stick to 'cancelled' as per Enums if 'declined' fails TS check.
-            // Wait, previous code used 'declined'. If it compiled, then 'declined' is valid or types are loose.
-            // database.types.ts said: "pending" | "scheduled" | "completed" | "cancelled".
-            // So 'declined' violates types. I'll change it to 'cancelled' here to be safe and correct.
+            status: 'cancelled', // 'declined' is not in ENUM, using 'cancelled' to represent rejection/withdrawal
+            // We could add 'declined' to ENUM in future if distinct state is needed.
         })
         .eq('id', resignationId)
         .select(`
@@ -138,7 +137,7 @@ export async function declineResignation(resignationId: string) {
     if (resignation?.profiles?.email) {
         try {
             await resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                 to: [(resignation as any).profiles.email],
                 subject: 'Update Regarding Your Resignation',
                 react: ResignationDeclineEmail({ employeeName: (resignation as any).employee_details.full_name }),
@@ -155,7 +154,16 @@ export async function declineResignation(resignationId: string) {
 
 // Create Resignation (Step 2 - Hybrid)
 
-export async function createResignation(data: { name: string, email: string, department: string, lastWorkingDay: Date }) {
+// Create Resignation (Step 2 - Hybrid)
+
+export async function createResignation(data: {
+    name: string,
+    email: string,
+    department: string,
+    businessUnit: string,
+    intermediateSupervisor: string,
+    lastWorkingDay: Date
+}) {
     const supabaseAdmin = createAdminClient();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
@@ -208,6 +216,8 @@ export async function createResignation(data: { name: string, email: string, dep
         .upsert({
             id: userId, // Assuming 1:1 relation on ID
             department: data.department,
+            business_unit: data.businessUnit,
+            intermediate_supervisor: data.intermediateSupervisor,
             full_name: data.name,
             // email: data.email // If column exists? database.types did not show this table. We'll assume typical structure or rely on profile.
         });
@@ -225,9 +235,8 @@ export async function createResignation(data: { name: string, email: string, dep
         .from('resignations')
         .insert({
             employee_id: userId,
-            status: 'pending',
-            last_working_day: data.lastWorkingDay.toISOString(),
-            exit_date: data.lastWorkingDay.toISOString() // Assuming exit_date is same or similar
+            status: 'pending_exit_form', // Initial state
+            last_working_day: data.lastWorkingDay.toISOString()
         } as any)
         .select()
         .single();
@@ -240,18 +249,28 @@ export async function createResignation(data: { name: string, email: string, dep
     // 4. Send Acknowledgement Email
     try {
         await resend.emails.send({
-            from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@mail.retentionhub.cloud>',
+            from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
             to: [data.email],
             subject: 'Resignation Notice Received - Pending Review',
             react: ResignationAckEmail({
                 employeeName: data.name,
             }),
         });
-    } catch (emailError) {
+    } catch (emailError: any) {
         console.error('Email Error:', emailError);
-        // We return success but warn? Or just success. The case is created.
+        revalidatePath('/dashboard/team');
+        return {
+            success: true,
+            id: resignation.id,
+            emailError: true,
+            emailErrorMessage: emailError.message || 'Unknown delivery error'
+        };
     }
 
     revalidatePath('/dashboard/team');
-    return { success: true, id: resignation.id };
+    return {
+        success: true,
+        id: resignation.id,
+        emailError: false
+    };
 }

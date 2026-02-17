@@ -14,7 +14,8 @@ import {
     CheckCircle2,
     CalendarClock,
     XCircle,
-    Clock
+    Clock,
+    Lock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,12 +38,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Interview {
     id: string;
-    status: 'pending' | 'scheduled' | 'completed';
+    status: 'pending_exit_form' | 'pending_interview' | 'scheduled' | 'completed' | 'cancelled' | 'locked';
     created_at: string;
     scheduled_interview_date: string | null;
+    last_working_day: string | null;
     employee: {
         id: string;
         full_name: string | null;
@@ -68,6 +71,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { scheduleInterview } from "@/app/actions/interview-ops"
+import { declineResignation } from "@/app/actions/resignation-ops"
 import { toast } from "sonner" // Assuming sonner is used, consistent with previous dialog
 
 export function InterviewsTable({ data }: InterviewsTableProps) {
@@ -79,6 +83,10 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
     const [selectedInterview, setSelectedInterview] = useState<Interview | null>(null)
     const [scheduleDate, setScheduleDate] = useState('')
     const [isScheduling, setIsScheduling] = useState(false)
+
+    // Decline State
+    const [isDeclineOpen, setIsDeclineOpen] = useState(false)
+    const [isDeclining, setIsDeclining] = useState(false)
 
     const handleOpenSchedule = (interview: Interview) => {
         setSelectedInterview(interview)
@@ -108,33 +116,54 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
         setIsScheduling(false)
     }
 
+    const handleOpenDecline = (interview: Interview) => {
+        setSelectedInterview(interview)
+        setIsDeclineOpen(true)
+    }
+
+    const handleDeclineSubmit = async () => {
+        if (!selectedInterview) return
+
+        setIsDeclining(true)
+        const res = await declineResignation(selectedInterview.id)
+
+        if (res.success) {
+            toast.success("Resignation Declined", {
+                description: `Notification sent to ${selectedInterview.employee?.full_name}`
+            })
+            setIsDeclineOpen(false)
+        } else {
+            toast.error("Action Failed", {
+                description: res.error
+            })
+        }
+        setIsDeclining(false)
+    }
+
     const getInitials = (name: string) => name ? name.substring(0, 2).toUpperCase() : '??';
-
-    const filteredData = data.filter((interview) => {
-        const matchesSearch =
-            interview.employee?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            interview.employee?.email?.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesStatus = statusFilter === 'all' || interview.status === statusFilter;
-
-        return matchesSearch && matchesStatus;
-    });
 
     const getStatusPill = (status: string) => {
         const config: Record<string, { icon: any, color: string, border: string, bg: string, label: string, spin?: boolean }> = {
             scheduled: {
                 icon: CalendarClock,
-                color: 'text-indigo-400',
+                color: 'text-blue-400',
                 border: 'border-white/10',
                 bg: 'bg-white/5',
-                label: 'Scheduled'
+                label: 'Accepted'
             },
-            pending: {
+            pending_exit_form: {
                 icon: Loader,
                 color: 'text-amber-400',
                 border: 'border-white/10',
                 bg: 'bg-white/5',
-                label: 'Action Required' // Changed label to imply need for scheduling
+                label: 'Pending Approval'
+            },
+            pending_interview: {
+                icon: CheckCircle2,
+                color: 'text-cyan-400',
+                border: 'border-white/10',
+                bg: 'bg-white/5',
+                label: 'Ready for Interview'
             },
             completed: {
                 icon: CheckCircle2,
@@ -143,19 +172,19 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                 bg: 'bg-white/5',
                 label: 'Completed'
             },
-            verified: {
-                icon: CheckCircle2,
-                color: 'text-emerald-400',
-                border: 'border-white/10',
-                bg: 'bg-white/5',
-                label: 'Verified'
-            },
             cancelled: {
                 icon: XCircle,
                 color: 'text-rose-400',
                 border: 'border-white/10',
                 bg: 'bg-white/5',
                 label: 'Cancelled'
+            },
+            locked: {
+                icon: Lock,
+                color: 'text-orange-400',
+                border: 'border-white/10',
+                bg: 'bg-white/5',
+                label: 'Locked'
             },
             default: {
                 icon: Clock,
@@ -177,128 +206,88 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
         );
     };
 
+    // Tab counts
+    const pendingRequestsCount = data.filter(i => i.status === 'pending_exit_form').length;
+    const pendingInterviewCount = data.filter(i => i.status === 'pending_interview').length;
+    const historyCount = data.filter(i => ['completed', 'cancelled', 'scheduled'].includes(i.status)).length;
+
     return (
         <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full sm:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search by name or email..."
-                        className="pl-9 bg-white/5 border-white/10"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+            {/* TABS SEGMENTATION — 3 Tabs */}
+            <Tabs id="interviews-tabs" defaultValue="pending_requests" className="w-full">
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-6">
+                    <TabsList className="bg-white/5 border border-white/10">
+                        <TabsTrigger value="pending_requests">
+                            Pending Requests
+                            {pendingRequestsCount > 0 && (
+                                <span className="ml-1.5 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+                                    {pendingRequestsCount}
+                                </span>
+                            )}
+                        </TabsTrigger>
+                        <TabsTrigger value="pending_interview">
+                            Pending for Interview
+                            {pendingInterviewCount > 0 && (
+                                <span className="ml-1.5 inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-cyan-500/20 text-cyan-400 text-[10px] font-bold">
+                                    {pendingInterviewCount}
+                                </span>
+                            )}
+                        </TabsTrigger>
+                        <TabsTrigger value="history">History</TabsTrigger>
+                    </TabsList>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative w-full sm:w-72">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by name..."
+                                className="pl-9 bg-white/5 border-white/10"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Tab 1: Pending Requests — Lead accepts or declines here */}
+                <TabsContent value="pending_requests" className="mt-0">
+                    <DataTable
+                        data={data.filter(i => i.status === 'pending_exit_form')}
+                        query={searchQuery}
+                        onSchedule={handleOpenSchedule}
+                        onDecline={handleOpenDecline}
+                        getStatusPill={getStatusPill}
+                        getInitials={getInitials}
+                        tabType="pending_requests"
                     />
-                </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Button
-                        variant={statusFilter === 'all' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setStatusFilter('all')}
-                    >
-                        All
-                    </Button>
-                    <Button
-                        variant={statusFilter === 'scheduled' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setStatusFilter('scheduled')}
-                        className="text-indigo-400"
-                    >
-                        Scheduled
-                    </Button>
-                    <Button
-                        variant={statusFilter === 'pending' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setStatusFilter('pending')}
-                        className="text-amber-400"
-                    >
-                        Pending
-                    </Button>
-                </div>
-            </div>
+                </TabsContent>
 
-            {/* Table */}
-            <div className="rounded-xl border border-white/10 bg-[#0a0a0a]/50 overflow-hidden shadow-sm">
-                <Table>
-                    <TableHeader className="bg-white/5">
-                        <TableRow className="hover:bg-white/5 border-white/5">
-                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground pl-6">Employee</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Status</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Date</TableHead>
-                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground text-right pr-6">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredData.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
-                                    No interviews found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filteredData.map((interview) => (
-                                <TableRow key={interview.id} className="hover:bg-white/5 border-white/5 group transition-colors">
-                                    <TableCell className="pl-6">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9 border border-indigo-500/20">
-                                                <AvatarImage src={interview.employee?.avatar_url || ''} alt={interview.employee?.full_name || 'Employee'} />
-                                                <AvatarFallback className="bg-indigo-500/10 text-indigo-400 text-xs">
-                                                    {getInitials(interview.employee?.full_name || 'U')}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium text-slate-200 group-hover:text-white transition-colors">
-                                                    {interview.employee?.full_name || 'Unknown Employee'}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {interview.employee?.department || 'No Dept'} • {interview.employee?.role || 'Employee'}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {getStatusPill(interview.status)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col text-sm">
-                                            <span className="text-slate-300">
-                                                {interview.scheduled_interview_date
-                                                    ? format(new Date(interview.scheduled_interview_date), 'MMM d, yyyy')
-                                                    : 'Not Scheduled'}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {interview.scheduled_interview_date
-                                                    ? format(new Date(interview.scheduled_interview_date), 'h:mm a')
-                                                    : '-'}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right pr-6">
-                                        {interview.status === 'pending' ? (
-                                            <Button
-                                                size="sm"
-                                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
-                                                onClick={() => handleOpenSchedule(interview)}
-                                            >
-                                                Approve & Schedule
-                                            </Button>
-                                        ) : (
-                                            <Button asChild size="sm" variant="default" className="bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white shadow-none">
-                                                <Link href={`/dashboard/interview/${interview.id}`}>
-                                                    Open Room <ArrowRight className="ml-2 h-3 w-3" />
-                                                </Link>
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                {/* Tab 2: Pending for Interview — Employee submitted form, awaiting interview */}
+                <TabsContent value="pending_interview" className="mt-0">
+                    <DataTable
+                        data={data.filter(i => i.status === 'pending_interview')}
+                        query={searchQuery}
+                        onSchedule={handleOpenSchedule}
+                        onDecline={handleOpenDecline}
+                        getStatusPill={getStatusPill}
+                        getInitials={getInitials}
+                        tabType="pending_interview"
+                    />
+                </TabsContent>
 
-            <div className="text-xs text-center text-muted-foreground pt-4">
-                Showing {filteredData.length} active interviews
-            </div>
+                {/* Tab 3: History — Completed, Cancelled, or Accepted (waiting for form) */}
+                <TabsContent value="history" className="mt-0">
+                    <DataTable
+                        data={data.filter(i => ['completed', 'cancelled', 'scheduled'].includes(i.status))}
+                        query={searchQuery}
+                        onSchedule={handleOpenSchedule}
+                        onDecline={handleOpenDecline}
+                        getStatusPill={getStatusPill}
+                        getInitials={getInitials}
+                        tabType="history"
+                    />
+                </TabsContent>
+            </Tabs>
 
             <Dialog open={isScheduleOpen} onOpenChange={setIsScheduleOpen}>
                 <DialogContent className="sm:max-w-[425px] border-white/10 bg-[#0f0f11] text-white">
@@ -340,6 +329,171 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <Dialog open={isDeclineOpen} onOpenChange={setIsDeclineOpen}>
+                <DialogContent className="sm:max-w-[425px] border-rose-900/20 bg-[#0f0f11] text-white">
+                    <DialogHeader>
+                        <DialogTitle className="text-rose-400">Decline Resignation</DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Are you sure you want to decline this resignation request? This action cannot be undone.
+                            The employee will be notified via email.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {selectedInterview && (
+                        <div className="py-4">
+                            <div className="p-3 rounded-lg border border-rose-900/20 bg-rose-950/10 text-sm text-zinc-300 mb-4">
+                                <span className="font-semibold text-rose-200">Processing for:</span> {selectedInterview.employee?.full_name}
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setIsDeclineOpen(false)}
+                                    className="text-zinc-400 hover:text-white"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={handleDeclineSubmit}
+                                    disabled={isDeclining}
+                                    className="bg-rose-900 hover:bg-rose-800 text-white"
+                                >
+                                    {isDeclining ? "Declining..." : "Confirm Decline"}
+                                </Button>
+                            </DialogFooter>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+}
+
+function DataTable({
+    data,
+    query,
+    onSchedule,
+    onDecline,
+    getStatusPill,
+    getInitials,
+    tabType = 'pending_requests'
+}: {
+    data: Interview[],
+    query: string,
+    onSchedule: (i: Interview) => void,
+    onDecline: (i: Interview) => void,
+    getStatusPill: (s: string) => React.ReactNode,
+    getInitials: (n: string) => string,
+    tabType?: 'pending_requests' | 'pending_interview' | 'history'
+}) {
+    const filtered = data.filter((interview) =>
+        interview.employee?.full_name?.toLowerCase().includes(query.toLowerCase()) ||
+        interview.employee?.email?.toLowerCase().includes(query.toLowerCase())
+    );
+
+    return (
+        <div className="space-y-4">
+            {/* Table */}
+            <div className="rounded-xl border border-white/10 bg-[#0a0a0a]/50 overflow-hidden shadow-sm">
+                <Table>
+                    <TableHeader className="bg-white/5">
+                        <TableRow className="hover:bg-white/5 border-white/5">
+                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground pl-6">Employee</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Status</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Date</TableHead>
+                            <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground text-right pr-6">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filtered.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-32 text-center text-muted-foreground">
+                                    No interviews found.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filtered.map((interview) => (
+                                <TableRow key={interview.id} className="hover:bg-white/5 border-white/5 group transition-colors">
+                                    <TableCell className="pl-6">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-9 w-9 border border-indigo-500/20">
+                                                <AvatarImage src={interview.employee?.avatar_url || ''} alt={interview.employee?.full_name || 'Employee'} />
+                                                <AvatarFallback className="bg-indigo-500/10 text-indigo-400 text-xs">
+                                                    {getInitials(interview.employee?.full_name || 'U')}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <p className="font-medium text-slate-200 group-hover:text-white transition-colors">
+                                                    {interview.employee?.full_name || 'Unknown Employee'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {interview.employee?.department || 'No Dept'} • {interview.employee?.role || 'Employee'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        {getStatusPill(interview.status)}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col text-sm">
+                                            <span className="text-slate-300">
+                                                {interview.scheduled_interview_date
+                                                    ? format(new Date(interview.scheduled_interview_date), 'MMM d, yyyy')
+                                                    : 'Not Scheduled'}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {interview.scheduled_interview_date
+                                                    ? format(new Date(interview.scheduled_interview_date), 'h:mm a')
+                                                    : '-'}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-right pr-6">
+                                        {tabType === 'pending_requests' ? (
+                                            <>
+                                                <Button
+                                                    size="sm"
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
+                                                    onClick={() => onSchedule(interview)}
+                                                >
+                                                    Accept & Schedule
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="ml-2"
+                                                    onClick={() => onDecline(interview)}
+                                                >
+                                                    Decline
+                                                </Button>
+                                            </>
+                                        ) : tabType === 'pending_interview' ? (
+                                            <Button asChild size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20">
+                                                <Link href={`/dashboard/interview/${interview.id}`}>
+                                                    Go to Interview
+                                                    <ArrowRight className="ml-2 h-3 w-3" />
+                                                </Link>
+                                            </Button>
+                                        ) : (
+                                            <Button asChild size="sm" variant="default" className="bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white shadow-none">
+                                                <Link href={`/dashboard/interview/${interview.id}`}>
+                                                    {interview.status === 'completed' ? 'View Report' : 'View Case'}
+                                                    <ArrowRight className="ml-2 h-3 w-3" />
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            <div className="text-xs text-center text-muted-foreground pt-4">
+                Showing {filtered.length} interviews
+            </div>
         </div>
     );
 }

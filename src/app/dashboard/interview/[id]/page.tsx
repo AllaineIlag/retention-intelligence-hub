@@ -3,13 +3,13 @@ import { InterviewSession } from '@/components/interview/InterviewSession';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
-import { ArrowLeft, UserCircle, Lock } from 'lucide-react';
+import { UserCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function InterviewPage({ params }: { params: { id: string } }) {
     const { id } = await params;
-    const { resignation, responses, error } = await getInterviewDetails(id);
+    const { resignation, responses, verifiedResults, error } = await getInterviewDetails(id);
 
     // Map details for UI consistency
     const details = resignation ? {
@@ -47,13 +47,7 @@ export default async function InterviewPage({ params }: { params: { id: string }
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
-                        <Link href="/dashboard" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
-                            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-                        </Link>
-                        <span>/</span>
-                        <span>Live Interview</span>
-                    </div>
+
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
                         <UserCircle className="w-8 h-8 text-indigo-600" />
                         Interview: {
@@ -79,9 +73,11 @@ export default async function InterviewPage({ params }: { params: { id: string }
                     <Badge className={`
             ${resignation.status === 'completed' ? 'bg-green-100 text-green-700 hover:bg-green-200' : ''}
             ${resignation.status === 'scheduled' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : ''}
-            ${resignation.status === 'pending' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : ''}
+            ${resignation.status === 'pending_interview' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : ''}
+            ${resignation.status === 'pending_exit_form' || resignation.status === 'pending_interview' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : ''}
+            ${resignation.status === 'cancelled' ? 'bg-red-100 text-red-700 hover:bg-red-200' : ''}
           `}>
-                        Status: {resignation.status?.toUpperCase()}
+                        Status: {resignation.status?.replace(/_/g, ' ').toUpperCase()}
                     </Badge>
                 </div>
             </div>
@@ -98,6 +94,7 @@ export default async function InterviewPage({ params }: { params: { id: string }
                 <InterviewSession
                     resignation={resignation}
                     responses={responses || []}
+                    verifiedResults={verifiedResults || []}
                 />
             )}
         </div>

@@ -3,6 +3,7 @@ import { resend } from '@/lib/email';
 import ResignationReminderEmail from '@/emails/ResignationReminderEmail';
 import { format } from 'date-fns';
 import { NextResponse } from 'next/server';
+import { EMAIL_CONFIG } from '@/constants/enums';
 
 export async function GET(request: Request) {
     // 1. Security Check
@@ -51,7 +52,7 @@ export async function GET(request: Request) {
             try {
                 // Send Email
                 const { error: emailError } = await resend.emails.send({
-                    from: process.env.RESEND_FROM_EMAIL || 'Retention Intelligence Hub <noreply@demos.resend.dev>',
+                    from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
                     to: [resignation.profiles.email],
                     subject: 'Reminder: Upcoming Exit Interview',
                     react: ResignationReminderEmail({

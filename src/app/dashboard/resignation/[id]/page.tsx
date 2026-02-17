@@ -85,19 +85,7 @@ export default async function ResignationPage({ params }: PageProps) {
                         </CardHeader>
                     </Card>
 
-                    {/* Reason & Details */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Submission Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <h3 className="text-sm font-medium text-muted-foreground mb-1">Reason for Leaving</h3>
-                                <p className="text-lg">{resignation.reason || 'No specific reason provided in initial notice.'}</p>
-                            </div>
-                            {/* Note: In Phase 4.3 we will show the full questionnaire answers here */}
-                        </CardContent>
-                    </Card>
+                    {/* Reason & Details - Removed (Legacy) */}
                 </div>
 
                 {/* Right Column: Operations Panel (1/3 width) */}

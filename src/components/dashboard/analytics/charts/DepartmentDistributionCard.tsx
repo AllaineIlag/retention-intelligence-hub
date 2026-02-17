@@ -87,6 +87,38 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
         }
     };
 
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Sync with page-level filter
+    useEffect(() => {
+        if (version !== lastVersionRef.current) {
+            lastVersionRef.current = version;
+            handleRangeChange(pageFilter || '30d', true);
+        }
+    }, [pageFilter, version]);
+
+    // ... (keep handleRangeChange)
+
+    if (!isMounted) {
+        return (
+            <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl relative overflow-hidden", className)}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div>
+                        <CardTitle className="text-base font-medium tracking-tight">Department Breakdown</CardTitle>
+                        <CardDescription>Loading...</CardDescription>
+                    </div>
+                </CardHeader>
+                <CardContent className="h-[350px] flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </CardContent>
+            </Card>
+        );
+    }
+
     return (
         <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl relative overflow-hidden", className)}>
             {isLoading && (
@@ -159,6 +191,6 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                     </BarChart>
                 </ResponsiveContainer>
             </CardContent>
-        </Card>
+        </Card >
     );
 }

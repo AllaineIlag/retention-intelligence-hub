@@ -16,7 +16,7 @@ export async function loginWithInvite(slug: string) {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${origin}/auth/callback`,
+            redirectTo: `${origin}/auth/callback?invite_type=${slug}`,
             queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',

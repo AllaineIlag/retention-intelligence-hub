@@ -17,7 +17,7 @@ import {
     Menu,
     X,
     ClipboardCheck, // For Corrections
-    Database, // For Dev Tools
+
 } from 'lucide-react';
 
 
@@ -100,7 +100,7 @@ const navItems: NavItem[] = [
     // { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] }, // Moved to sub-menu
     { title: 'Settings', url: '/dashboard/settings', icon: Settings, roles: ['lead', 'interviewer'] },
     { title: 'System Audit', url: '/dashboard/audit', icon: ShieldCheck, roles: ['lead'] },
-    { title: 'Developer Tools', url: '/dashboard/dev/data-tools', icon: Database, roles: ['lead'] },
+
 ];
 
 const MOBILE_BREAKPOINT = 768;
