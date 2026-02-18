@@ -1,7 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { differenceInYears, differenceInMonths, parseISO } from 'date-fns';
+import { AnalyticsFilters } from '@/app/actions/analytics';
+import { differenceInYears, differenceInMonths, parseISO, subMonths } from 'date-fns';
 
 export interface DemographicRiskData {
     name: string;
@@ -9,8 +10,11 @@ export interface DemographicRiskData {
     fill: string;
 }
 
-export async function getDemographicRiskData(): Promise<DemographicRiskData[]> {
+export async function getDemographicRiskData(filters: AnalyticsFilters = {}): Promise<DemographicRiskData[]> {
     const supabase = await createClient();
+
+    const endDate = filters.endDate ? filters.endDate.toISOString() : new Date().toISOString();
+    const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
 
     // Fetch hire_date and resignation_date via resignations -> employee_details
     const { data: resignations, error } = await supabase
@@ -21,7 +25,9 @@ export async function getDemographicRiskData(): Promise<DemographicRiskData[]> {
                 date_hired
             )
         `)
-        .neq('status', 'cancelled');
+        .neq('status', 'cancelled')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate);
 
     if (error) {
         console.error('Error fetching demographic risk data:', error);

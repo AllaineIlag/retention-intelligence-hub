@@ -15,6 +15,7 @@ export type AnalyticsSummary = {
     avgTenureMonths: number;
     voluntaryExits: number;
     primaryDriver: PrimaryDriver | null;
+    lowestDriver: PrimaryDriver | null;
 };
 
 export type TurnoverDataPoint = {
@@ -112,6 +113,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     const avgTenureMonths = tenureCount > 0 ? Math.round((totalTenureDays / tenureCount) / 30 * 10) / 10 : 0;
 
     let primaryDriver: PrimaryDriver | null = null;
+    let lowestDriver: PrimaryDriver | null = null;
     const resignationIds = filtered.map(r => r.id);
 
     if (resignationIds.length > 0) {
@@ -129,17 +131,27 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
                 const val = r.response_value;
                 const values = Array.isArray(val) ? val : [String(val)];
                 values.forEach((v: string) => {
-                    counts[v] = (counts[v] || 0) + 1;
-                    totalReasons++;
+                    const clean = v.trim().replace(/^"|"$/g, '');
+                    if (clean) {
+                        counts[clean] = (counts[clean] || 0) + 1;
+                        totalReasons++;
+                    }
                 });
             });
 
             let maxReason = '';
             let maxCount = 0;
+            let minReason = '';
+            let minCount = Infinity;
+
             Object.entries(counts).forEach(([reason, count]) => {
                 if (count > maxCount) {
                     maxCount = count;
                     maxReason = reason;
+                }
+                if (count < minCount) {
+                    minCount = count;
+                    minReason = reason;
                 }
             });
 
@@ -148,6 +160,13 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
                     reason: maxReason,
                     count: maxCount,
                     percentage: Math.round((maxCount / totalReasons) * 100)
+                };
+            }
+            if (minCount !== Infinity && totalReasons > 0) {
+                lowestDriver = {
+                    reason: minReason,
+                    count: minCount,
+                    percentage: Math.round((minCount / totalReasons) * 100)
                 };
             }
         }
@@ -160,7 +179,8 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
             turnoverRate,
             avgTenureMonths,
             voluntaryExits: totalExits,
-            primaryDriver
+            primaryDriver,
+            lowestDriver
         }
     };
 }

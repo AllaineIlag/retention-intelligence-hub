@@ -2,14 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server';
 
+import { AnalyticsFilters } from '@/app/actions/analytics';
+import { subMonths } from 'date-fns';
+
 export interface DepartmentClusterData {
     department: string;
     totalCount: number;
     [reason: string]: number | string; // Dynamic keys for reasons
 }
 
-export async function getDepartmentClusterData(): Promise<DepartmentClusterData[]> {
+export async function getDepartmentClusterData(filters: AnalyticsFilters = {}): Promise<DepartmentClusterData[]> {
     const supabase = await createClient();
+
+    const endDate = filters.endDate ? filters.endDate.toISOString() : new Date().toISOString();
+    const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
 
     // We utilize the direct relationship between resignations and employee_details
     // AND fetch the 'reason_for_leaving' from exit_interview_results
@@ -25,7 +31,9 @@ export async function getDepartmentClusterData(): Promise<DepartmentClusterData[
                 response_value
             )
         `)
-        .neq('status', 'cancelled');
+        .neq('status', 'cancelled')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate);
 
     if (error) {
         console.error('Error fetching department cluster data:', error);
