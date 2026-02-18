@@ -308,7 +308,7 @@ export async function getRecentResignations(filters: AnalyticsFilters = {}) {
 
     const { data, error } = await query
         .order('created_at', { ascending: false })
-        .limit(5);
+        .limit(20);
 
     if (error) {
         console.error('Error fetching recent resignations:', error);

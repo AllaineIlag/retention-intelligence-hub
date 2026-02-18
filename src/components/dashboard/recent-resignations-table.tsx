@@ -33,126 +33,50 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
-                    <ExportButton />
                 </div>
             </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow className="hover:bg-white/5 border-white/5">
-                            <TableHead className="w-[250px]">Employee</TableHead>
-                            <TableHead>Department</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Last Day</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {resignations.map((item) => (
-                            <TableRow key={item.id} className="hover:bg-white/5 border-white/5">
-                                <TableCell className="flex items-center gap-3">
-                                    <div className="flex flex-col">
-                                        <span className="font-medium text-sm text-zinc-200">{item.profiles?.full_name || 'Unknown'}</span>
-                                        <span className="text-[10px] text-muted-foreground">{item.profiles?.role}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm">
-                                    {item.profiles?.department || 'Unassigned'}
-                                </TableCell>
-                                <TableCell>
-                                    <StatusBadge status={item.status} />
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm">
-                                    {item.last_working_day
-                                        ? new Date(item.last_working_day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                                        : 'Not set'}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <Link
-                                        href={`/dashboard/resignation/${item.id}`}
-                                        className="inline-flex items-center justify-center rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-white/10 bg-white/5 shadow-sm hover:bg-white/10 hover:text-white h-7 w-7"
-                                    >
-                                        <ArrowRight className="h-3.5 w-3.5" />
-                                        <span className="sr-only">View</span>
-                                    </Link>
-                                </TableCell>
+            <CardContent className="p-0">
+                <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                    <Table>
+                        <TableHeader className="sticky top-0 bg-[#09090b] z-10">
+                            <TableRow className="hover:bg-transparent border-white/5">
+                                <TableHead className="w-[250px] pl-6">Employee</TableHead>
+                                <TableHead>Department</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right pr-6">Last Day</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {resignations.map((item) => (
+                                <TableRow key={item.id} className="hover:bg-white/5 border-white/5">
+                                    <TableCell className="flex items-center gap-3 pl-6">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-sm text-zinc-200">
+                                                {item.employee_details?.full_name || 'Unknown'}
+                                            </span>
+                                            <span className="text-[10px] text-muted-foreground">
+                                                {item.employee_details?.profiles?.role || 'N/A'}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm">
+                                        {item.employee_details?.department || 'Unassigned'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={item.status} />
+                                    </TableCell>
+                                    <TableCell className="text-muted-foreground text-sm text-right pr-6">
+                                        {item.last_working_day
+                                            ? new Date(item.last_working_day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                            : 'Not set'}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
-    );
-}
-
-
-
-function ExportButton() {
-    // We need to check permission client-side or just let the server reject it.
-    // For better UX, we could pass permission as prop, but for now let's try-catch the action.
-    const [loading, setLoading] = useState(false);
-
-    const handleExport = async () => {
-        setLoading(true);
-        try {
-            const { exportResignations } = await import('@/app/actions/user-actions');
-            const result = await exportResignations();
-
-            if (result.error) {
-                toast.error(result.error);
-                return;
-            }
-
-            if (!result.data || result.data.length === 0) {
-                toast.info("No data to export.");
-                return;
-            }
-
-            // Convert to CSV
-            const headers = ['Employee', 'Department', 'Role', 'Status', 'Last Day', 'Created At'];
-            const csvContent = [
-                headers.join(','),
-                ...result.data.map((r: any) => [
-                    `"${r.profiles?.full_name || 'Unknown'}"`,
-                    `"${r.profiles?.department || 'N/A'}"`,
-                    `"${r.profiles?.role || 'N/A'}"`,
-                    r.status,
-                    r.last_working_day || '',
-                    r.created_at
-                ].join(','))
-            ].join('\n');
-
-            // Download
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `resignations_export_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            toast.success("Export successful.");
-        } catch (error) {
-            toast.error("Export failed.");
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={loading}
-            className="h-8 border-white/10 bg-white/5 hover:bg-white/10 text-xs"
-        >
-            {loading ? <Loader className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />}
-            Export CSV
-        </Button>
     );
 }
 

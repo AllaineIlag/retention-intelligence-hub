@@ -20,7 +20,7 @@ import { PromoterScoreCard } from '@/components/dashboard/analytics/kpi/Promoter
 import { AvgTenureCard } from '@/components/dashboard/analytics/kpi/AvgTenureCard';
 import { SmartDonutCard } from '@/components/dashboard/analytics/charts/SmartDonutCard';
 import { DestinationExitsCard } from '@/components/dashboard/analytics/charts/DestinationExitsCard';
-import { RiskRadarWrapper } from '@/components/dashboard/risk/RiskRadarWrapper';
+
 
 
 import { parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -45,12 +45,7 @@ export default async function DashboardPage() {
             {/* MAIN GRID */}
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
                 <div className="lg:col-span-3 space-y-6">
-                    {/* RISK RADAR */}
-                    <div className="w-full">
-                        <Suspense fallback={<div className="h-32 bg-gray-800/50 rounded-xl" />}>
-                            <RiskRadarWrapper />
-                        </Suspense>
-                    </div>
+
 
                     <div className="w-full">
                         <Suspense fallback={<StatsSkeleton />}>
