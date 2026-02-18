@@ -72,7 +72,6 @@ const navItems: NavItem[] = [
         roles: ['lead', 'interviewer'],
         subItems: [
             { title: 'Schedule', url: '/dashboard/interview/schedule' },
-            { title: 'Live Workspace', url: '/dashboard/interview/live' },
             { title: 'Corrections', url: '/dashboard/interview/corrections' },
         ],
     },

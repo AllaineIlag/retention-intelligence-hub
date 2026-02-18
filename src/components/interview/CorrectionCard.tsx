@@ -8,9 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CheckCircle2, Loader2, ArrowRight, Save } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { CheckCircle2, Loader2, ArrowRight, Save, Check, ChevronsUpDown } from 'lucide-react';
 import { saveVerifiedAnswer } from '@/app/actions/interview-ops';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+import { COUNTRIES } from '@/lib/countries';
 
 interface CorrectionCardProps {
     response: any;
@@ -53,7 +57,11 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
     const [value, setValue] = useState<string | string[]>(getInitialValue);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(!!verifiedResult);
+    const [countryOpen, setCountryOpen] = useState(false);
     const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Detect if this is the country question
+    const isCountryQuestion = question?.question_key === 'reason_for_leaving_country';
 
     // Reset state when response changes (navigating between questions)
     useEffect(() => {
@@ -185,29 +193,149 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                     )}
 
                     {/* Multi Select → Checkboxes */}
-                    {questionType === 'multi' && options.length > 0 && (
-                        <div className="space-y-2 bg-black/20 rounded-xl p-4 border border-white/5">
-                            {options.map((opt) => {
-                                const checked = Array.isArray(value) && value.includes(opt.value);
-                                return (
-                                    <label
-                                        key={opt.value}
-                                        className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group"
-                                    >
-                                        <Checkbox
-                                            checked={checked}
-                                            onCheckedChange={(c) => handleMultiToggle(opt.value, !!c)}
-                                            className="border-white/20 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
-                                        />
-                                        <span className="text-sm text-white/80 group-hover:text-white transition-colors">{opt.label}</span>
-                                    </label>
-                                );
-                            })}
-                        </div>
+                    {questionType === 'multi' && options.length > 0 && (() => {
+                        const isReasonQuestion = question?.question_key === 'reason_for_leaving';
+                        const currentValues = Array.isArray(value) ? value : [];
+                        const hasAnotherJob = currentValues.some(v => v.startsWith('Another Job'));
+
+                        return (
+                            <div className="space-y-2 bg-black/20 rounded-xl p-4 border border-white/5">
+                                {options.map((opt) => {
+                                    // For "Another Job", check if any variant is selected
+                                    const isAnotherJobOption = isReasonQuestion && opt.value === 'Another Job';
+                                    const checked = isAnotherJobOption
+                                        ? currentValues.some(v => v.startsWith('Another Job'))
+                                        : currentValues.includes(opt.value);
+
+                                    const handleToggle = (c: boolean) => {
+                                        if (isAnotherJobOption) {
+                                            // Remove all "Another Job*" variants
+                                            const without = currentValues.filter(v => !v.startsWith('Another Job'));
+                                            if (c) {
+                                                // Auto-default to the original sub-variant if available
+                                                const originalOptions: string[] = response.selected_options || [];
+                                                const originalVariant = originalOptions.find(v => v === 'Another Job (Local)' || v === 'Another Job (Abroad)');
+                                                const updated = [...without, originalVariant || 'Another Job'];
+                                                setValue(updated);
+                                                doSave(updated);
+                                            } else {
+                                                setValue(without);
+                                                doSave(without);
+                                            }
+                                        } else {
+                                            handleMultiToggle(opt.value, c);
+                                        }
+                                    };
+
+                                    return (
+                                        <div key={opt.value}>
+                                            <label className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                                                <Checkbox
+                                                    checked={checked}
+                                                    onCheckedChange={(c) => handleToggle(!!c)}
+                                                    className="border-white/20 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                                />
+                                                <span className="text-sm text-white/80 group-hover:text-white transition-colors">{opt.label}</span>
+                                            </label>
+
+                                            {/* Sub-options: Local / Abroad */}
+                                            {isAnotherJobOption && hasAnotherJob && (
+                                                <div className="ml-10 mt-1 mb-2 flex gap-2">
+                                                    <Button
+                                                        variant={currentValues.includes('Another Job (Local)') ? 'default' : 'outline'}
+                                                        size="sm"
+                                                        className={cn(
+                                                            'text-xs rounded-lg',
+                                                            currentValues.includes('Another Job (Local)')
+                                                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                                                : 'border-white/10 hover:bg-white/5 text-white/70'
+                                                        )}
+                                                        onClick={() => {
+                                                            const without = currentValues.filter(v => !v.startsWith('Another Job'));
+                                                            const updated = [...without, 'Another Job (Local)'];
+                                                            setValue(updated);
+                                                            doSave(updated);
+                                                        }}
+                                                    >
+                                                        🏠 Local
+                                                    </Button>
+                                                    <Button
+                                                        variant={currentValues.includes('Another Job (Abroad)') ? 'default' : 'outline'}
+                                                        size="sm"
+                                                        className={cn(
+                                                            'text-xs rounded-lg',
+                                                            currentValues.includes('Another Job (Abroad)')
+                                                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                                                : 'border-white/10 hover:bg-white/5 text-white/70'
+                                                        )}
+                                                        onClick={() => {
+                                                            const without = currentValues.filter(v => !v.startsWith('Another Job'));
+                                                            const updated = [...without, 'Another Job (Abroad)'];
+                                                            setValue(updated);
+                                                            doSave(updated);
+                                                        }}
+                                                    >
+                                                        ✈️ Abroad
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
+
+                    {/* Country Question → Searchable Combobox */}
+                    {isCountryQuestion && (
+                        <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={countryOpen}
+                                    className="w-full justify-between bg-black/40 border-white/10 hover:bg-white/5 text-white rounded-xl h-12"
+                                >
+                                    {typeof value === 'string' && value
+                                        ? value
+                                        : 'Select country...'}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 h-[300px] bg-zinc-900 border-white/10">
+                                <Command>
+                                    <CommandInput placeholder="Search country..." />
+                                    <CommandList>
+                                        <CommandEmpty>No country found.</CommandEmpty>
+                                        <CommandGroup>
+                                            {COUNTRIES.map((country) => (
+                                                <CommandItem
+                                                    key={country}
+                                                    value={country}
+                                                    onSelect={() => {
+                                                        handleSelectChange(country);
+                                                        setCountryOpen(false);
+                                                    }}
+                                                    className="text-white focus:bg-indigo-600 focus:text-white"
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            'mr-2 h-4 w-4',
+                                                            value === country ? 'opacity-100' : 'opacity-0'
+                                                        )}
+                                                    />
+                                                    {country}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                     )}
 
                     {/* Text / No options → Textarea */}
-                    {(questionType === 'text' || options.length === 0) && questionType !== 'multi' && (
+                    {!isCountryQuestion && (questionType === 'text' || options.length === 0) && questionType !== 'multi' && (
                         <div className="space-y-2">
                             <Textarea
                                 placeholder="Enter the verified answer..."

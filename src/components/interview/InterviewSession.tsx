@@ -1,10 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { CorrectionCard } from './CorrectionCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format, parseISO } from 'date-fns';
 
 import {
@@ -12,6 +22,7 @@ import {
     AlertCircle,
     MessageSquare,
     ThumbsUp,
+    Pencil,
     User,
     ClipboardList,
     Briefcase,
@@ -19,9 +30,24 @@ import {
     MapPin,
     Shield
 } from 'lucide-react';
-import { finalizeInterview } from '@/app/actions/interview-ops';
+import { finalizeInterview, saveVerifiedAnswer } from '@/app/actions/interview-ops';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { DatePicker } from '@/components/date-picker';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select';
+import {
+    DEPARTMENTS,
+    POSITIONS,
+    INTERMEDIATE_SUPERVISORS,
+    BUSINESS_UNITS
+} from '@/constants/enums';
 
 interface InterviewSessionProps {
     resignation: any;
@@ -29,12 +55,38 @@ interface InterviewSessionProps {
     verifiedResults: any[];
 }
 
-export function InterviewSession({ resignation, responses, verifiedResults }: InterviewSessionProps) {
+// Match the exit form wizard's question sequence
+const EXIT_FORM_QUESTION_ORDER = [
+    'reason_for_leaving',
+    'reason_for_leaving_country',
+    'why_more_desirable',
+    'career_growth',
+    'rate_of_pay',
+    'benefits',
+    'workload',
+    'recommendation',
+];
+
+export function InterviewSession({ resignation, responses: rawResponses, verifiedResults }: InterviewSessionProps) {
     const router = useRouter();
+
+    // Sort responses to match the exit form wizard sequence
+    const responses = [...rawResponses].sort((a, b) => {
+        const aKey = a.question?.question_key || '';
+        const bKey = b.question?.question_key || '';
+        const aIndex = EXIT_FORM_QUESTION_ORDER.indexOf(aKey);
+        const bIndex = EXIT_FORM_QUESTION_ORDER.indexOf(bKey);
+        // Unknown keys go to the end
+        return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+    });
+
     const [selectedResponseId, setSelectedResponseId] = useState<string | null>(
         responses.length > 0 ? responses[0].id : null
     );
+    const [selectedPersonalField, setSelectedPersonalField] = useState<string>('personal_full_name');
+    const [activeTab, setActiveTab] = useState('questionnaire');
     const [finishing, setFinishing] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
     const selectedResponse = responses.find(r => r.id === selectedResponseId);
     const selectedIndex = responses.findIndex(r => r.id === selectedResponseId);
@@ -44,8 +96,7 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
     const employee = (resignation as any).employee_details || {};
 
     const handleFinalize = async () => {
-        if (!confirm('Are you sure you want to finalize this interview? This will lock the record permanently.')) return;
-
+        setShowConfirmDialog(false);
         setFinishing(true);
         const result = await finalizeInterview(resignation.id);
 
@@ -54,7 +105,7 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
             setFinishing(false);
         } else {
             toast.success('Complete', { description: 'Interview finalized successfully.' });
-            router.push('/dashboard');
+            router.push('/dashboard/interview/schedule');
         }
     };
 
@@ -74,11 +125,32 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
         }
     };
 
+    // Helper: Determine question status (confirmed / modified / unreviewed)
+    const getQuestionStatus = (response: any): 'confirmed' | 'modified' | 'unreviewed' => {
+        const questionKey = response.question?.question_key;
+        const verified = verifiedResults.find(v => v.question_key === questionKey);
+
+        if (!verified) return 'unreviewed';
+
+        // Get the original answer in a comparable form
+        const original = response.selected_options?.length > 0
+            ? response.selected_options
+            : response.response_text || response.original_answer || '';
+
+        const corrected = verified.response_value;
+
+        // Use normalized comparison
+        const origNorm = normalizeForComparison(original);
+        const corrNorm = normalizeForComparison(corrected);
+
+        return origNorm === corrNorm ? 'confirmed' : 'modified';
+    };
+
     return (
         <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-140px)] gap-6">
             {/* LEFT: Sidebar with Tabs */}
             <div className="w-full lg:w-[380px] bg-black/20 rounded-2xl border border-white/5 flex flex-col overflow-hidden backdrop-blur-md shrink-0">
-                <Tabs defaultValue="questionnaire" className="flex flex-col h-full">
+                <Tabs defaultValue="questionnaire" className="flex flex-col h-full" onValueChange={(v) => setActiveTab(v)}>
                     <div className="p-4 border-b border-white/5 bg-white/[0.02]">
                         <TabsList className="w-full bg-black/30 p-1">
                             <TabsTrigger value="personal" className="flex-1 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white gap-1.5">
@@ -94,49 +166,18 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
 
                     {/* Personal Info Tab */}
                     <TabsContent value="personal" className="flex-1 overflow-y-auto m-0 p-0">
-                        <div className="p-5 space-y-4">
-                            <PersonalInfoItem
-                                icon={<User className="w-4 h-4 text-indigo-400" />}
-                                label="Full Name"
-                                value={employee.full_name || 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<Briefcase className="w-4 h-4 text-cyan-400" />}
-                                label="Position"
-                                value={employee.current_position || 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<MapPin className="w-4 h-4 text-amber-400" />}
-                                label="Department"
-                                value={employee.department || 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<Shield className="w-4 h-4 text-emerald-400" />}
-                                label="Employee Number"
-                                value={employee.employee_number || 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<Calendar className="w-4 h-4 text-purple-400" />}
-                                label="Date Hired"
-                                value={employee.date_hired ? format(parseISO(employee.date_hired), 'MMMM d, yyyy') : 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<User className="w-4 h-4 text-rose-400" />}
-                                label="Immediate Superior"
-                                value={employee.immediate_superior || 'N/A'}
-                            />
-                            <PersonalInfoItem
-                                icon={<Calendar className="w-4 h-4 text-red-400" />}
-                                label="Resignation Date"
-                                value={employee.resignation_date ? format(parseISO(employee.resignation_date), 'MMMM d, yyyy') : 'N/A'}
-                            />
-                            {resignation.scheduled_interview_date && (
-                                <PersonalInfoItem
-                                    icon={<Calendar className="w-4 h-4 text-indigo-400" />}
-                                    label="Interview Date"
-                                    value={format(parseISO(resignation.scheduled_interview_date), 'MMMM d, yyyy')}
+                        <div className="p-3 space-y-1">
+                            {PERSONAL_FIELDS.map((field) => (
+                                <PersonalInfoSidebarItem
+                                    key={field.key}
+                                    field={field}
+                                    employee={employee}
+                                    resignation={resignation}
+                                    verifiedResults={verifiedResults}
+                                    isSelected={selectedPersonalField === field.key}
+                                    onSelect={() => setSelectedPersonalField(field.key)}
                                 />
-                            )}
+                            ))}
                         </div>
                     </TabsContent>
 
@@ -144,7 +185,7 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
                     <TabsContent value="questionnaire" className="flex-1 overflow-y-auto m-0 p-0">
                         <div className="p-3 space-y-1">
                             {responses.map((response, index) => {
-                                const isVerified = verifiedResults.some(v => v.question_key === response.question?.question_key);
+                                const questionStatus = getQuestionStatus(response);
                                 const isSelected = selectedResponseId === response.id;
 
                                 return (
@@ -160,7 +201,9 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
                                             <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-indigo-300' : 'text-gray-300'}`}>
                                                 {response.question?.question_text || `Question ${index + 1}`}
                                             </span>
-                                            {isVerified ? (
+                                            {questionStatus === 'modified' ? (
+                                                <Pencil className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                            ) : questionStatus === 'confirmed' ? (
                                                 <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                                             ) : (
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0 mt-1.5" />
@@ -186,7 +229,17 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
 
             {/* RIGHT: Active Correction Card */}
             <div className="flex-1 flex flex-col gap-4">
-                {selectedResponse ? (
+                {activeTab === 'personal' && (
+                    <PersonalInfoCorrectionCard
+                        fieldKey={selectedPersonalField}
+                        resignationId={resignation.id}
+                        resignation={resignation}
+                        employee={employee}
+                        verifiedResults={verifiedResults}
+                    />
+                )}
+
+                {activeTab === 'questionnaire' && (selectedResponse ? (
                     <motion.div
                         key={selectedResponse.id}
                         initial={{ opacity: 0, x: 20 }}
@@ -209,7 +262,7 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
                             Select a question to begin
                         </p>
                     </div>
-                )}
+                ))}
 
                 {/* Finalize Button — only visible when viewing the last question */}
                 {isLastQuestion && selectedResponse && (
@@ -221,7 +274,7 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
                     >
                         <Button
                             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold py-6 text-base"
-                            onClick={handleFinalize}
+                            onClick={() => setShowConfirmDialog(true)}
                             disabled={finishing}
                         >
                             {finishing ? 'Finalizing...' : <><ThumbsUp className="w-5 h-5 mr-2" /> Finalize & Seal Case</>}
@@ -229,20 +282,334 @@ export function InterviewSession({ resignation, responses, verifiedResults }: In
                     </motion.div>
                 )}
             </div>
+
+            {/* Finalize Confirmation Dialog */}
+            <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+                <AlertDialogContent className="bg-zinc-900 border border-white/10 text-white max-w-md">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-amber-400" />
+                            Finalize & Seal Case
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-white/60 text-sm leading-relaxed">
+                            This action will <span className="text-amber-400 font-semibold">permanently lock</span> all verified answers for this interview. No further edits will be possible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-2">
+                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white">
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleFinalize}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold"
+                        >
+                            <ThumbsUp className="w-4 h-4 mr-2" />
+                            Yes, Seal It
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
 
 // --- Sub-components ---
 
-function PersonalInfoItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+// --- Constants & Config ---
+
+const PERSONAL_FIELDS = [
+    { key: 'personal_full_name', label: 'Full Name', icon: <User className="w-4 h-4 text-indigo-400" />, rawKey: 'full_name', type: 'text' },
+    { key: 'personal_employee_number', label: 'Employee Number', icon: <Shield className="w-4 h-4 text-emerald-400" />, rawKey: 'employee_number', type: 'text' },
+    { key: 'personal_business_unit', label: 'Business Unit', icon: <Briefcase className="w-4 h-4 text-orange-400" />, rawKey: 'business_unit', type: 'business_unit' },
+    { key: 'personal_current_position', label: 'Current Position', icon: <Briefcase className="w-4 h-4 text-cyan-400" />, rawKey: 'current_position', type: 'position' },
+    { key: 'personal_position_hired', label: 'Position When Hired', icon: <Briefcase className="w-4 h-4 text-slate-400" />, rawKey: 'position_when_hired', type: 'position' },
+    { key: 'personal_department', label: 'Department', icon: <MapPin className="w-4 h-4 text-amber-400" />, rawKey: 'department', type: 'department' },
+    { key: 'personal_date_hired', label: 'Date Hired', icon: <Calendar className="w-4 h-4 text-purple-400" />, rawKey: 'date_hired', type: 'date' },
+    { key: 'personal_immediate_superior', label: 'Immediate Superior', icon: <User className="w-4 h-4 text-rose-400" />, rawKey: 'immediate_superior', type: 'supervisor' },
+    { key: 'personal_resignation_date', label: 'Resignation Date', icon: <Calendar className="w-4 h-4 text-red-400" />, rawKey: 'resignation_date', type: 'date' },
+];
+
+
+// Helper for robust comparison
+function normalizeForComparison(val: any): string {
+    if (val === null || val === undefined) return '';
+    const asString = Array.isArray(val) ? val.join(',') : String(val);
+    return asString
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean)
+        .sort()
+        .join(', ');
+}
+
+function parseDateSafe(value: any): Date | undefined {
+    if (!value) return undefined;
+    // Try parseISO first if it's a string looking like ISO, otherwise new Date
+    // Actually new Date() handles ISO fine usually. 
+    // We just need to catch Invalid Date.
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return undefined;
+    return d;
+}
+
+function formatDisplayValue(value: any, type: string) {
+    if (!value) return null;
+    if (type === 'date') {
+        const d = parseDateSafe(value);
+        if (d) {
+            try {
+                return format(d, 'MMMM d, yyyy');
+            } catch (e) {
+                return value;
+            }
+        }
+        return value;
+    }
+    return value;
+}
+
+function PersonalInfoSidebarItem({ field, employee, resignation, verifiedResults, isSelected, onSelect }: any) {
+    const rawOriginal = employee[field.rawKey];
+    const originalDisplay = formatDisplayValue(rawOriginal, field.type) || 'N/A';
+
+    const verified = verifiedResults.find((v: any) => v.question_key === field.key);
+    const verifiedRaw = verified?.response_value;
+    const verifiedDisplay = formatDisplayValue(verifiedRaw, field.type);
+
+    const normalizedOriginal = normalizeForComparison(rawOriginal);
+    const normalizedVerified = normalizeForComparison(verifiedRaw);
+
+    const isModified = verifiedRaw !== undefined && normalizedVerified !== normalizedOriginal;
+    const isConfirmed = verifiedRaw !== undefined && normalizedVerified === normalizedOriginal;
+
     return (
-        <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
-            <div className="mt-0.5">{icon}</div>
-            <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-bold">{label}</p>
-                <p className="text-sm text-white font-medium truncate">{value}</p>
+        <button
+            onClick={onSelect}
+            className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
+                ? 'bg-indigo-500/10 border-indigo-500/30'
+                : 'bg-transparent border-transparent hover:bg-white/5'
+                }`}
+        >
+            <div className="flex items-center gap-3">
+                <div className="mt-0.5 shrink-0">{field.icon}</div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? 'text-indigo-300' : 'text-muted-foreground/60'}`}>
+                            {field.label}
+                        </p>
+                        <div className="flex items-center gap-1">
+                            {isModified && <Pencil className="w-3.5 h-3.5 text-amber-400" />}
+                            {isConfirmed && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                        </div>
+                    </div>
+                    <p className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-white/80'}`}>
+                        {verifiedDisplay ?? originalDisplay}
+                    </p>
+                </div>
             </div>
-        </div>
+            {isSelected && (
+                <motion.div
+                    layoutId="active-pill-personal"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+                />
+            )}
+        </button>
     );
 }
+
+function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifiedResults }: any) {
+    const router = useRouter();
+    const field = PERSONAL_FIELDS.find(f => f.key === fieldKey);
+    if (!field) return null;
+
+    const rawOriginal = employee[field.rawKey] || '';
+    const verified = verifiedResults.find((v: any) => v.question_key === fieldKey);
+    const verifiedValue = verified?.response_value;
+
+    const [value, setValue] = useState(verifiedValue ?? rawOriginal);
+    const [saving, setSaving] = useState(false);
+
+    // Update local state when selection changes
+    useEffect(() => {
+        setValue(verifiedValue ?? rawOriginal);
+    }, [fieldKey, verifiedValue, rawOriginal]);
+
+    const handleSave = async () => {
+        const trimmed = typeof value === 'string' ? value.trim() : value;
+        if (trimmed === (verifiedValue ?? rawOriginal)) return;
+
+        setSaving(true);
+        const result = await saveVerifiedAnswer(resignationId, fieldKey, trimmed);
+        if (result.error) {
+            toast.error('Failed to save', { description: result.error });
+            setValue(verifiedValue ?? rawOriginal);
+        } else {
+            toast.success('Saved', { description: `${field.label} updated.` });
+            router.refresh();
+        }
+        setSaving(false);
+    };
+
+    // Render Input based on type
+    const renderInput = () => {
+        if (field.type === 'position') {
+            return (
+                <Select value={value} onValueChange={setValue}>
+                    <SelectTrigger className="w-full bg-black/40 border-white/10 h-14 rounded-xl text-lg">
+                        <SelectValue placeholder="Select position" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            );
+        }
+        if (field.type === 'business_unit') {
+            return (
+                <Select value={value} onValueChange={setValue}>
+                    <SelectTrigger className="w-full bg-black/40 border-white/10 h-14 rounded-xl text-lg">
+                        <SelectValue placeholder="Select business unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {BUSINESS_UNITS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            );
+        }
+        if (field.type === 'department') {
+            return (
+                <Select value={value} onValueChange={setValue}>
+                    <SelectTrigger className="w-full bg-black/40 border-white/10 h-14 rounded-xl text-lg">
+                        <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            );
+        }
+        if (field.type === 'supervisor') {
+            return (
+                <Select value={value} onValueChange={setValue}>
+                    <SelectTrigger className="w-full bg-black/40 border-white/10 h-14 rounded-xl text-lg">
+                        <SelectValue placeholder="Select supervisor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {INTERMEDIATE_SUPERVISORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            );
+        }
+        if (field.type === 'date') {
+            return (
+                <div className="w-full">
+                    <DatePicker
+                        date={parseDateSafe(value)}
+                        onChange={(date) => setValue(date?.toISOString() || '')}
+                        id={`date-${fieldKey}`}
+                    />
+                </div>
+            );
+        }
+        return (
+            <input
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 text-lg text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-white/20"
+                placeholder={`Enter correct ${field.label.toLowerCase()}...`}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+            />
+        );
+    };
+
+    const originalDisplay = formatDisplayValue(rawOriginal, field.type);
+
+    return (
+        <motion.div
+            key={fieldKey}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+        >
+            {/* Header */}
+            <div className="p-6 border-b border-white/5 bg-gradient-to-r from-indigo-500/5 to-transparent">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                        {field.icon}
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-bold text-white tracking-tight">{field.label}</h2>
+                        <p className="text-sm text-indigo-300/60 font-medium">Personal Information Correction</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* Original Answer */}
+                <div className="space-y-3 opacity-60 hover:opacity-100 transition-opacity">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold pl-1">
+                        Employee's Original Entry
+                    </p>
+                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-lg text-white/90 font-medium leading-relaxed">
+                        {originalDisplay || 'N/A'}
+                    </div>
+                </div>
+
+                {/* Verified Answer Input */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] uppercase tracking-widest text-indigo-400 font-bold pl-1 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                            Verified Information
+                        </p>
+                        {value !== rawOriginal && (
+                            <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">
+                                MODIFIED
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="relative group">
+                        {renderInput()}
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        {value !== (verifiedValue ?? rawOriginal) && (
+                            <Button
+                                variant="ghost"
+                                onClick={() => setValue(verifiedValue ?? rawOriginal)}
+                                className="text-white/40 hover:text-white hover:bg-white/5"
+                            >
+                                Cancel
+                            </Button>
+                        )}
+                        <Button
+                            onClick={handleSave}
+                            disabled={saving || value === (verifiedValue ?? rawOriginal)}
+                            className={cn(
+                                "font-bold shadow-lg transition-all",
+                                value !== (verifiedValue ?? rawOriginal)
+                                    ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20"
+                                    : "bg-white/5 text-white/40 hover:bg-white/10"
+                            )}
+                        >
+                            {saving ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Save Correction
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
+
+

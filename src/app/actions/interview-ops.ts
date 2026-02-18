@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { resend } from '@/lib/email';
@@ -72,7 +73,9 @@ export async function getInterviewDetails(resignationId: string) {
                 current_position,
                 date_hired,
                 immediate_superior,
-                resignation_date
+                resignation_date,
+                business_unit,
+                position_when_hired
             ),
             profiles (
                 email,
@@ -84,7 +87,7 @@ export async function getInterviewDetails(resignationId: string) {
 
 
     if (resError) {
-        console.error('Error fetching resignation:', resError);
+        console.error('Error fetching resignation:', JSON.stringify(resError, null, 2));
         return { error: 'Failed to fetch interview details' };
     }
 
@@ -100,7 +103,7 @@ export async function getInterviewDetails(resignationId: string) {
         .order('question_id', { ascending: true }); // Simple ordering, might need refinement if order matters
 
     if (respError) {
-        console.error('Error fetching responses:', respError);
+        console.error('Error fetching responses:', JSON.stringify(respError, null, 2));
         return { error: 'Failed to fetch responses' };
     }
 
@@ -112,7 +115,7 @@ export async function getInterviewDetails(resignationId: string) {
         .eq('resignation_id', resignationId);
 
     if (verError) {
-        console.error('Error fetching verified results:', verError);
+        console.error('Error fetching verified results:', JSON.stringify(verError, null, 2));
         // We don't block the UI, just return empty array
     }
 
@@ -145,8 +148,10 @@ export async function saveVerifiedAnswer(
         return { success: false, error: 'This interview is finalized and cannot be edited.' };
     }
 
-    // Upsert the verified answer
-    const { error } = await supabase
+    // Upsert the verified answer using admin client to bypass RLS
+    // (the table has no UPDATE policy — server action is already auth-guarded above)
+    const admin = createAdminClient();
+    const { error } = await admin
         .from('exit_interview_results')
         .upsert({
             resignation_id: resignationId,
@@ -354,7 +359,7 @@ export async function getInterviewerDashboard() {
         .order('scheduled_interview_date', { ascending: true, nullsFirst: false }); // Put scheduled ones first-ish? No, sort by date for scheduled.
 
     if (error) {
-        console.error('Error fetching interviewer dashboard:', error);
+        console.error('Error fetching interviewer dashboard:', JSON.stringify(error, null, 2));
         return { success: false, error: 'Failed to fetch dashboard data' };
     }
 
