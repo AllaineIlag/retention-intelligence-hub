@@ -86,7 +86,7 @@ BEGIN
             ELSIF random() > 0.5 THEN
                 status_val := 'scheduled';
             ELSE
-                status_val := 'pending';
+                status_val := 'pending_exit_form';
             END IF;
 
             INSERT INTO resignations (id, employee_id, status, created_at, last_working_day)
