@@ -2,10 +2,13 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AttritionTrendChart } from '@/components/analytics/deep-dive/AttritionTrendChart';
+import { DepartmentHeatmap } from '@/components/analytics/deep-dive/DepartmentHeatmap';
 import { getAttritionTrendData } from './actions-trend';
+import { getDepartmentHeatmapData } from './actions-heatmap';
 
 export default async function ReasonForLeavingPage() {
     const trendData = await getAttritionTrendData();
+    const heatmapData = await getDepartmentHeatmapData();
 
     return (
         <div className="space-y-6">
@@ -30,8 +33,8 @@ export default async function ReasonForLeavingPage() {
                         <CardTitle className="text-sm font-medium text-gray-400">Department</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex h-[300px] items-center justify-center rounded-md border border-dashed border-white/10 bg-white/5">
-                            <p className="text-sm text-muted-foreground">Viz: Horizontal Bar Chart</p>
+                        <div className="mt-4">
+                            <DepartmentHeatmap data={heatmapData} />
                         </div>
                     </CardContent>
                 </Card>
