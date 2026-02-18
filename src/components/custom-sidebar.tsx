@@ -72,7 +72,6 @@ const navItems: NavItem[] = [
         roles: ['lead', 'interviewer'],
         subItems: [
             { title: 'Schedule', url: '/dashboard/interview/schedule' },
-            { title: 'Corrections', url: '/dashboard/interview/corrections' },
         ],
     },
     {
@@ -86,14 +85,20 @@ const navItems: NavItem[] = [
         ],
     },
     {
-        title: 'Analytics',
+        title: 'Deep Dive',
         url: '/dashboard/analytics',
         icon: Activity,
         roles: ['lead'],
         subItems: [
             { title: 'Trends', url: '/dashboard/analytics/trends' },
             { title: 'Exit Drivers', url: '/dashboard/analytics/exit-drivers' },
-            { title: 'Deep Dive', url: '/dashboard/analytics/deep-dive' },
+            { title: '(Legacy) Deep Dive', url: '/dashboard/analytics/deep-dive' },
+            { title: 'Reason for Leaving', url: '/dashboard/deep-dive/reason' },
+            { title: 'Career Growth', url: '/dashboard/deep-dive/career-growth' },
+            { title: 'Pay Rate', url: '/dashboard/deep-dive/pay-rate' },
+            { title: 'Benefits', url: '/dashboard/deep-dive/benefits' },
+            { title: 'Amount of Work', url: '/dashboard/deep-dive/workload' },
+            { title: 'Recommend', url: '/dashboard/deep-dive/recommend' },
         ],
     },
     // { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] }, // Moved to sub-menu

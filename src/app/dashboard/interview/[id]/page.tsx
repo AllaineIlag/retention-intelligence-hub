@@ -1,5 +1,6 @@
 import { getInterviewDetails } from '@/app/actions/interview-ops';
 import { InterviewSession } from '@/components/interview/InterviewSession';
+import { InterviewReportDossier } from '@/components/interview/InterviewReportDossier';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/server';
@@ -83,13 +84,11 @@ export default async function InterviewPage({ params }: { params: { id: string }
             </div>
 
             {resignation.status === 'completed' ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center text-green-800">
-                    <h3 className="font-bold text-lg">This interview is complete.</h3>
-                    <p className="mb-4">No further edits can be made.</p>
-                    <Button asChild variant="outline" className="border-green-300 hover:bg-green-100">
-                        <Link href="/dashboard">Return to Dashboard</Link>
-                    </Button>
-                </div>
+                <InterviewReportDossier
+                    resignation={resignation}
+                    verifiedResults={verifiedResults || []}
+                    responses={responses || []}
+                />
             ) : (
                 <InterviewSession
                     resignation={resignation}
