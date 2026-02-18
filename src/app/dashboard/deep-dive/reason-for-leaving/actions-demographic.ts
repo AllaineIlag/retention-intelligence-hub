@@ -1,0 +1,60 @@
+'use server';
+
+import { createClient } from '@/lib/supabase/server';
+import { differenceInYears, differenceInMonths, parseISO } from 'date-fns';
+
+export interface DemographicRiskData {
+    name: string;
+    value: number;
+    fill: string;
+}
+
+export async function getDemographicRiskData(): Promise<DemographicRiskData[]> {
+    const supabase = await createClient();
+
+    // Fetch hire_date and resignation_date via resignations -> employee_details
+    const { data: resignations, error } = await supabase
+        .from('resignations')
+        .select(`
+            created_at,
+            employee_details!fk_resignations_employee_details (
+                date_hired
+            )
+        `)
+        .neq('status', 'cancelled');
+
+    if (error) {
+        console.error('Error fetching demographic risk data:', error);
+        return [];
+    }
+
+    let newHires = 0; // < 1 Year
+    let midTenure = 0; // 1 - 3 Years
+    let veterans = 0;  // > 3 Years
+
+    resignations.forEach((row: any) => {
+        const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
+        if (!details || !details.date_hired || !row.created_at) return;
+
+        const hired = parseISO(details.date_hired);
+        const resigned = parseISO(row.created_at);
+
+        const years = differenceInYears(resigned, hired);
+        const months = differenceInMonths(resigned, hired);
+
+        if (months < 12) {
+            newHires++;
+        } else if (years >= 1 && years <= 3) {
+            midTenure++;
+        } else {
+            veterans++;
+        }
+    });
+
+    // Donut Chart Data
+    return [
+        { name: '< 1 Year', value: newHires, fill: '#EF4444' },    // Red (High Risk)
+        { name: '1 - 3 Years', value: midTenure, fill: '#F59E0B' }, // Amber (Medium Risk)
+        { name: '> 3 Years', value: veterans, fill: '#10B981' },    // Green (Low Risk / Stable)
+    ];
+}
