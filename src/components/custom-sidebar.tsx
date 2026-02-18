@@ -90,9 +90,6 @@ const navItems: NavItem[] = [
         icon: Activity,
         roles: ['lead'],
         subItems: [
-            { title: 'Trends', url: '/dashboard/analytics/trends' },
-            { title: 'Exit Drivers', url: '/dashboard/analytics/exit-drivers' },
-            { title: '(Legacy) Deep Dive', url: '/dashboard/analytics/deep-dive' },
             { title: 'Reason for Leaving', url: '/dashboard/deep-dive/reason-for-leaving' },
             { title: 'Career Growth', url: '/dashboard/deep-dive/career-growth' },
             { title: 'Compensation', url: '/dashboard/deep-dive/compensation' },

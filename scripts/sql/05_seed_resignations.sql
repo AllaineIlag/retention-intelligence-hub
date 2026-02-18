@@ -13,12 +13,12 @@ DECLARE
     months_back INT := 12;          -- History window
     total_employees INT := 5000;    -- Total Workforce
     annual_attrition_pct FLOAT := 0.2; -- 20% annual turnover (matches 04)
-    variance_pct FLOAT := 0.05;     -- +/- 5% variance per month
+    variance_pct FLOAT := 0.2;     -- +/- 5% variance per month
     
     -- Calculations
     avg_exits_per_month FLOAT := total_employees * (annual_attrition_pct / 12);
     
-    completion_rate FLOAT := 0.85; -- 85% completed
+    completion_rate FLOAT := 0.9; -- 85% completed
     cancel_rate FLOAT := 0.05;     -- 5% cancelled
     
     statuses TEXT[] := ARRAY['completed', 'cancelled', 'pending', 'scheduled'];
@@ -97,6 +97,11 @@ BEGIN
                 resign_date,
                 (resign_date + interval '14 days')
             );
+            
+            -- SYNC TO EMPLOYEE_DETAILS
+            UPDATE employee_details
+            SET resignation_date = resign_date::date
+            WHERE id = emp_id;
         END LOOP;
     END LOOP;
 

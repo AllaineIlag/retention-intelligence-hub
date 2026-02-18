@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getMultiSeriesTrendData, getDepartmentScoreData, getCorrelationData } from '../shared-actions';
+import { getWorkloadScatterData } from './actions-workload';
 import { MultiSeriesTrendChart } from '@/components/analytics/deep-dive/MultiSeriesTrendChart';
 import { DepartmentScoreChart } from '@/components/analytics/deep-dive/DepartmentScoreChart';
 import { CorrelationCard } from '@/components/analytics/deep-dive/CorrelationCard';
+import { WorkloadScatter } from '@/components/analytics/deep-dive/WorkloadScatter';
 
 export default async function WorkloadPage() {
     const questionKey = 'workload'; // DB Key
@@ -14,10 +16,11 @@ export default async function WorkloadPage() {
     ];
 
     // Parallel Fetching
-    const [trendData, deptData, correlationData] = await Promise.all([
+    const [trendData, deptData, correlationData, scatterData] = await Promise.all([
         getMultiSeriesTrendData(questionKey, options.map(o => o.label)),
         getDepartmentScoreData(questionKey),
-        getCorrelationData(questionKey)
+        getCorrelationData(questionKey),
+        getWorkloadScatterData()
     ]);
 
     return (
@@ -25,6 +28,21 @@ export default async function WorkloadPage() {
             <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Workload Balance</h1>
 
             <div className="grid gap-6 md:grid-cols-2">
+                {/* Legacy Migration: Scatter Plot */}
+                <div className="col-span-2 lg:col-span-1">
+                    <WorkloadScatter data={scatterData} />
+                </div>
+                
+                {/* 2. The Heatmap (Department) - Moved up to fill gap */}
+                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
+                    <CardHeader>
+                        <CardTitle className="text-sm font-medium text-gray-400">Department (Average Score)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <DepartmentScoreChart data={deptData} />
+                    </CardContent>
+                </Card>
+
                 {/* 1. The Timeline (Trend) */}
                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl col-span-2">
                     <CardHeader>
@@ -35,18 +53,8 @@ export default async function WorkloadPage() {
                     </CardContent>
                 </Card>
 
-                {/* 2. The Heatmap (Department) */}
-                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-gray-400">Department (Average Score)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DepartmentScoreChart data={deptData} />
-                    </CardContent>
-                </Card>
-
                 {/* 3. The Correlation (Root Cause) */}
-                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
+                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl col-span-2">
                     <CardHeader>
                         <CardTitle className="text-sm font-medium text-gray-400">Root Cause Analysis</CardTitle>
                     </CardHeader>

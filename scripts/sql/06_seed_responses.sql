@@ -9,7 +9,7 @@
 -- └──────────────────────────────────────────────────────┘
 DO $$
 DECLARE
-    sentiment_bias FLOAT := 0.65;  -- ◄── CHANGE THIS (0.0 to 1.0)
+    sentiment_bias FLOAT := 0.9;  -- ◄── CHANGE THIS (0.0 to 1.0)
 
     rec RECORD;
     q RECORD;
@@ -49,9 +49,10 @@ DECLARE
 BEGIN
     -- Loop through eligible mock resignations
     FOR rec IN 
-        SELECT r.id AS resignation_id, r.created_at
+        SELECT r.id AS resignation_id, r.created_at, ed.department
         FROM resignations r
         JOIN profiles p ON r.employee_id = p.id
+        JOIN employee_details ed ON p.id = ed.id
         WHERE p.email ILIKE '%@sim.retention.com'
           AND r.status IN ('completed', 'scheduled')
     LOOP
@@ -73,17 +74,32 @@ BEGIN
         -- ── EXIT QUESTIONNAIRE RESULTS (KPI-level) ──
 
         -- reason_for_leaving (array of 1-3 reasons)
-        is_abroad := (random() < 0.25); -- 25% chance of going abroad
+        -- TWEAK: Departmental Bias for Cluster Analysis
+        is_abroad := (random() < 0.25); 
+
+        -- Reset base options
+        reason_options := ARRAY['Better opportunity', 'Higher pay', 'Career growth', 'Relocation', 'Work-life balance', 'Management issues', 'Company culture', 'Personal reasons'];
+
+        -- Apply Bias
+        IF rec.department = 'Engineering' AND random() < 0.6 THEN
+             reason_options := ARRAY['Career growth', 'Better opportunity', 'Higher pay']; -- Techies leave for growth/pay
+        ELSIF rec.department = 'Sales' AND random() < 0.6 THEN
+             reason_options := ARRAY['Higher pay', 'Better opportunity']; -- Sales leaves for money
+        ELSIF rec.department = 'Customer Success' AND random() < 0.6 THEN
+             reason_options := ARRAY['Work-life balance', 'Management issues', 'Personal reasons']; -- CS burns out
+        ELSIF rec.department = 'Human Resources' AND random() < 0.6 THEN
+             reason_options := ARRAY['Company culture', 'Management issues']; -- HR leaves for culture
+        END IF;
 
         -- Select standard reasons first
         SELECT jsonb_agg(val) INTO picked_reasons
         FROM (
             SELECT unnest(reason_options) AS val
             ORDER BY random()
-            LIMIT (1 + floor(random() * 2)::int) -- Reduce max random to allow space for forced reason
+            LIMIT (1 + floor(random() * 2)::int) -- 1 to 2 reasons
         ) sub;
 
-        -- If going abroad, force add "Another Job (Abroad)" and ensure it's in the array
+        -- If going abroad, force add "Another Job (Abroad)"
         IF is_abroad THEN
             picked_reasons := picked_reasons || '"Another Job (Abroad)"'::jsonb;
             
@@ -107,14 +123,20 @@ BEGIN
             rec.created_at);
         total_results := total_results + 1;
 
-        -- career_growth
-        INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
-        VALUES (gen_random_uuid(), rec.resignation_id, 'career_growth',
-            CASE WHEN is_positive 
-                THEN to_jsonb(career_positive[1 + floor(random() * array_length(career_positive, 1))::int])
-                ELSE to_jsonb(career_negative[1 + floor(random() * array_length(career_negative, 1))::int])
-            END,
-            rec.created_at);
+        -- career_growth (Correlate with Department?)
+        -- Engineering = Low Growth chance (stagnation)
+        IF rec.department = 'Engineering' AND random() < 0.5 THEN
+            INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
+            VALUES (gen_random_uuid(), rec.resignation_id, 'career_growth', to_jsonb('No chances'::text), rec.created_at);
+        ELSE 
+             INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
+            VALUES (gen_random_uuid(), rec.resignation_id, 'career_growth',
+                CASE WHEN is_positive 
+                    THEN to_jsonb(career_positive[1 + floor(random() * array_length(career_positive, 1))::int])
+                    ELSE to_jsonb(career_negative[1 + floor(random() * array_length(career_negative, 1))::int])
+                END,
+                rec.created_at);
+        END IF;
         total_results := total_results + 1;
 
         -- rate_of_pay

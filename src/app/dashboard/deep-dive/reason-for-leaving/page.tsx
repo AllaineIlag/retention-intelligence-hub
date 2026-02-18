@@ -1,28 +1,47 @@
 
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AttritionTrendChart } from '@/components/analytics/deep-dive/AttritionTrendChart';
 import { DepartmentClusterChart } from '@/components/analytics/deep-dive/DepartmentClusterChart';
 import { DemographicRiskChart } from '@/components/analytics/deep-dive/DemographicRiskChart';
 import { QualitativeFeed } from '@/components/analytics/deep-dive/QualitativeFeed';
+import { ReasonTopKpiGrid } from '@/components/analytics/deep-dive/ReasonTopKpiGrid';
+import { ReasonAnalysisGrid } from '@/components/analytics/deep-dive/ReasonAnalysisGrid';
+
 
 import { getAttritionTrendData } from './actions-trend';
 import { getDepartmentClusterData } from './actions-heatmap';
 import { getDemographicRiskData } from './actions-demographic';
 import { getQualitativeComments } from './actions-qualitative';
+import { getButterflyData } from './actions-retention';
+import { getCompetitorDraw, getMoneyVsCulture } from './actions-market';
 
 export default async function ReasonForLeavingPage() {
     // Parallel data fetching
-    const [trendData, clusterData, riskData, comments] = await Promise.all([
+    const [trendData, clusterData, riskData, comments, butterflyData, competitor, moneyVsCulture] = await Promise.all([
         getAttritionTrendData(),
         getDepartmentClusterData(),
         getDemographicRiskData(),
-        getQualitativeComments()
+        getQualitativeComments(),
+        getButterflyData(),
+        getCompetitorDraw(),
+        getMoneyVsCulture()
     ]);
 
     return (
         <div className="space-y-6">
             <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Reason for Leaving</h1>
+
+            {/* SECTOR 1: Top KPIs */}
+            <ReasonTopKpiGrid />
+
+
+            {/* SECTOR 2: Deep Dive Analysis (Market + Drivers) */}
+            <ReasonAnalysisGrid
+                competitor={competitor}
+                moneyVsCulture={moneyVsCulture}
+                push={butterflyData.push}
+                pull={butterflyData.pull}
+            />
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
@@ -65,4 +84,3 @@ export default async function ReasonForLeavingPage() {
         </div>
     );
 }
-

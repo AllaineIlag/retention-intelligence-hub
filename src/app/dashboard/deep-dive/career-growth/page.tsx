@@ -25,6 +25,8 @@ export default async function CareerGrowthPage() {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Career Growth</h1>
 
+
+
             <div className="grid gap-6 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl col-span-2">
