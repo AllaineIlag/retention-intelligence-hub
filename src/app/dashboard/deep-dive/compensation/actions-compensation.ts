@@ -56,3 +56,70 @@ export async function getCompensationMetrics(): Promise<PayVsBenefits[]> {
         { label: 'High', pay: payDistribution['high'] || 0, benefits: benefitsDistribution['high'] || 0 },
     ];
 }
+
+export interface PayBenefitsMatrixData {
+    martyrs: number;      // Low Pay, Low Benefits
+    hostages: number;     // Low Pay, High Benefits
+    mercenaries: number;  // High Pay, Low Benefits
+    aristocrats: number;  // High Pay, High Benefits
+    total: number;
+}
+
+export async function getPayBenefitsMatrix(): Promise<PayBenefitsMatrixData> {
+    const supabase = await createClient();
+
+    // Fetch Rate of Pay and Benefits for all resignations
+    const { data: results, error } = await supabase
+        .from('exit_interview_results')
+        .select('resignation_id, question_key, response_value')
+        .in('question_key', ['rate_of_pay', 'benefits']);
+
+    if (error || !results) {
+        return { martyrs: 0, hostages: 0, mercenaries: 0, aristocrats: 0, total: 0 };
+    }
+
+    const byResignation = new Map<string, { pay?: 'low' | 'high', benefits?: 'low' | 'high' }>();
+
+    results.forEach(r => {
+        let val = r.response_value;
+        if (Array.isArray(val)) val = val[0];
+        val = String(val).trim().replace(/^"|"$/g, '');
+
+        const tier = classify(val); // returns 'low', 'fair', 'high'
+        if (!tier) return;
+
+        // Map 'fair' to 'high' for 2x2 matrix (Golden Handcuffs logic)
+        // Adjust logic here if strict 3x3 is needed, but user asked for 2x2.
+        const binaryTier = tier === 'low' ? 'low' : 'high';
+
+        if (!byResignation.has(r.resignation_id)) {
+            byResignation.set(r.resignation_id, {});
+        }
+        const entry = byResignation.get(r.resignation_id)!;
+
+        if (r.question_key === 'rate_of_pay') entry.pay = binaryTier;
+        if (r.question_key === 'benefits') entry.benefits = binaryTier;
+    });
+
+    let martyrs = 0;
+    let hostages = 0;
+    let mercenaries = 0;
+    let aristocrats = 0;
+
+    byResignation.forEach(entry => {
+        if (entry.pay && entry.benefits) {
+            if (entry.pay === 'low' && entry.benefits === 'low') martyrs++;
+            else if (entry.pay === 'low' && entry.benefits === 'high') hostages++;
+            else if (entry.pay === 'high' && entry.benefits === 'low') mercenaries++;
+            else if (entry.pay === 'high' && entry.benefits === 'high') aristocrats++;
+        }
+    });
+
+    return {
+        martyrs,
+        hostages,
+        mercenaries,
+        aristocrats,
+        total: martyrs + hostages + mercenaries + aristocrats
+    };
+}
