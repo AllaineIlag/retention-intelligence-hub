@@ -34,12 +34,12 @@ DECLARE
     desirable_options TEXT[] := ARRAY['Better compensation', 'More growth', 'Better management', 'Flexible hours', 'Remote work', 'Better benefits'];
     career_positive TEXT[] := ARRAY['Very good chance', 'Good chances'];
     career_negative TEXT[] := ARRAY['Little chances', 'Very little', 'No chances'];
-    pay_positive TEXT[] := ARRAY['Very compensating', 'Fair enough'];
-    pay_negative TEXT[] := ARRAY['A bit low', 'Very low'];
-    benefits_positive TEXT[] := ARRAY['Very satisfied', 'Satisfied'];
-    benefits_negative TEXT[] := ARRAY['Dissatisfied', 'Very dissatisfied'];
-    workload_positive TEXT[] := ARRAY['Very manageable', 'Manageable'];
-    workload_negative TEXT[] := ARRAY['Heavy', 'Very heavy'];
+    pay_positive TEXT[] := ARRAY['High', 'Competitive', 'Good', 'Excellent'];
+    pay_negative TEXT[] := ARRAY['Very low', 'Uncompetitive', 'Poor', 'Low'];
+    benefits_positive TEXT[] := ARRAY['High', 'Competitive', 'Good', 'Excellent'];
+    benefits_negative TEXT[] := ARRAY['Very low', 'Uncompetitive', 'None', 'Poor'];
+    workload_positive TEXT[] := ARRAY['Manageable', 'Light', 'Good'];
+    workload_negative TEXT[] := ARRAY['Heavy', 'Very heavy', 'Unmanageable'];
 
     picked_reasons JSONB;
     is_abroad BOOLEAN;

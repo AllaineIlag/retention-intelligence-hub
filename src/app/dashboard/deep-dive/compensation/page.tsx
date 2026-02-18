@@ -4,7 +4,7 @@ import { getCompensationMetrics, getPayBenefitsMatrix } from './actions-compensa
 import { MultiSeriesTrendChart } from '@/components/analytics/deep-dive/MultiSeriesTrendChart';
 import { DepartmentScoreChart } from '@/components/analytics/deep-dive/DepartmentScoreChart';
 import { CorrelationCard } from '@/components/analytics/deep-dive/CorrelationCard';
-import { PayBenefitsMatrix } from '@/components/analytics/deep-dive/PayBenefitsMatrix';
+import { PayBenefitsStackedBar } from '@/components/analytics/deep-dive/PayBenefitsStackedBar';
 
 export default async function CompensationPage() {
     const questionKey = 'rate_of_pay'; // DB Key
@@ -29,7 +29,7 @@ export default async function CompensationPage() {
             <div className="grid gap-6 md:grid-cols-2">
                 {/* 1. The Strategy (Golden Handcuffs Matrix) */}
                 <div className="col-span-2">
-                    <PayBenefitsMatrix data={matrixData} />
+                    <PayBenefitsStackedBar />
                 </div>
 
                 {/* 2. The Timeline (Trend) */}
