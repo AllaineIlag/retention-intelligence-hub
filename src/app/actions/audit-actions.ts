@@ -1,7 +1,20 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { isWithinInterval, parseISO } from 'date-fns';
+
+// Initialize Admin Client for Audit Logging (Service Role)
+const adminSupabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
 
 export type AuditFilters = {
     action?: string;
@@ -32,7 +45,51 @@ export type CorrectionLog = {
     created_at: string;
     employee_name: string;
     question_text: string;
+    resignation_status?: string;
 };
+
+
+export async function logAudit({
+    action,
+    userId,
+    entityTable,
+    entityId,
+    details,
+    ipAddress
+}: {
+    action: string;
+    userId: string | null; // Nullable for system actions or unauthenticated (though rare)
+    entityTable: string;
+    entityId: string;
+    details?: Record<string, any>;
+    ipAddress?: string;
+}) {
+    try {
+        const { error } = await adminSupabase
+            .from('audit_logs')
+            .insert({
+                action,
+                user_id: userId,
+                entity_table: entityTable,
+                entity_id: entityId,
+                details: details || {},
+                ip_address: ipAddress || null,
+                created_at: new Date().toISOString()
+            });
+
+        if (error) {
+            console.error('Failed to log audit entry:', error);
+            // We usually don't throw here to avoid blocking the main action,
+            // but we log the error.
+            return { error: error.message };
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error('Unexpected error logging audit:', err);
+        return { error: 'Internal Server Error' };
+    }
+}
 
 export async function getAuditLogs(filters: AuditFilters) {
     const supabase = await createClient();
@@ -45,10 +102,10 @@ export async function getAuditLogs(filters: AuditFilters) {
         .limit(100);
 
     // Apply filters
-    if (filters.action) {
+    if (filters.action && filters.action !== 'all') {
         query = query.eq('action', filters.action);
     }
-    if (filters.userId) {
+    if (filters.userId && filters.userId !== 'all') {
         query = query.eq('user_id', filters.userId);
     }
 
@@ -104,6 +161,7 @@ export async function getCorrectionHistory() {
             interviewer_note,
             created_at,
             resignations!resignation_id (
+                status,
                 profiles!employee_id (
                     full_name
                 )
@@ -133,7 +191,9 @@ export async function getCorrectionHistory() {
         // @ts-ignore - Supabase nested join types
         employee_name: c.resignations?.profiles?.full_name || 'Unknown',
         // @ts-ignore
-        question_text: c.questions?.text || c.questions?.question_text || 'Unknown Question'
+        question_text: c.questions?.text || c.questions?.question_text || 'Unknown Question',
+        // @ts-ignore
+        resignation_status: c.resignations?.status || 'unknown'
     })) || [];
 
     return { success: true, data: transformed as CorrectionLog[] };

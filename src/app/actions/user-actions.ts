@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { EMAIL_CONFIG } from '@/constants/enums';
+import { logAudit } from './audit-actions';
 
 // Initialize Admin Client for User Management (Service Role)
 const adminSupabase = createAdminClient(
@@ -47,6 +48,15 @@ export async function toggleUserPermission(targetUserId: string, field: 'can_exp
     if (error) {
         return { error: error.message };
     }
+
+    // Log Audit
+    await logAudit({
+        action: 'PERMISSION_UPDATED',
+        userId: user.id,
+        entityTable: 'admin_details',
+        entityId: targetUserId,
+        details: { field, value, target_user_id: targetUserId }
+    });
 
     return { success: true };
 }
@@ -214,6 +224,15 @@ export async function approveUser(userId: string) {
 
     if (error) return { error: error.message };
 
+    // Log Audit
+    await logAudit({
+        action: 'USER_APPROVED',
+        userId: user.id,
+        entityTable: 'profiles',
+        entityId: userId,
+        details: { target_email: targetEmail, approved_by: user.email }
+    });
+
     // Send approval email via Resend
     if (targetEmail) {
         try {
@@ -278,10 +297,26 @@ export async function rejectUser(userId: string) {
 
     if (profile?.role !== 'lead') return { error: 'Unauthorized' };
 
+    // Get email for audit before deleting
+    const { data: targetUser } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
     // Delete user from Auth (hard delete)
     const { error } = await adminSupabase.auth.admin.deleteUser(userId);
 
     if (error) return { error: error.message };
+
+    // Log Audit
+    await logAudit({
+        action: 'USER_REJECTED',
+        userId: user.id,
+        entityTable: 'profiles',
+        entityId: userId,
+        details: { target_email: targetUser?.email, rejected_by: user.email }
+    });
 
     return { success: true };
 }
