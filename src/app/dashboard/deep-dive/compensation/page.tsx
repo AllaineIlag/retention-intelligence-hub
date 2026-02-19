@@ -28,9 +28,7 @@ export default async function CompensationPage() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* 1. The Strategy (Golden Handcuffs Matrix) */}
-                <div className="col-span-2">
-                    <PayBenefitsStackedBar />
-                </div>
+                {/* REMOVED as per user request */}
 
                 {/* 2. The Timeline (Trend) */}
                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl col-span-2">

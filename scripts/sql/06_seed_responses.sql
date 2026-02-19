@@ -9,7 +9,7 @@
 -- └──────────────────────────────────────────────────────┘
 DO $$
 DECLARE
-    sentiment_bias FLOAT := 0.9;  -- ◄── CHANGE THIS (0.0 to 1.0)
+    sentiment_bias FLOAT := 0.65;  -- ◄── CHANGE THIS (0.0 to 1.0)
 
     rec RECORD;
     q RECORD;
@@ -36,8 +36,8 @@ DECLARE
     career_negative TEXT[] := ARRAY['Little chances', 'Very little', 'No chances'];
     pay_positive TEXT[] := ARRAY['High', 'Competitive', 'Good', 'Excellent'];
     pay_negative TEXT[] := ARRAY['Very low', 'Uncompetitive', 'Poor', 'Low'];
-    benefits_positive TEXT[] := ARRAY['High', 'Competitive', 'Good', 'Excellent'];
-    benefits_negative TEXT[] := ARRAY['Very low', 'Uncompetitive', 'None', 'Poor'];
+    benefits_positive TEXT[] := ARRAY['Very satisfied', 'Satisfied'];
+    benefits_negative TEXT[] := ARRAY['Very dissatisfied', 'Dissatisfied'];
     workload_positive TEXT[] := ARRAY['Manageable', 'Light', 'Good'];
     workload_negative TEXT[] := ARRAY['Heavy', 'Very heavy', 'Unmanageable'];
 
@@ -150,13 +150,19 @@ BEGIN
         total_results := total_results + 1;
 
         -- benefits
-        INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
-        VALUES (gen_random_uuid(), rec.resignation_id, 'benefits',
-            CASE WHEN is_positive 
-                THEN to_jsonb(benefits_positive[1 + floor(random() * array_length(benefits_positive, 1))::int])
-                ELSE to_jsonb(benefits_negative[1 + floor(random() * array_length(benefits_negative, 1))::int])
-            END,
-            rec.created_at);
+        -- Add noise to benefits to ensure trend chart variance
+        -- 70% chance to match global sentiment, 30% chance to deviate
+        IF (is_positive AND random() < 0.7) OR (NOT is_positive AND random() < 0.3) THEN
+             INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
+             VALUES (gen_random_uuid(), rec.resignation_id, 'benefits',
+                to_jsonb(benefits_positive[1 + floor(random() * array_length(benefits_positive, 1))::int]),
+                rec.created_at);
+        ELSE
+             INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
+             VALUES (gen_random_uuid(), rec.resignation_id, 'benefits',
+                to_jsonb(benefits_negative[1 + floor(random() * array_length(benefits_negative, 1))::int]),
+                rec.created_at);
+        END IF;
         total_results := total_results + 1;
 
         -- workload
@@ -170,10 +176,15 @@ BEGIN
         total_results := total_results + 1;
 
         -- recommendation
+        -- Add some noise so it's not perfectly correlated with is_positive
+        IF (is_positive AND random() < 0.8) OR (NOT is_positive AND random() < 0.2) THEN
+            resp_value := '"Yes"'::jsonb;
+        ELSE
+            resp_value := '"No"'::jsonb;
+        END IF;
+
         INSERT INTO exit_interview_results (id, resignation_id, question_key, response_value, created_at)
-        VALUES (gen_random_uuid(), rec.resignation_id, 'recommendation',
-            CASE WHEN is_positive THEN '"Yes"'::jsonb ELSE '"No"'::jsonb END,
-            rec.created_at);
+        VALUES (gen_random_uuid(), rec.resignation_id, 'recommendation', resp_value, rec.created_at);
         total_results := total_results + 1;
 
     END LOOP;
