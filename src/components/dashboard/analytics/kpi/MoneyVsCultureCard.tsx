@@ -94,27 +94,32 @@ export function MoneyVsCultureCard({
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground line-clamp-1">
                     Money vs Culture
                 </h3>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
-                            suppressHydrationWarning
-                        >
-                            {mode.toUpperCase()}
-                            <ChevronDown className="h-3 w-3" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
-                        <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggle('6m')} className="text-xs">Last 6 Months</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggle('12m')} className="text-xs">Last 12 Months</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggle('ytd')} className="text-xs">Year to Date</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                                suppressHydrationWarning
+                            >
+                                {mode.toUpperCase()}
+                                <ChevronDown className="h-3 w-3" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
+                            <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggle('6m')} className="text-xs">Last 6 Months</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggle('12m')} className="text-xs">Last 12 Months</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleToggle('ytd')} className="text-xs">Year to Date</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    <div className="p-2 rounded-full bg-purple-500/10 text-purple-400">
+                        <DollarSign className="h-4 w-4" />
+                    </div>
+                </div>
             </CardHeader>
             <CardContent className="h-full flex flex-col justify-end pb-6">
                 <h3 className="text-2xl font-bold text-white mb-1 truncate" title={value}>
@@ -142,10 +147,6 @@ export function MoneyVsCultureCard({
                         Cultural ({culturalVal})
                         <div className="h-2 w-2 rounded-full bg-purple-500"></div>
                     </span>
-                </div>
-
-                <div className="absolute top-6 right-6 p-2 rounded-full bg-purple-500/10 text-purple-400">
-                    <DollarSign className="h-4 w-4" />
                 </div>
             </CardContent>
         </Card>

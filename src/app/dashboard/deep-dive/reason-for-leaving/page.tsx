@@ -1,18 +1,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AttritionTrendChart } from '@/components/analytics/deep-dive/AttritionTrendChart';
-import { DepartmentClusterChart } from '@/components/analytics/deep-dive/DepartmentClusterChart';
-import { DemographicRiskChart } from '@/components/analytics/deep-dive/DemographicRiskChart';
+import { AttritionTrendDeepDive } from '@/components/analytics/deep-dive/AttritionTrendDeepDive';
+import { DepartmentClusterDeepDive } from '@/components/analytics/deep-dive/DepartmentClusterDeepDive';
+import { DemographicRiskDeepDive } from '@/components/analytics/deep-dive/DemographicRiskDeepDive';
 import { QualitativeFeed } from '@/components/analytics/deep-dive/QualitativeFeed';
 import { ReasonTopKpiGrid } from '@/components/analytics/deep-dive/ReasonTopKpiGrid';
-import { ReasonAnalysisGrid } from '@/components/analytics/deep-dive/ReasonAnalysisGrid';
+import { ReasonAnalysisDeepDive } from '@/components/analytics/deep-dive/ReasonAnalysisDeepDive';
 
 
 import { getAttritionTrendData } from './actions-trend';
 import { getDepartmentClusterData } from './actions-heatmap';
 import { getDemographicRiskData } from './actions-demographic';
 import { getQualitativeComments } from './actions-qualitative';
-import { getButterflyData } from './actions-retention';
+import { getPushPullData } from './actions-retention';
 import { getCompetitorDraw, getMoneyVsCulture } from './actions-market';
 
 export default async function ReasonForLeavingPage() {
@@ -22,7 +22,7 @@ export default async function ReasonForLeavingPage() {
         getDepartmentClusterData(),
         getDemographicRiskData(),
         getQualitativeComments(),
-        getButterflyData(),
+        getPushPullData(),
         getCompetitorDraw(),
         getMoneyVsCulture()
     ]);
@@ -36,11 +36,10 @@ export default async function ReasonForLeavingPage() {
 
 
             {/* SECTOR 2: Deep Dive Analysis (Market + Drivers) */}
-            <ReasonAnalysisGrid
-                competitor={competitor}
-                moneyVsCulture={moneyVsCulture}
-                push={butterflyData.push}
-                pull={butterflyData.pull}
+            <ReasonAnalysisDeepDive
+                initialCompetitor={competitor}
+                initialMoneyVsCulture={moneyVsCulture}
+                initialButterfly={butterflyData}
             />
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -51,11 +50,12 @@ export default async function ReasonForLeavingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">
-                            <AttritionTrendChart data={trendData} />
+                            <AttritionTrendDeepDive initialData={trendData} />
                         </div>
                     </CardContent>
                 </Card>
 
+                {/* 2. The Cluster (Reason by Dept) */}
                 {/* 2. The Cluster (Reason by Dept) */}
                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
                     <CardHeader>
@@ -63,11 +63,12 @@ export default async function ReasonForLeavingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">
-                            <DepartmentClusterChart data={clusterData} />
+                            <DepartmentClusterDeepDive initialData={clusterData} />
                         </div>
                     </CardContent>
                 </Card>
 
+                {/* 3. The Demographic (Risk Profile) */}
                 {/* 3. The Demographic (Risk Profile) */}
                 <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
                     <CardHeader>
@@ -75,7 +76,7 @@ export default async function ReasonForLeavingPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">
-                            <DemographicRiskChart data={riskData} />
+                            <DemographicRiskDeepDive initialData={riskData} />
                         </div>
                     </CardContent>
                 </Card>

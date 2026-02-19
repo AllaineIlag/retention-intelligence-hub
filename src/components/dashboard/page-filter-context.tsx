@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export type FilterMode = '7d' | '30d' | '3m' | '6m' | '12m' | 'ytd';
 
@@ -16,6 +17,7 @@ const PageFilterContext = createContext<PageFilterContextType | undefined>(undef
 export function PageFilterProvider({ children }: { children: React.ReactNode }) {
     const [pageFilter, setPageFilterState] = useState<FilterMode | null>(null);
     const [version, setVersion] = useState(0);
+    const pathname = usePathname();
 
     const setPageFilter = useCallback((mode: FilterMode) => {
         setPageFilterState(mode);
@@ -26,6 +28,11 @@ export function PageFilterProvider({ children }: { children: React.ReactNode }) 
         setPageFilterState(null);
         setVersion((v) => v + 1);
     }, []);
+
+    // Reset filter on route change
+    useEffect(() => {
+        resetPageFilter();
+    }, [pathname, resetPageFilter]);
 
     return (
         <PageFilterContext.Provider value={{ pageFilter, version, setPageFilter, resetPageFilter }}>

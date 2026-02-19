@@ -22,12 +22,16 @@ export async function getDemographicRiskData(filters: AnalyticsFilters = {}): Pr
         .select(`
             created_at,
             employee_details!fk_resignations_employee_details (
-                date_hired
+                date_hired,
+                department
             )
         `)
         .neq('status', 'cancelled')
         .gte('created_at', startDate)
         .lte('created_at', endDate);
+
+    // Filter logic
+    const filterDepts = filters.department && filters.department.length > 0 ? new Set(filters.department) : null;
 
     if (error) {
         console.error('Error fetching demographic risk data:', error);
@@ -40,6 +44,13 @@ export async function getDemographicRiskData(filters: AnalyticsFilters = {}): Pr
 
     resignations.forEach((row: any) => {
         const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
+        const dept = details?.department || 'Unknown';
+
+        // Apply Department Filter
+        if (filterDepts && !filterDepts.has(dept)) {
+            return;
+        }
+
         if (!details || !details.date_hired || !row.created_at) return;
 
         const hired = parseISO(details.date_hired);

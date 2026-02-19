@@ -54,7 +54,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                                 {entry.value}
                             </span>
                             <span className="text-gray-500">
-                                ({((entry.value / total) * 100).toFixed(0)}%)
+                                ({total > 0 ? ((entry.value / total) * 100).toFixed(0) : 0}%)
                             </span>
                         </div>
                     ))}

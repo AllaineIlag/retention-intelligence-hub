@@ -17,12 +17,13 @@ interface ReasonAnalysisGridProps {
     };
     push: { name: string; value: number }[];
     pull: { name: string; value: number }[];
+    filterAction?: React.ReactNode;
 }
 
 const PUSH_COLORS = ['#fb7185', '#f43f5e', '#e11d48', '#be123c', '#9f1239']; // Rose palette
 const PULL_COLORS = ['#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8', '#1e40af']; // Blue palette
 
-export function ReasonAnalysisGrid({ competitor, moneyVsCulture, push, pull }: ReasonAnalysisGridProps) {
+export function ReasonAnalysisGrid({ competitor, moneyVsCulture, push, pull, filterAction }: ReasonAnalysisGridProps) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-2 duration-700">
 
@@ -59,6 +60,7 @@ export function ReasonAnalysisGrid({ competitor, moneyVsCulture, push, pull }: R
                     data={push}
                     colors={PUSH_COLORS}
                     className="h-full"
+                    action={filterAction}
                 />
             </div>
 
@@ -71,6 +73,7 @@ export function ReasonAnalysisGrid({ competitor, moneyVsCulture, push, pull }: R
                     data={pull}
                     colors={PULL_COLORS}
                     className="h-full"
+                    action={filterAction}
                 />
             </div>
 

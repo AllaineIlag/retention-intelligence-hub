@@ -21,16 +21,11 @@ interface AttritionTrendChartProps {
 }
 
 const COLORS = [
-    '#EF4444', // Red
-    '#F59E0B', // Amber
+    '#EF4444', // Red (Voluntary)
+    '#F59E0B', // Amber (Involuntary)
     '#10B981', // Emerald
-    '#8B5CF6', // Violet
     '#3B82F6', // Blue
-    '#EC4899', // Pink
-    '#6366F1', // Indigo
-    '#14B8A6', // Teal
-    '#84CC16', // Lime
-    '#F97316', // Orange
+    '#8B5CF6', // Violet
 ];
 
 interface CustomTooltipProps {
@@ -43,7 +38,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
             <div className="rounded-lg border border-white/10 bg-[#0f0f11]/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-sm font-semibold text-white">Exits in {label}</p>
+                <p className="mb-2 text-sm font-semibold text-white">{label}</p>
                 <div className="space-y-1">
                     {payload.map((entry: any, index: number) => (
                         <div key={index} className="flex items-center gap-2 text-xs">
@@ -54,7 +49,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                             <span className="font-medium text-gray-300">
                                 {entry.name}:
                             </span>
-                            <span className="font-bold text-white">
+                            <span className="text-white">
                                 {entry.value}
                             </span>
                         </div>
@@ -95,27 +90,22 @@ export function AttritionTrendChart({ data }: AttritionTrendChartProps) {
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
-                        allowDecimals={false} // Count must be integer
                         dx={-10}
                     />
                     <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }} />
                     <Legend
                         wrapperStyle={{ paddingTop: '20px' }}
                         iconType="circle"
-                        formatter={(value) => <span className="text-gray-400 text-xs font-medium ml-1">{value}</span>}
                     />
                     {allKeys.map((key, index) => (
                         <Line
                             key={key}
                             type="monotone"
                             dataKey={key}
-                            name={key}
                             stroke={COLORS[index % COLORS.length]}
                             strokeWidth={2}
-                            dot={false}
-                            activeDot={{ r: 4 }}
-                            animationDuration={1500}
-                            connectNulls
+                            dot={{ r: 4, fill: '#0f0f11', strokeWidth: 2 }}
+                            activeDot={{ r: 6, strokeWidth: 0 }}
                         />
                     ))}
                 </LineChart>

@@ -10,6 +10,7 @@ interface PushPullChartProps {
     data: { name: string; value: number }[]
     colors: string[]
     className?: string
+    action?: React.ReactNode
 }
 
 const CustomTooltip = ({ active, payload, label, color }: any) => {
@@ -29,12 +30,17 @@ const CustomTooltip = ({ active, payload, label, color }: any) => {
     return null;
 };
 
-export function PushPullChart({ title, subtitle, data, colors, className }: PushPullChartProps) {
+export function PushPullChart({ title, subtitle, data, colors, className, action }: PushPullChartProps) {
     const sortedData = [...data].sort((a, b) => b.value - a.value).slice(0, 5)
 
     return (
         <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm flex flex-col rounded-3xl relative overflow-hidden min-h-[400px]", className)}>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 relative z-20">
+                {action && (
+                    <div className="absolute right-6 top-6">
+                        {action}
+                    </div>
+                )}
                 <CardDescription className="text-xs uppercase tracking-widest font-semibold text-muted-foreground/60">
                     {subtitle}
                 </CardDescription>

@@ -4,7 +4,7 @@ import { getCompensationMetrics, getPayBenefitsMatrix } from './actions-compensa
 import { MultiSeriesTrendChart } from '@/components/analytics/deep-dive/MultiSeriesTrendChart';
 import { DepartmentScoreChart } from '@/components/analytics/deep-dive/DepartmentScoreChart';
 import { CorrelationCard } from '@/components/analytics/deep-dive/CorrelationCard';
-import { PayBenefitsStackedBar } from '@/components/analytics/deep-dive/PayBenefitsStackedBar';
+
 
 export default async function CompensationPage() {
     const questionKey = 'rate_of_pay'; // DB Key

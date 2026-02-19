@@ -35,6 +35,11 @@ export async function getDepartmentClusterData(filters: AnalyticsFilters = {}): 
         .gte('created_at', startDate)
         .lte('created_at', endDate);
 
+    // Filter logic
+    // We do in-memory filtering for department since we already fetch it in the join
+    // and the result set is relatively small (hundreds, not millions).
+    const filterDepts = filters.department && filters.department.length > 0 ? new Set(filters.department) : null;
+
     if (error) {
         console.error('Error fetching department cluster data:', error);
         return [];
@@ -48,6 +53,11 @@ export async function getDepartmentClusterData(filters: AnalyticsFilters = {}): 
         // 1. Get Department
         const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
         const dept = details?.department || 'Unknown';
+
+        // Apply Department Filter
+        if (filterDepts && !filterDepts.has(dept)) {
+            return;
+        }
 
         if (!aggregation[dept]) aggregation[dept] = {};
 

@@ -1,7 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { differenceInMonths, parseISO } from 'date-fns';
+import { differenceInMonths, parseISO, subMonths } from 'date-fns';
+import { AnalyticsFilters } from '@/app/actions/analytics';
 
 
 export interface ButterflyData {
@@ -54,20 +55,54 @@ const categorizeReason = (reason: string): 'push' | 'pull' | 'neutral' => {
     return 'neutral';
 };
 
-export async function getButterflyData(): Promise<ButterflyData> {
+export async function getPushPullData(filters: AnalyticsFilters = {}): Promise<ButterflyData> {
     const supabase = await createClient();
 
+    // Default to last 12 months if no date provided, or use provided filters
+    const endDate = filters.endDate ? filters.endDate.toISOString() : new Date().toISOString();
+    const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
+    const filterDepts = filters.department && filters.department.length > 0 ? new Set(filters.department) : null;
+
+    // Fetch results with joins to get department
     const { data: results, error } = await supabase
         .from('exit_interview_results')
-        .select('response_value')
-        .eq('question_key', 'reason_for_leaving');
+        .select(`
+            response_value,
+            created_at,
+            resignation:resignations (
+                employee_details (
+                    department
+                )
+            )
+        `)
+        .eq('question_key', 'reason_for_leaving')
+        .gte('created_at', startDate)
+        .lte('created_at', endDate);
 
-    if (error || !results) return { push: [], pull: [] };
+    if (error || !results) {
+        console.error("Error fetching push/pull data:", error);
+        return { push: [], pull: [] };
+    }
 
     const pushCounts: Record<string, number> = {};
     const pullCounts: Record<string, number> = {};
 
-    results.forEach(r => {
+    results.forEach((r: any) => {
+        // 1. Filter by Department
+        if (filterDepts) {
+            // Traverse the join: resignation -> employee_details -> department
+            // Note: Supabase response structure might be array or object depending on relationship (one-to-one/many)
+            const empDetails = Array.isArray(r.resignation?.employee_details)
+                ? r.resignation.employee_details[0]
+                : r.resignation?.employee_details;
+
+            const dept = empDetails?.department;
+
+            if (!dept || !filterDepts.has(dept)) {
+                return; // Skip this record
+            }
+        }
+
         let reasons: string[] = [];
         let val = r.response_value;
 

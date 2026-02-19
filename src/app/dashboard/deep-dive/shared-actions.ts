@@ -1,7 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { startOfMonth, subMonths, format, parseISO } from 'date-fns';
+import { startOfMonth, subMonths, format, parseISO, subDays, startOfYear, endOfMonth } from 'date-fns';
+import { AnalyticsFilters } from '@/app/actions/analytics';
 
 export interface ScoreTrendData {
     month: string;
@@ -27,11 +28,14 @@ export interface CorrelationData {
 }
 
 // 1. Trend Intelligence: Multi-Series Option Trend
-export async function getMultiSeriesTrendData(questionKey: string, options: string[]): Promise<MultiSeriesTrendData[]> {
+export async function getMultiSeriesTrendData(questionKey: string, options: string[], filters: AnalyticsFilters = {}): Promise<MultiSeriesTrendData[]> {
     const supabase = await createClient();
-    const endDate = new Date();
-    const startDate = subMonths(endDate, 12);
+
+    // Default to 12 months if no filters
+    const endDate = filters.endDate || new Date();
+    const startDate = filters.startDate || subMonths(endDate, 12);
     const startDateStr = startDate.toISOString();
+    const endDateStr = endDate.toISOString();
 
     const { data, error } = await supabase
         .from('exit_interview_results')
@@ -41,6 +45,7 @@ export async function getMultiSeriesTrendData(questionKey: string, options: stri
         `)
         .eq('question_key', questionKey)
         .gte('created_at', startDateStr)
+        .lte('created_at', endDateStr)
         .order('created_at', { ascending: true });
 
     if (error) {
@@ -48,17 +53,23 @@ export async function getMultiSeriesTrendData(questionKey: string, options: stri
         return [];
     }
 
-    // Initialize map with all months
+    // Initialize map with all months in range
+    // We'll iterate by month from start to end
     const monthlyMap = new Map<string, Record<string, number>>();
-    for (let i = 11; i >= 0; i--) {
-        const d = subMonths(endDate, i);
-        const monthKey = format(d, 'MMM yyyy');
+    let iterDate = startOfMonth(startDate);
+    const stopDate = endOfMonth(endDate);
+
+    while (iterDate <= stopDate) {
+        const monthKey = format(iterDate, 'MMM yyyy');
 
         // Initialize counts for ALL options to 0
         const initialCounts: Record<string, number> = {};
         options.forEach(opt => initialCounts[opt] = 0);
 
         monthlyMap.set(monthKey, initialCounts);
+
+        // Next month
+        iterDate = new Date(iterDate.getFullYear(), iterDate.getMonth() + 1, 1);
     }
 
     // Tally data
@@ -74,9 +85,6 @@ export async function getMultiSeriesTrendData(questionKey: string, options: stri
             }
 
             // Normalize for matching
-            // We need to match the DB value to our expected "options" keys
-            // The DB values might have different casing or extra chars, but let's assume they match the Enums/Seed pretty well.
-            // Let's iterate options and find a match
             const matchedOption = options.find(opt => opt.toLowerCase() === val.toLowerCase());
 
             if (matchedOption) {
@@ -91,8 +99,10 @@ export async function getMultiSeriesTrendData(questionKey: string, options: stri
         ...counts
     }));
 }
+
 // 1b. Legacy Score Trend (Keeping for reference or fallback)
 export async function getScoreTrendData(questionKey: string): Promise<ScoreTrendData[]> {
+    // Legacy: Keep default 12m for now, or update if used. Assuming unused based on request focus.
     const supabase = await createClient();
     const endDate = new Date();
     const startDate = subMonths(endDate, 12);
@@ -140,15 +150,21 @@ export async function getScoreTrendData(questionKey: string): Promise<ScoreTrend
 }
 
 // 2. Department Intelligence: Average Score by Department
-export async function getDepartmentScoreData(questionKey: string): Promise<DepartmentScoreData[]> {
+export async function getDepartmentScoreData(questionKey: string, filters: AnalyticsFilters = {}): Promise<DepartmentScoreData[]> {
     const supabase = await createClient();
 
+    const endDate = filters.endDate || new Date();
+    const startDate = filters.startDate || subMonths(endDate, 12);
+    const startDateStr = startDate.toISOString();
+    const endDateStr = endDate.toISOString();
+
     // Join with resignations -> profiles -> employee_details
-    // Note: This relies on the correct relationships being set up
+    // Using created_at from exit_interview_results as the filter
     const { data, error } = await supabase
         .from('exit_interview_results')
         .select(`
             response_value,
+            created_at,
             resignation:resignation_id (
                 employee_id,
                 profiles:profiles!resignations_employee_id_fkey (
@@ -158,7 +174,9 @@ export async function getDepartmentScoreData(questionKey: string): Promise<Depar
                 )
             )
         `)
-        .eq('question_key', questionKey);
+        .eq('question_key', questionKey)
+        .gte('created_at', startDateStr)
+        .lte('created_at', endDateStr);
 
     if (error) {
         console.error(`Error fetching dept scores for ${questionKey}:`, error);
@@ -180,6 +198,11 @@ export async function getDepartmentScoreData(questionKey: string): Promise<Depar
 
         const dept = dObj?.department || 'Unknown';
 
+        // Apply Dept Filter if present
+        if (filters.department && filters.department.length > 0) {
+            if (!filters.department.includes(dept)) return;
+        }
+
         if (!deptStats.has(dept)) {
             deptStats.set(dept, { total: 0, count: 0 });
         }
@@ -198,19 +221,22 @@ export async function getDepartmentScoreData(questionKey: string): Promise<Depar
 }
 
 // 3. Root Cause Intelligence: Correlation with Exit Reason
-export async function getCorrelationData(scoreQuestionKey: string): Promise<CorrelationData> {
+export async function getCorrelationData(scoreQuestionKey: string, filters: AnalyticsFilters = {}): Promise<CorrelationData> {
     const supabase = await createClient();
 
-    // Fetch BOTH the specified question AND the reason_for_leaving for the SAME resignation
-    // We can do this by fetching all results for both keys and grouping by resignation_id in JS
-    // OR we can fetch resignations and select their answers. Let's do the latter.
+    const endDate = filters.endDate || new Date();
+    const startDate = filters.startDate || subMonths(endDate, 12);
+    const startDateStr = startDate.toISOString();
+    const endDateStr = endDate.toISOString();
 
-    // However, exit_interview_results is the main table.
-    // Let's fetch results where question is EITHER scoreKey OR 'reason_for_leaving'
+    // Fetch BOTH the specified question AND the reason_for_leaving for the SAME resignation
+    // Filter by created_at
     const { data, error } = await supabase
         .from('exit_interview_results')
-        .select('resignation_id, question_key, response_value')
-        .in('question_key', [scoreQuestionKey, 'reason_for_leaving']);
+        .select('resignation_id, question_key, response_value, created_at')
+        .in('question_key', [scoreQuestionKey, 'reason_for_leaving'])
+        .gte('created_at', startDateStr)
+        .lte('created_at', endDateStr);
 
     if (error) {
         console.error(`Error fetching correlation for ${scoreQuestionKey}:`, error);
@@ -233,9 +259,6 @@ export async function getCorrelationData(scoreQuestionKey: string): Promise<Corr
         }
 
         if (row.question_key === 'reason_for_leaving') {
-            // It might be a JSON array string "[\"Reason A\", \"Reason B\"]" or simplified
-            // The logic above creates a raw string often.
-            // If it's stored as JSONB in DB, supabase returns object/array.
             if (Array.isArray(val)) {
                 entry.reasons.push(...val);
             } else if (typeof val === 'string') {
