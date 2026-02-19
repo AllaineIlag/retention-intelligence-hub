@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { resend } from '@/lib/email';
 import { EMAIL_CONFIG } from '@/constants/enums';
 import ResignationScheduledEmail from '@/emails/ResignationScheduledEmail';
+import { notifyLeads } from './notification-actions';
 
 // Schedule Interview (Step 3)
 export async function scheduleInterview(resignationId: string, scheduleDate: Date) {
@@ -287,6 +288,14 @@ export async function finalizeInterview(resignationId: string) {
         console.error('Error finalizing interview:', error);
         return { error: 'Failed to finalize interview' };
     }
+
+    // Notify Leads (Completion)
+    await notifyLeads({
+        title: 'Exit Interview Completed',
+        message: `Exit interview for resignation #${resignationId.slice(0, 8)} has been finalized.`,
+        type: 'success',
+        link: `/dashboard/interview/${resignationId}`
+    });
 
     revalidatePath('/dashboard');
     return { success: true };

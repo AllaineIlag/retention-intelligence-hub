@@ -9,6 +9,7 @@ import ResignationDeclineEmail from '@/emails/ResignationDeclineEmail';
 import { format } from 'date-fns';
 import { revalidatePath } from 'next/cache';
 import { EMAIL_CONFIG } from '@/constants/enums';
+import { notifyLeads } from './notification-actions';
 
 // Verify Resignation (Step 2)
 export async function verifyResignation(resignationId: string, lastWorkingDay: Date) {
@@ -241,10 +242,19 @@ export async function createResignation(data: {
         .select()
         .single();
 
+
     if (resError) {
         console.error('Resignation Error:', resError);
         return { success: false, error: 'Failed to create resignation case: ' + resError.message };
     }
+
+    // Notify Leads
+    await notifyLeads({
+        title: 'New Resignation Submitted',
+        message: `${data.name} (${data.department}) has submitted a resignation.`,
+        type: 'warning',
+        link: `/dashboard/resignation/${resignation.id}`
+    });
 
     // 4. Send Acknowledgement Email
     try {
