@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getMultiSeriesTrendData, getDepartmentScoreData, getCorrelationData } from '../shared-actions';
 
-import { MultiSeriesTrendChart } from '@/components/analytics/deep-dive/MultiSeriesTrendChart';
-import { DepartmentScoreChart } from '@/components/analytics/deep-dive/DepartmentScoreChart';
-import { CorrelationCard } from '@/components/analytics/deep-dive/CorrelationCard';
+import { MultiSeriesTrendDeepDive } from '@/components/analytics/deep-dive/MultiSeriesTrendDeepDive';
+import { DepartmentScoreDeepDive } from '@/components/analytics/deep-dive/DepartmentScoreDeepDive';
+import { CorrelationDeepDive } from '@/components/analytics/deep-dive/CorrelationDeepDive';
 
 
 export default async function WorkloadPage() {
@@ -33,7 +33,11 @@ export default async function WorkloadPage() {
                         <CardTitle className="text-sm font-medium text-gray-400">Response Trend (Count over Time)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <MultiSeriesTrendChart data={trendData} options={options} />
+                        <MultiSeriesTrendDeepDive
+                            initialData={trendData}
+                            options={options}
+                            questionKey={questionKey}
+                        />
                     </CardContent>
                 </Card>
 
@@ -43,7 +47,10 @@ export default async function WorkloadPage() {
                         <CardTitle className="text-sm font-medium text-gray-400">Department (Average Score)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <DepartmentScoreChart data={deptData} />
+                        <DepartmentScoreDeepDive
+                            initialData={deptData}
+                            questionKey={questionKey}
+                        />
                     </CardContent>
                 </Card>
 
@@ -53,7 +60,11 @@ export default async function WorkloadPage() {
                         <CardTitle className="text-sm font-medium text-gray-400">Root Cause Analysis</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <CorrelationCard data={correlationData} metricLabel="Workload" />
+                        <CorrelationDeepDive
+                            initialData={correlationData}
+                            metricLabel="Workload"
+                            questionKey={questionKey}
+                        />
                     </CardContent>
                 </Card>
             </div>
