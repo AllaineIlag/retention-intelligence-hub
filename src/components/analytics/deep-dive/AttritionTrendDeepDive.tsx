@@ -18,6 +18,11 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
     const { pageFilter, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     // Sync local range with global page filter
     useEffect(() => {
         if (version !== lastVersionRef.current) {
@@ -71,19 +76,21 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
     return (
         <div className="relative">
             <div className="absolute top-[-3.5rem] right-0 z-10 flex gap-2">
-                <Select value={range} onValueChange={handleRangeChange}>
-                    <SelectTrigger className="h-8 w-[130px] bg-white/5 border-white/10 text-xs">
-                        <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="7d">Last 7 Days</SelectItem>
-                        <SelectItem value="30d">Last 30 Days</SelectItem>
-                        <SelectItem value="3m">Last 3 Months</SelectItem>
-                        <SelectItem value="6m">Last 6 Months</SelectItem>
-                        <SelectItem value="12m">Last 12 Months</SelectItem>
-                        <SelectItem value="ytd">Year to Date</SelectItem>
-                    </SelectContent>
-                </Select>
+                {isMounted && (
+                    <Select value={range} onValueChange={handleRangeChange}>
+                        <SelectTrigger className="h-8 w-[130px] bg-white/5 border-white/10 text-xs">
+                            <SelectValue placeholder="Select range" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="7d">Last 7 Days</SelectItem>
+                            <SelectItem value="30d">Last 30 Days</SelectItem>
+                            <SelectItem value="3m">Last 3 Months</SelectItem>
+                            <SelectItem value="6m">Last 6 Months</SelectItem>
+                            <SelectItem value="12m">Last 12 Months</SelectItem>
+                            <SelectItem value="ytd">Year to Date</SelectItem>
+                        </SelectContent>
+                    </Select>
+                )}
             </div>
 
             {isLoading && (
