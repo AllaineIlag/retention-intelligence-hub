@@ -13,16 +13,15 @@ DECLARE
     months_back INT := 12;          -- History window
     total_employees INT := 5000;    -- Total Workforce
     annual_attrition_pct FLOAT := 0.2; -- 20% annual turnover (matches 04)
-    variance_pct FLOAT := 0.2;     -- +/- 5% variance per month
+    variance_pct FLOAT := 0.2;     -- +/- 20% variance per month
     
     -- Calculations
     avg_exits_per_month FLOAT := total_employees * (annual_attrition_pct / 12);
     
-    completion_rate FLOAT := 0.9; -- 85% completed
+    completion_rate FLOAT := 0.9; -- 90% completed
     cancel_rate FLOAT := 0.05;     -- 5% cancelled
     
     statuses TEXT[] := ARRAY['completed', 'cancelled', 'pending', 'scheduled'];
-    
     
     employee_ids UUID[];
     emp_id UUID;
@@ -41,7 +40,7 @@ BEGIN
     -- Get all sim employees
     SELECT array_agg(id) INTO employee_ids
     FROM profiles
-    WHERE email ILIKE '%@sim.retention.com';
+    WHERE email ILIKE '%@sim.retention.com' OR email ILIKE '%@mock.co';
 
     IF employee_ids IS NULL OR array_length(employee_ids, 1) = 0 THEN
         RAISE EXCEPTION 'No simulation profiles found. Run 04_seed_profiles.sql first.';
@@ -57,18 +56,14 @@ BEGIN
         month_date := date_trunc('month', CURRENT_TIMESTAMP - (m || ' months')::interval);
 
         -- CALCULATE DYNAMIC TARGET FOR THIS MONTH
-        -- Formula: Average * (1 + (Random between -Variance and +Variance))
-        -- e.g. 0.05 variance => multiplier between 0.95 and 1.05
         variance_factor := (random() * (variance_pct * 2)) - variance_pct;
         current_month_target := floor(avg_exits_per_month * (1 + variance_factor));
         
-        -- RAISE NOTICE 'Month %: Target % exits (Variance %)', m, current_month_target, variance_factor;
-
         FOR i IN 1..current_month_target LOOP
             idx := idx + 1;
             IF idx > array_length(employee_ids, 1) THEN
                 RAISE NOTICE 'Ran out of employees at % resignations', idx - 1;
-                EXIT; -- Stop if we run out of profiles
+                EXIT;
             END IF;
 
             emp_id := employee_ids[idx];
@@ -93,7 +88,7 @@ BEGIN
             VALUES (
                 gen_random_uuid(),
                 emp_id,
-                status_val::resignation_status,
+                status_val,
                 resign_date,
                 (resign_date + interval '14 days')
             );
@@ -110,6 +105,8 @@ END $$;
 
 -- Verify
 SELECT status, COUNT(*) 
-FROM resignations 
+FROM resignations r
+JOIN profiles p ON r.employee_id = p.id
+WHERE p.email ILIKE '%@sim.retention.com' OR p.email ILIKE '%@mock.co'
 GROUP BY status 
 ORDER BY COUNT(*) DESC;

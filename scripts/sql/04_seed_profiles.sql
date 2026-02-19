@@ -16,21 +16,24 @@ DECLARE
     max_tenure_years INT := 5;     -- Maximum years of employment
     
     -- AUTOMATICALLY CALCULATED
-    -- We only create profiles for people who have resigned.
-    -- No "Active" buffer is created in this mode.
-    
     avg_exits_per_month FLOAT := total_employees * (annual_attrition_pct / 12);
-    
-    -- We calculate the MAXIMUM possible exits to ensure we have enough profiles
-    -- even if variance hits +5% every single month (unlikely but safe).
     max_exits_per_month INT := ceil(avg_exits_per_month * (1 + variance_pct));
-    
-    -- Total unique profiles needed = Max exits * months
     num_profiles INT := (max_exits_per_month * history_months);
     
-    departments TEXT[] := ARRAY['Engineering', 'Product', 'Sales', 'Marketing', 'Customer Success', 'HR', 'Operations'];
-    positions TEXT[] := ARRAY['Software Engineer', 'Product Manager', 'Sales Rep', 'Marketing Analyst', 'CS Agent', 'HR Coordinator', 'Operations Lead', 'Data Analyst', 'QA Engineer', 'DevOps Engineer', 'Designer', 'Tech Lead'];
-    superiors TEXT[] := ARRAY['Maria Santos', 'Juan dela Cruz', 'Ana Reyes', 'Pedro Garcia', 'Rosa Mendoza', 'Carlos Cruz', 'Elena Torres'];
+    -- Align with src/constants/enums.ts and ref_ tables
+    departments TEXT[] := ARRAY[
+        'Engineering', 'Product Management', 'Design', 'Sales', 'Marketing', 
+        'Customer Success', 'Human Resources', 'Finance', 'Legal', 'Operations', 'IT', 'Data Science'
+    ];
+    positions TEXT[] := ARRAY[
+        'Software Engineer', 'Senior Software Engineer', 'Tech Lead', 'Product Manager', 
+        'UI/UX Designer', 'QA Engineer', 'Marketing Manager', 'HR Representative', 'Operations Specialist'
+    ];
+    superiors TEXT[] := ARRAY[
+        'Alex Chen', 'Sarah Connor', 'Mike Ross', 'Jessica Pearson', 
+        'Harvey Specter', 'Louis Litt', 'Rachel Zane', 'Donna Paulsen'
+    ];
+    
     first_names TEXT[] := ARRAY['James', 'Maria', 'Robert', 'Patricia', 'John', 'Jennifer', 'Michael', 'Linda', 'David', 'Elizabeth', 'Richard', 'Barbara', 'Joseph', 'Susan', 'Thomas', 'Jessica', 'Christopher', 'Sarah', 'Charles', 'Karen', 'Daniel', 'Lisa', 'Matthew', 'Nancy', 'Anthony', 'Betty', 'Mark', 'Margaret', 'Andrew', 'Sandra', 'Joshua', 'Ashley', 'Kenneth', 'Dorothy', 'Kevin', 'Kimberly', 'Brian', 'Emily', 'George', 'Donna'];
     last_names TEXT[] := ARRAY['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'];
     

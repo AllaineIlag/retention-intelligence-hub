@@ -208,8 +208,8 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
 
     // Tab counts
     const pendingRequestsCount = data.filter(i => i.status === 'pending_exit_form').length;
-    const pendingInterviewCount = data.filter(i => i.status === 'pending_interview').length;
-    const historyCount = data.filter(i => ['completed', 'cancelled', 'scheduled'].includes(i.status)).length;
+    const pendingInterviewCount = data.filter(i => ['pending_interview', 'scheduled'].includes(i.status)).length;
+    const historyCount = data.filter(i => ['completed', 'cancelled'].includes(i.status)).length;
 
     return (
         <div className="space-y-4">
@@ -262,10 +262,10 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                     />
                 </TabsContent>
 
-                {/* Tab 2: Pending for Interview — Employee submitted form, awaiting interview */}
+                {/* Tab 2: Pending for Interview — Employee submitted form, awaiting interview, or scheduled */}
                 <TabsContent value="pending_interview" className="mt-0">
                     <DataTable
-                        data={data.filter(i => i.status === 'pending_interview')}
+                        data={data.filter(i => ['pending_interview', 'scheduled'].includes(i.status))}
                         query={searchQuery}
                         onSchedule={handleOpenSchedule}
                         onDecline={handleOpenDecline}
@@ -275,10 +275,10 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                     />
                 </TabsContent>
 
-                {/* Tab 3: History — Completed, Cancelled, or Accepted (waiting for form) */}
+                {/* Tab 3: History — Completed or Cancelled */}
                 <TabsContent value="history" className="mt-0">
                     <DataTable
-                        data={data.filter(i => ['completed', 'cancelled', 'scheduled'].includes(i.status))}
+                        data={data.filter(i => ['completed', 'cancelled'].includes(i.status))}
                         query={searchQuery}
                         onSchedule={handleOpenSchedule}
                         onDecline={handleOpenDecline}
@@ -302,7 +302,7 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                             <div className="grid gap-2">
                                 <Label className="text-zinc-300">Employee</Label>
                                 <div className="p-3 rounded-lg border border-white/10 bg-white/5 text-sm text-zinc-300">
-                                    {selectedInterview.employee?.full_name} ({selectedInterview.employee?.email})
+                                    {selectedInterview.employee?.full_name} {selectedInterview.employee?.email ? `(${selectedInterview.employee.email})` : ''}
                                 </div>
                             </div>
                             <div className="grid gap-2">

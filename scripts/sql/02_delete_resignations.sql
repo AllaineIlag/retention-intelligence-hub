@@ -8,11 +8,11 @@ DELETE FROM resignations
 WHERE id IN (
     SELECT r.id FROM resignations r
     JOIN profiles p ON r.employee_id = p.id
-    WHERE p.email ILIKE '%@sim.retention.com'
+    WHERE p.email ILIKE '%@sim.retention.com' OR p.email ILIKE '%@mock.co'
 );
 
 -- Verify
 SELECT COUNT(*) AS remaining_mock_resignations
 FROM resignations r
 JOIN profiles p ON r.employee_id = p.id
-WHERE p.email ILIKE '%@sim.retention.com';
+WHERE p.email ILIKE '%@sim.retention.com' OR p.email ILIKE '%@mock.co';

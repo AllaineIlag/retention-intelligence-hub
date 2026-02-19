@@ -1,101 +1,148 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
-export type ProfileData = {
-    full_name: string | null;
-    email: string;
-    role: string;
-    email_notifications: boolean | null;
-    notification_frequency: string | null;
+// Initialize Admin Client for Settings Management (Service Role)
+const adminSupabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
+);
+
+export type ReferenceItem = {
+    id: string;
+    name: string;
+    is_active: boolean;
+    created_at: string;
 };
+
+// --- Profile ---
 
 export async function getProfile() {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-        return { error: 'Unauthorized' };
-    }
+    if (!user) return { error: 'Not authenticated' };
 
-    const { data: profile, error } = await supabase
+    const { data, error } = await supabase
         .from('profiles')
-        .select(`
-            email, 
-            role,
-            admin_details (
-                full_name,
-                email_notifications,
-                notification_frequency
-            )
-        `)
+        .select('*')
         .eq('id', user.id)
         .single();
 
-    if (error) {
-        return { error: error.message };
-    }
-
-    const flattened: ProfileData = {
-        email: profile.email,
-        role: profile.role,
-        full_name: (profile as any).admin_details?.full_name || null,
-        email_notifications: (profile as any).admin_details?.email_notifications || false,
-        notification_frequency: (profile as any).admin_details?.notification_frequency || 'daily'
-    };
-
-    return { success: true, data: flattened };
+    if (error) return { error: error.message };
+    return { success: true, data };
 }
 
+// --- Departments ---
 
-export async function updateProfile(fullName: string) {
+export async function getDepartments() {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-        return { error: 'Unauthorized' };
-    }
-
-    const { error } = await supabase
-        .from('admin_details')
-        .update({
-            full_name: fullName,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
+    const { data, error } = await supabase
+        .from('ref_departments')
+        .select('*')
+        .order('name', { ascending: true });
 
     if (error) {
+        console.error('Error fetching departments:', error);
         return { error: error.message };
     }
 
+    return { success: true, data: data as ReferenceItem[] };
+}
+
+export async function addDepartment(name: string) {
+    try {
+        const { data, error } = await adminSupabase
+            .from('ref_departments')
+            .insert({ name })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') { // Unique violation
+                return { error: 'Department already exists' };
+            }
+            console.error('Error adding department:', error);
+            return { error: error.message };
+        }
+
+        revalidatePath('/dashboard/settings');
+        return { success: true, data };
+    } catch (err) {
+        return { error: 'Internal Server Error' };
+    }
+}
+
+export async function toggleDepartmentStatus(id: string, isActive: boolean) {
+    const { error } = await adminSupabase
+        .from('ref_departments')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/dashboard/settings');
     return { success: true };
 }
 
-export async function updateNotificationPreferences(
-    emailNotifications: boolean,
-    frequency: 'instant' | 'daily' | 'weekly'
-) {
+// --- Positions ---
+
+export async function getPositions() {
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-        return { error: 'Unauthorized' };
-    }
-
-    const { error } = await supabase
-        .from('admin_details')
-        .update({
-            email_notifications: emailNotifications,
-            notification_frequency: frequency,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
+    const { data, error } = await supabase
+        .from('ref_positions')
+        .select('*')
+        .order('name', { ascending: true });
 
     if (error) {
+        console.error('Error fetching positions:', error);
         return { error: error.message };
     }
 
+    return { success: true, data: data as ReferenceItem[] };
+}
+
+export async function addPosition(name: string) {
+    try {
+        const { data, error } = await adminSupabase
+            .from('ref_positions')
+            .insert({ name })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                return { error: 'Position already exists' };
+            }
+            console.error('Error adding position:', error);
+            return { error: error.message };
+        }
+
+        revalidatePath('/dashboard/settings');
+        return { success: true, data };
+    } catch (err) {
+        return { error: 'Internal Server Error' };
+    }
+}
+
+export async function togglePositionStatus(id: string, isActive: boolean) {
+    const { error } = await adminSupabase
+        .from('ref_positions')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/dashboard/settings');
     return { success: true };
 }

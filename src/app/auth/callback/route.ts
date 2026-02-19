@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { notifyLeads } from '@/app/actions/notification-actions';
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -57,6 +58,14 @@ export async function GET(request: Request) {
                                 console.error('[Gatekeeper] Profile upsert failed:', upsertError);
                                 return NextResponse.redirect(`${baseUrl}/login?message=Account creation failed.`);
                             }
+
+                            // Notify leads about the new pending request
+                            await notifyLeads({
+                                title: 'New Access Request',
+                                message: `${user.email} has requested to join as an Interviewer.`,
+                                type: 'info',
+                                link: '/dashboard/team/recruitment'
+                            });
 
                             return NextResponse.redirect(`${baseUrl}/pending`);
                         }

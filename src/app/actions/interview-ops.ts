@@ -37,15 +37,30 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
         return { success: false, error: updateError.message };
     }
 
+    // 1.1 Fetch full details using Admin Client to ensure email is retrieved for notification
+    const admin = createAdminClient();
+    const { data: resignationDetail } = await admin
+        .from('resignations')
+        .select(`
+            id,
+            employee_details ( full_name ),
+            profiles ( email )
+        `)
+        .eq('id', resignationId)
+        .single();
+
     // 2. Send Invitation Email (Email 2)
-    if (resignation?.profiles?.email) {
+    const profile = Array.isArray(resignationDetail?.profiles) ? resignationDetail?.profiles[0] : resignationDetail?.profiles;
+    const employeeDetails = Array.isArray(resignationDetail?.employee_details) ? resignationDetail?.employee_details[0] : resignationDetail?.employee_details;
+
+    if (profile?.email) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [(resignation as any).profiles.email],
+                to: [profile.email],
                 subject: 'Exit Interview Scheduled & Action Required',
                 react: ResignationScheduledEmail({
-                    employeeName: (resignation as any).employee_details?.full_name || 'Employee',
+                    employeeName: employeeDetails?.full_name || 'Employee',
                     interviewDate: scheduleDate.toISOString(),
                     actionUrl: `${siteUrl}/login`
                 }),
@@ -55,7 +70,9 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
         }
     }
 
-    revalidatePath('/dashboard/interview');
+    revalidatePath('/dashboard/interview', 'layout');
+    revalidatePath('/dashboard/interview/schedule');
+    revalidatePath('/dashboard/resignation/[id]', 'page');
     return { success: true };
 }
 
@@ -333,16 +350,19 @@ export async function getAllInterviews() {
         return { success: false, error: 'Failed to fetch interviews' };
     }
 
-    // Transform data to ensure employee is a single object
-    const formattedInterviews = interviews?.map(interview => ({
-        ...interview,
-        employee: {
-            // @ts-ignore
-            ...interview.employee_details,
-            // @ts-ignore
-            ...interview.profiles
-        }
-    }));
+    // Transform data to handle array mapping from Supabase JOINs
+    const formattedInterviews = interviews?.map(interview => {
+        const profile = Array.isArray(interview.profiles) ? interview.profiles[0] : interview.profiles;
+        const details = Array.isArray(interview.employee_details) ? interview.employee_details[0] : interview.employee_details;
+
+        return {
+            ...interview,
+            employee: {
+                ...details,
+                ...profile
+            }
+        };
+    });
 
 
     return { success: true, data: formattedInterviews };

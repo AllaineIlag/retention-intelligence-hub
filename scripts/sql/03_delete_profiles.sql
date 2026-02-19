@@ -4,6 +4,24 @@
 -- ⚠️ Run 01 and 02 first!
 -- ═══════════════════════════════════════════════════════════
 
+-- Step 0: Clear notifications and audit logs linked to mock profiles (if any remain)
+DELETE FROM notifications
+WHERE user_id IN (
+    SELECT id FROM profiles 
+    WHERE email ILIKE '%@sim.retention.com' OR email ILIKE '%@mock.co'
+);
+
+DELETE FROM audit_logs
+WHERE user_id IN (
+    SELECT id FROM profiles 
+    WHERE email ILIKE '%@sim.retention.com' OR email ILIKE '%@mock.co'
+) OR (
+    entity_table = 'profiles' AND entity_id IN (
+        SELECT id FROM profiles 
+        WHERE email ILIKE '%@sim.retention.com' OR email ILIKE '%@mock.co'
+    )
+);
+
 -- Step 1: Delete employee details for simulation profiles
 DELETE FROM employee_details
 WHERE id IN (
@@ -20,7 +38,7 @@ WHERE email ILIKE '%@sim.retention.com'
 -- Verify
 SELECT 
     'profiles' AS table_name,
-    COUNT(*) AS remaining_sim_rows 
+    COUNT(*) AS remaining_rows 
 FROM profiles 
 WHERE email ILIKE '%@sim.retention.com' OR email ILIKE '%@mock.co'
 UNION ALL

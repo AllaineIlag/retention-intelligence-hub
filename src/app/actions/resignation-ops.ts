@@ -40,23 +40,34 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
         return { success: false, error: updateError.message };
     }
 
-    // 2. Send Ack Email
-    if (resignation?.profiles?.email) {
+    // 2. Send Ack Email (Fetch via Admin to bypass RLS)
+    const admin = createAdminClient();
+    const { data: detail } = await admin
+        .from('resignations')
+        .select(`id, employee_details(full_name), profiles(email)`)
+        .eq('id', resignationId)
+        .single();
+
+    const profile = Array.isArray(detail?.profiles) ? detail?.profiles[0] : detail?.profiles;
+    const employeeDetails = Array.isArray(detail?.employee_details) ? detail?.employee_details[0] : detail?.employee_details;
+
+    if (profile?.email) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [(resignation as any).profiles.email],
+                to: [profile.email],
                 subject: 'Resignation Notice Received',
-                react: ResignationAckEmail({ employeeName: (resignation as any).employee_details.full_name }),
+                react: ResignationAckEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });
 
         } catch (emailError) {
             console.error('Email Error:', emailError);
-            // Don't fail the action if email fails, but log it
         }
     }
 
     revalidatePath('/dashboard/resignation/[id]', 'page');
+    revalidatePath('/dashboard/interview/schedule');
+    revalidatePath('/dashboard/team');
     return { success: true };
 }
 
@@ -87,14 +98,25 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
         return { success: false, error: updateError.message };
     }
 
-    if (resignation?.profiles?.email) {
+    // Send Email (Fetch via Admin)
+    const admin = createAdminClient();
+    const { data: detail } = await admin
+        .from('resignations')
+        .select(`id, employee_details(full_name), profiles(email)`)
+        .eq('id', resignationId)
+        .single();
+
+    const profile = Array.isArray(detail?.profiles) ? detail?.profiles[0] : detail?.profiles;
+    const employeeDetails = Array.isArray(detail?.employee_details) ? detail?.employee_details[0] : detail?.employee_details;
+
+    if (profile?.email) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [(resignation as any).profiles.email],
+                to: [profile.email],
                 subject: 'Exit Interview Scheduled',
                 react: ResignationApprovalEmail({
-                    employeeName: (resignation as any).employee_details.full_name,
+                    employeeName: employeeDetails?.full_name || 'Employee',
                     interviewDate: format(scheduleDate, 'PPP p'), // e.g. "Apr 29, 2026 2:00 PM"
                 }),
             });
@@ -105,6 +127,8 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
     }
 
     revalidatePath('/dashboard/resignation/[id]', 'page');
+    revalidatePath('/dashboard/interview/schedule');
+    revalidatePath('/dashboard/team');
     return { success: true };
 }
 
@@ -135,13 +159,16 @@ export async function declineResignation(resignationId: string) {
         return { success: false, error: updateError.message };
     }
 
-    if (resignation?.profiles?.email) {
+    const profile = Array.isArray(resignation?.profiles) ? resignation?.profiles[0] : resignation?.profiles;
+    const employeeDetails = Array.isArray(resignation?.employee_details) ? resignation?.employee_details[0] : resignation?.employee_details;
+
+    if (profile?.email) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [(resignation as any).profiles.email],
+                to: [profile.email],
                 subject: 'Update Regarding Your Resignation',
-                react: ResignationDeclineEmail({ employeeName: (resignation as any).employee_details.full_name }),
+                react: ResignationDeclineEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });
 
         } catch (emailError) {
