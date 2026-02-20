@@ -25,6 +25,7 @@ export function NotificationBell() {
     const [unreadCount, setUnreadCount] = React.useState(0)
     const [isOpen, setIsOpen] = React.useState(false)
     const [loading, setLoading] = React.useState(true)
+    const [isMounted, setIsMounted] = React.useState(false)
     const router = useRouter()
     const supabase = createClient()
 
@@ -38,6 +39,7 @@ export function NotificationBell() {
     }, [])
 
     React.useEffect(() => {
+        setIsMounted(true)
         fetchNotifications()
 
         // Realtime Subscription
@@ -96,6 +98,12 @@ export function NotificationBell() {
             default: return <div className="h-2 w-2 rounded-full bg-indigo-500" />
         }
     }
+
+    if (!isMounted) return (
+        <Button variant="ghost" size="icon" className="relative text-zinc-400">
+            <Bell className="h-5 w-5" />
+        </Button>
+    )
 
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>

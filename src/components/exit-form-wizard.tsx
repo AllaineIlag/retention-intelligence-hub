@@ -74,8 +74,6 @@ const STEPS = [
   { id: 'summary', title: 'Summary' },
 ];
 
-
-
 const QUESTIONNAIRE_STEPS_COUNT = 7;
 
 export function ExitFormWizard({
@@ -101,7 +99,6 @@ export function ExitFormWizard({
     date_hired: initialResponse?.employee_details?.date_hired || '',
     position_when_hired: initialResponse?.employee_details?.position_when_hired || '',
     current_position: initialResponse?.employee_details?.current_position || '',
-
     business_unit: initialResponse?.employee_details?.business_unit || '',
     intermediate_supervisor: initialResponse?.employee_details?.intermediate_supervisor || '',
     department: initialResponse?.employee_details?.department || '',
@@ -137,8 +134,6 @@ export function ExitFormWizard({
   const handleAutoSave = useCallback(async (newDetails: EmployeeDetails | null, newResponses: QuestionnaireResponses | null) => {
     setIsSaving(true);
     try {
-      // ALWAYS send the full payload to support DELETE + INSERT strategy
-      // Use the new value if provided, otherwise fallback to current state
       const payload: {
         resignation_id: string;
         employee_details: EmployeeDetails;
@@ -158,9 +153,7 @@ export function ExitFormWizard({
     } finally {
       setIsSaving(false);
     }
-  }, [resignation.id, details, responses]); // Add dependencies to ensure we have latest state
-
-
+  }, [resignation.id, details, responses]);
 
   const updateDetail = (field: keyof EmployeeDetails, value: string) => {
     const newDetails = { ...details, [field]: value };
@@ -307,9 +300,6 @@ export function ExitFormWizard({
       toast.error("Please complete the required fields.");
       return;
     }
-
-    // Save current progress logic (already handled by auto-save or state updates)
-    // Just navigate back
     setIsEditingFromSummary(false);
     setCurrentStep(3); // Jump back to Summary
   };
@@ -543,8 +533,8 @@ export function ExitFormWizard({
 
                   {/* Step 2.1: Reason for Leaving */}
                   {questionnaireStep === 0 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                      <h4 className="text-lg font-medium text-center">What is your primary reason for leaving? (Select all that apply)</h4>
+                    <div className="space-y-4 max-w-3xl mx-auto animate-in fade-in slide-in-from-right-4">
+                      <h4 className="text-lg font-medium text-center mb-6">What is your primary reason for leaving? (Select all that apply)</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           "Another Job",
@@ -607,9 +597,17 @@ export function ExitFormWizard({
                               Abroad
                             </Button>
                           </div>
+                          
+                          {/* Highlight when user hasn't made a location selection */}
+                          {responses.reason_for_leaving?.some(r => r === "Another Job") && (
+                             <p className="text-xs text-destructive animate-pulse font-medium flex items-center gap-1">
+                               <span className="w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
+                               Please specify Local or Abroad to proceed.
+                             </p>
+                          )}
 
                           {responses.reason_for_leaving.includes("Another Job (Abroad)") && (
-                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-2 pt-2 animate-in fade-in slide-in-from-top-2">
                               <FieldLabel>Which country?</FieldLabel>
                               <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                                 <PopoverTrigger asChild>
@@ -617,7 +615,7 @@ export function ExitFormWizard({
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={countryOpen}
-                                    className="w-full justify-between"
+                                    className="w-full sm:w-80 justify-between"
                                   >
                                     {responses.reason_for_leaving_country
                                       ? responses.reason_for_leaving_country
@@ -663,9 +661,9 @@ export function ExitFormWizard({
 
                   {/* Step 2.2: Why More Desirable */}
                   {questionnaireStep === 1 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">Why is the new position more desirable? (Select all that apply)</h4>
-                      <div className="grid grid-cols-1 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           "Higher salary",
                           "More convenient location",
@@ -675,7 +673,7 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.why_more_desirable?.includes(option) ? "default" : "outline"}
-                            className="justify-start h-auto min-h-[3rem] py-3 text-base sm:text-lg whitespace-normal text-left"
+                            className="justify-start h-auto min-h-[3.5rem] py-3 px-4 text-base sm:text-[15px] whitespace-normal text-left"
                             onClick={() => toggleSelection('why_more_desirable', option)}
                           >
                             {responses.why_more_desirable?.includes(option) && <CheckCircle2 className="w-4 h-4 mr-2 shrink-0" />}
@@ -697,7 +695,7 @@ export function ExitFormWizard({
 
                   {/* Step 2.3: Career Growth Opportunity */}
                   {questionnaireStep === 2 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How would you describe your chances for career growth here?</h4>
                       <div className="flex flex-col gap-3">
                         {[
@@ -710,7 +708,7 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.career_growth === option ? "default" : "outline"}
-                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base sm:text-lg px-6 whitespace-normal text-left"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ career_growth: option })}
                           >
                             <span className="flex-1">{option}</span>
@@ -723,7 +721,7 @@ export function ExitFormWizard({
 
                   {/* Step 2.4: Rate of Pay */}
                   {questionnaireStep === 3 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How would you describe your rate of pay?</h4>
                       <div className="flex flex-col gap-3">
                         {[
@@ -735,7 +733,7 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.rate_of_pay === option ? "default" : "outline"}
-                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base sm:text-lg px-6 whitespace-normal text-left"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ rate_of_pay: option })}
                           >
                             <span className="flex-1">{option}</span>
@@ -748,14 +746,14 @@ export function ExitFormWizard({
 
                   {/* Step 2.5: Benefits */}
                   {questionnaireStep === 4 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How were the benefits?</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                         {["Very adequate", "Adequate", "Inadequate"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.benefits === option ? "default" : "outline"}
-                            className="h-auto py-4 sm:h-24 text-base sm:text-lg flex-col gap-2 whitespace-normal"
+                            className="h-auto py-4 sm:h-24 text-base flex-col gap-2 whitespace-normal"
                             onClick={() => updateResponse({ benefits: option })}
                           >
                             <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.benefits === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
@@ -779,14 +777,14 @@ export function ExitFormWizard({
 
                   {/* Step 2.6: Workload */}
                   {questionnaireStep === 5 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How was your workload?</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                         {["Too much", "Just enough", "Minimal"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.workload === option ? "default" : "outline"}
-                            className="h-auto py-4 sm:h-24 text-base sm:text-lg flex-col gap-2 whitespace-normal"
+                            className="h-auto py-4 sm:h-24 text-base flex-col gap-2 whitespace-normal"
                             onClick={() => updateResponse({ workload: option })}
                           >
                             <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.workload === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
@@ -810,9 +808,9 @@ export function ExitFormWizard({
 
                   {/* Step 2.7: Recommendation */}
                   {questionnaireStep === 6 && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">Would you recommend this company to your friends?</h4>
-                      <div className="flex gap-6 justify-center my-6">
+                      <div className="flex flex-wrap gap-4 sm:gap-6 justify-center my-6">
                         <Button
                           variant={responses.recommendation === "Yes" ? "default" : "outline"}
                           className="w-32 h-32 rounded-2xl flex-col gap-3 text-xl"
@@ -832,7 +830,7 @@ export function ExitFormWizard({
                       </div>
 
                       {responses.recommendation && (
-                        <div className="space-y-2 animate-in fade-in slide-in-from-bottom-2">
+                        <div className="space-y-2 pt-4 animate-in fade-in slide-in-from-bottom-2">
                           <FieldLabel>Comments (Optional)</FieldLabel>
                           <textarea
                             className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -848,7 +846,7 @@ export function ExitFormWizard({
               )}
 
               {currentStep === 2 && (
-                <div className="space-y-6 py-4 animate-in fade-in slide-in-from-right-4">
+                <div className="space-y-6 py-4 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
                   <div className="text-center space-y-2 mb-6">
                     <h3 className="text-xl font-bold tracking-tight text-primary">Terms and Conditions</h3>
                     <p className="text-muted-foreground">Please review our data privacy policy</p>
@@ -936,7 +934,7 @@ export function ExitFormWizard({
                         I acknowledge and agree to the terms stated above.
                       </label>
                       <p className={cn(
-                        "text-xs",
+                        "text-xs mt-1",
                         !canAcceptTerms ? "text-destructive font-medium animate-pulse" : "text-muted-foreground"
                       )}>
                         {!canAcceptTerms
@@ -1029,11 +1027,12 @@ export function ExitFormWizard({
 
               <Button
                 onClick={handleNext}
+                disabled={!isStepValid || isSaving}
                 className={cn(
                   "px-8 flex items-center justify-center gap-2 group transition-all duration-200 w-full sm:w-auto",
                   isStepValid
                     ? "hover:bg-primary/90"
-                    : "opacity-50 hover:bg-primary"
+                    : "opacity-50 cursor-not-allowed"
                 )}
               >
                 Next Step
