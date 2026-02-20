@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -82,8 +82,10 @@ export function ExitFormWizard({
   initialResponse,
   readOnly = false,
 }: ExitFormWizardProps) {
-  // If readOnly (Locked), force start at Summary (Step 3)
-  const [currentStep, setCurrentStep] = useState(readOnly ? 3 : 0);
+  // 1. REVERT SMART RESUME
+  // Form always starts at the beginning unless in read-only mode
+  const initialStep = readOnly ? 3 : 0;
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [questionnaireStep, setQuestionnaireStep] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -131,40 +133,57 @@ export function ExitFormWizard({
     return baseProgress;
   }, [currentStep, questionnaireStep]);
 
-  const handleAutoSave = useCallback(async (newDetails: EmployeeDetails | null, newResponses: QuestionnaireResponses | null) => {
-    setIsSaving(true);
-    try {
-      const payload: {
-        resignation_id: string;
-        employee_details: EmployeeDetails;
-        questionnaire_responses: QuestionnaireResponses;
-      } = {
-        resignation_id: resignation.id,
-        employee_details: newDetails ?? details,
-        questionnaire_responses: newResponses ?? responses
-      };
+  // 2. BROWSER WARNING FOR UNSAVED CHANGES
+  const hasUnsavedChanges = useRef(false);
+  const isFinalSubmitting = useRef(false);
 
-      const result = await saveExitForm(payload);
-      if (!result.success) {
-        toast.error("Auto-save failed: " + result.error);
+  useEffect(() => {
+    // A. External Navigation Guard (Refresh, Tab Close, External Links)
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges.current && !readOnly && !isFinalSubmitting.current) {
+        const message = "Changes you made may not be saved.";
+        e.preventDefault();
+        e.returnValue = message;
+        return message;
       }
-    } catch (error) {
-      console.error("Auto-save error:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [resignation.id, details, responses]);
+    };
+
+    // B. Internal Navigation Guard (Next.js Client-side Links)
+    const handleInternalNavigation = (e: MouseEvent) => {
+      if (!hasUnsavedChanges.current || readOnly || isFinalSubmitting.current) return;
+
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+
+      if (link && link.href) {
+        const url = new URL(link.href, window.location.origin);
+        // Only warn if navigating away from the current form path
+        if (url.origin === window.location.origin && !url.pathname.startsWith('/exit-form')) {
+          if (!window.confirm("Changes you made may not be saved. Are you sure you want to leave?")) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleInternalNavigation, true); // Use capture phase
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleInternalNavigation, true);
+    };
+  }, [readOnly]);
 
   const updateDetail = (field: keyof EmployeeDetails, value: string) => {
-    const newDetails = { ...details, [field]: value };
-    setDetails(newDetails);
-    handleAutoSave(newDetails, null);
+    setDetails(prev => ({ ...prev, [field]: value }));
+    hasUnsavedChanges.current = true;
   };
 
   const updateResponse = (updates: Partial<QuestionnaireResponses>) => {
-    const newResponses = { ...responses, ...updates };
-    setResponses(newResponses);
-    handleAutoSave(null, newResponses);
+    setResponses(prev => ({ ...prev, ...updates }));
+    hasUnsavedChanges.current = true;
   };
 
   const toggleSelection = (field: keyof QuestionnaireResponses, value: string) => {
@@ -252,10 +271,29 @@ export function ExitFormWizard({
     return true;
   }, [currentStep, questionnaireStep, details, responses, consent]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isStepValid) {
       toast.error("Please complete the required fields.");
       return;
+    }
+
+    // Save progress on explicit navigation to avoid data loss
+    if (hasUnsavedChanges.current) {
+      setIsSaving(true);
+      try {
+        const result = await saveExitForm({
+          resignation_id: resignation.id,
+          employee_details: details,
+          questionnaire_responses: responses
+        });
+        if (result.success) {
+          hasUnsavedChanges.current = false;
+        }
+      } catch (err) {
+        console.error("Save error during navigation:", err);
+      } finally {
+        setIsSaving(false);
+      }
     }
 
     setDirection(1);
@@ -295,11 +333,30 @@ export function ExitFormWizard({
     }
   };
 
-  const handleSaveAndReturn = () => {
+  const handleSaveAndReturn = async () => {
     if (!isStepValid) {
       toast.error("Please complete the required fields.");
       return;
     }
+
+    if (hasUnsavedChanges.current) {
+      setIsSaving(true);
+      try {
+        const result = await saveExitForm({
+          resignation_id: resignation.id,
+          employee_details: details,
+          questionnaire_responses: responses
+        });
+        if (result.success) {
+          hasUnsavedChanges.current = false;
+        }
+      } catch (err) {
+        console.error("Save error during Return:", err);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+
     setIsEditingFromSummary(false);
     setCurrentStep(3); // Jump back to Summary
   };
@@ -597,13 +654,13 @@ export function ExitFormWizard({
                               Abroad
                             </Button>
                           </div>
-                          
+
                           {/* Highlight when user hasn't made a location selection */}
                           {responses.reason_for_leaving?.some(r => r === "Another Job") && (
-                             <p className="text-xs text-destructive animate-pulse font-medium flex items-center gap-1">
-                               <span className="w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
-                               Please specify Local or Abroad to proceed.
-                             </p>
+                            <p className="text-xs text-destructive animate-pulse font-medium flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
+                              Please specify Local or Abroad to proceed.
+                            </p>
                           )}
 
                           {responses.reason_for_leaving.includes("Another Job (Abroad)") && (
@@ -976,6 +1033,10 @@ export function ExitFormWizard({
                         return;
                       }
 
+                      // 1. Mark as final submitting to disable persistent warning
+                      isFinalSubmitting.current = true;
+                      hasUnsavedChanges.current = false;
+
                       // 2. Submit formal resignation
                       const submitResult = await submitExitForm(resignation.id);
 
@@ -985,9 +1046,14 @@ export function ExitFormWizard({
                         await fetch('/auth/signout', { method: 'POST' });
                         window.location.href = "/";
                       } else {
+                        // Reset if failed
+                        isFinalSubmitting.current = false;
+                        hasUnsavedChanges.current = true;
                         toast.error("Submission failed: " + submitResult.error);
                       }
                     } catch (error) {
+                      isFinalSubmitting.current = false;
+                      hasUnsavedChanges.current = true;
                       console.error("Submission error:", error);
                       toast.error("An unexpected error occurred.");
                     } finally {

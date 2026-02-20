@@ -1,11 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import {
-    getResignation, // Updated import
+    getResignation,
     getExitResponse,
     getUserProfile,
     getQuestions
 } from './actions';
+
+export const dynamic = 'force-dynamic';
+
 import { ExitFormWizard } from '@/components/exit-form-wizard';
 
 export default async function ExitFormPage() {

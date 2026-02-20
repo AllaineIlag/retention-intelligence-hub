@@ -175,7 +175,6 @@ export async function saveExitForm(formData: ExitFormData) {
     }
 
     // 2. Sync Granular Answers to `exit_questionnaires_result` for Interviewer View (Phase 4)
-    // 2. Sync Granular Answers to `exit_questionnaires_result` for Interviewer View (Phase 4)
     if (formData.questionnaire_responses) {
         // Fetch Question Map (Key -> ID)
         const { data: questions } = await supabase.from('questions').select('id, question_key');
@@ -222,8 +221,6 @@ export async function saveExitForm(formData: ExitFormData) {
 
             if (deleteError) {
                 console.error('Granular Sync (Delete) Error:', deleteError);
-                // Continue to try insert, or abort? If delete fails, insert might violate unique constraints if they exist.
-                // But we proceed to try.
             }
 
             // 2. Insert new responses
@@ -233,14 +230,11 @@ export async function saveExitForm(formData: ExitFormData) {
 
             if (insertError) {
                 console.error('Granular Sync (Insert) Error:', insertError);
-                // We don't block the UI success since Snapshot is saved
             }
         }
-
-
     }
 
-    revalidatePath('/exit-form');
+    // Removed revalidatePath('/exit-form') to prevent UI loops during auto-save
     return { success: true };
 }
 
@@ -260,22 +254,14 @@ export async function submitExitForm(resignationId: string) {
 
     if (checkError || !existing) return { success: false, error: 'Unauthorized' };
 
-
-
-    // Update resignation status to pending_interview (Phase 2: Logic)
-    // After the lead accepts (status → 'scheduled'), the employee fills the form.
-    // On submission, promote status from 'scheduled' → 'pending_interview'.
+    // Update resignation status to pending_interview
     const adminClient = createAdminClient();
 
-    // Postgres update with condition is atomic — only promote if currently 'scheduled'.
     const { error: resignationError } = await adminClient
         .from('resignations')
         .update({ status: 'pending_interview' })
         .eq('id', resignationId)
-        .eq('status', 'scheduled'); // Only promote after lead has accepted
-
-    // Note: If update returns 0 rows modified because status was already promoted, that's fine.
-    // We don't consider it an error.
+        .eq('status', 'scheduled');
 
     if (resignationError) {
         return { success: false, error: resignationError.message };
@@ -333,7 +319,7 @@ export async function getUserProfile() {
         success: true,
         data: {
             ...profile,
-            ...details // This overlays department, business_unit, intermediate_supervisor if they exist
+            ...details
         }
     };
 }
