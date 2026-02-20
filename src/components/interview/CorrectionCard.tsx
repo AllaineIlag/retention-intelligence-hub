@@ -169,27 +169,28 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                         Verified Answer
                     </Label>
 
-                    {/* Single Select → Dropdown */}
+                    {/* Single Select / Conditional → Interactive Button Grid */}
                     {(questionType === 'single' || questionType === 'conditional') && options.length > 0 && (
-                        <Select
-                            value={typeof value === 'string' ? value : ''}
-                            onValueChange={handleSelectChange}
-                        >
-                            <SelectTrigger className="bg-black/40 border-white/10 focus:border-indigo-500/50 text-white rounded-xl h-12">
-                                <SelectValue placeholder="Select an option..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10">
-                                {options.map((opt) => (
-                                    <SelectItem
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {options.map((opt) => {
+                                const isSelected = value === opt.value;
+                                return (
+                                    <button
                                         key={opt.value}
-                                        value={opt.value}
-                                        className="text-white focus:bg-indigo-600 focus:text-white"
+                                        onClick={() => handleSelectChange(opt.value)}
+                                        className={cn(
+                                            "flex items-center justify-between p-4 rounded-xl border transition-all text-left group",
+                                            isSelected
+                                                ? "bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-500/20 text-white"
+                                                : "bg-white/5 border-white/10 hover:bg-white/10 text-white/70 hover:text-white"
+                                        )}
                                     >
-                                        {opt.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                                        <span className="text-sm font-medium">{opt.label}</span>
+                                        {isSelected && <Check className="w-4 h-4 shrink-0" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     )}
 
                     {/* Multi Select → Checkboxes */}
@@ -359,9 +360,18 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                     )}
                 </div>
 
-                {/* Next button */}
-                {onNext && (
-                    <div className="pt-2">
+                {/* Next button / Verification Footer */}
+                <div className="pt-4 mt-auto border-t border-white/5 flex flex-col gap-3">
+                    {!verifiedResult && !saving && (
+                        <Button
+                            onClick={() => doSave(value)}
+                            className="w-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 py-6 font-bold"
+                        >
+                            <CheckCircle2 className="w-5 h-5 mr-2" /> Confirm & Mark as Correct
+                        </Button>
+                    )}
+
+                    {onNext && (
                         <Button
                             variant="outline"
                             onClick={onNext}
@@ -369,8 +379,8 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                         >
                             Next Question <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
-                    </div>
-                )}
+                    )}
+                </div>
             </CardContent>
         </Card>
     );

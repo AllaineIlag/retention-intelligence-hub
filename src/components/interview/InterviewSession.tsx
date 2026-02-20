@@ -118,9 +118,11 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
         return '(No answer)';
     };
 
-    // Navigate to next question
-    const handleNext = () => {
+    // Navigate to next question with auto-save check
+    const handleNext = async () => {
         if (selectedIndex < responses.length - 1) {
+            // Give a tiny moment for any debounced saves to start
+            await new Promise(resolve => setTimeout(resolve, 100));
             setSelectedResponseId(responses[selectedIndex + 1].id);
         }
     };
@@ -202,11 +204,19 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                                 {response.question?.question_text || `Question ${index + 1}`}
                                             </span>
                                             {questionStatus === 'modified' ? (
-                                                <Pencil className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                                <div className="flex items-center gap-1">
+                                                    <Pencil className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                                                    <span className="text-[9px] text-amber-400/60 font-bold uppercase tracking-tighter">Edit</span>
+                                                </div>
                                             ) : questionStatus === 'confirmed' ? (
-                                                <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                                                <div className="flex items-center gap-1">
+                                                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 shadow-[0_0_8px_rgba(52,211,153,0.3)]" />
+                                                </div>
                                             ) : (
-                                                <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0 mt-1.5" />
+                                                <div className="flex items-center gap-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0 mt-1.5 mr-1" />
+                                                    <span className="text-[9px] text-white/20 font-bold uppercase tracking-tighter">Pending</span>
+                                                </div>
                                             )}
                                         </div>
                                         <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-indigo-200/50' : 'text-muted-foreground/40'}`}>

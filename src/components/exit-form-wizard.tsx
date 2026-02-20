@@ -226,6 +226,11 @@ export function ExitFormWizard({
       // Q1: Reason for leaving
       if (questionnaireStep === 0) {
         if (!responses.reason_for_leaving || responses.reason_for_leaving.length === 0) return false;
+
+        // Block if the generic "Another Job" is present (must be specialized to Local or Abroad)
+        const hasUnspecializedJob = responses.reason_for_leaving.some(r => r === 'Another Job');
+        if (hasUnspecializedJob) return false;
+
         if (responses.reason_for_leaving.includes('Another Job (Abroad)') && !responses.reason_for_leaving_country) return false;
       }
       // Q2: Why more desirable (Conditional)
@@ -670,11 +675,11 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.why_more_desirable?.includes(option) ? "default" : "outline"}
-                            className="justify-start h-12 text-lg"
+                            className="justify-start h-auto min-h-[3rem] py-3 text-base sm:text-lg whitespace-normal text-left"
                             onClick={() => toggleSelection('why_more_desirable', option)}
                           >
-                            {responses.why_more_desirable?.includes(option) && <CheckCircle2 className="w-4 h-4 mr-2" />}
-                            {option}
+                            {responses.why_more_desirable?.includes(option) && <CheckCircle2 className="w-4 h-4 mr-2 shrink-0" />}
+                            <span className="flex-1">{option}</span>
                           </Button>
                         ))}
                       </div>
@@ -705,11 +710,11 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.career_growth === option ? "default" : "outline"}
-                            className="justify-between h-14 text-lg px-6"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base sm:text-lg px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ career_growth: option })}
                           >
-                            {option}
-                            {responses.career_growth === option && <CheckCircle2 className="w-5 h-5" />}
+                            <span className="flex-1">{option}</span>
+                            {responses.career_growth === option && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                           </Button>
                         ))}
                       </div>
@@ -719,7 +724,7 @@ export function ExitFormWizard({
                   {/* Step 2.4: Rate of Pay */}
                   {questionnaireStep === 3 && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
-                      <h4 className="text-lg font-medium text-center">How would you disable your rate of pay?</h4>
+                      <h4 className="text-lg font-medium text-center">How would you describe your rate of pay?</h4>
                       <div className="flex flex-col gap-3">
                         {[
                           "Very compensating",
@@ -730,11 +735,11 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.rate_of_pay === option ? "default" : "outline"}
-                            className="justify-between h-14 text-lg px-6"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base sm:text-lg px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ rate_of_pay: option })}
                           >
-                            {option}
-                            {responses.rate_of_pay === option && <CheckCircle2 className="w-5 h-5" />}
+                            <span className="flex-1">{option}</span>
+                            {responses.rate_of_pay === option && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                           </Button>
                         ))}
                       </div>
@@ -745,16 +750,16 @@ export function ExitFormWizard({
                   {questionnaireStep === 4 && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How were the benefits?</h4>
-                      <div className="flex gap-4 justify-center mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                         {["Very adequate", "Adequate", "Inadequate"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.benefits === option ? "default" : "outline"}
-                            className="flex-1 h-24 text-lg flex-col gap-2"
+                            className="h-auto py-4 sm:h-24 text-base sm:text-lg flex-col gap-2 whitespace-normal"
                             onClick={() => updateResponse({ benefits: option })}
                           >
-                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${responses.benefits === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
-                              {responses.benefits === option && <CheckCircle2 className="w-5 h-5" />}
+                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.benefits === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
+                              {responses.benefits === option && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
                             </div>
                             {option}
                           </Button>
@@ -776,16 +781,16 @@ export function ExitFormWizard({
                   {questionnaireStep === 5 && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How was your workload?</h4>
-                      <div className="flex gap-4 justify-center mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                         {["Too much", "Just enough", "Minimal"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.workload === option ? "default" : "outline"}
-                            className="flex-1 h-24 text-lg flex-col gap-2"
+                            className="h-auto py-4 sm:h-24 text-base sm:text-lg flex-col gap-2 whitespace-normal"
                             onClick={() => updateResponse({ workload: option })}
                           >
-                            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${responses.workload === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
-                              {responses.workload === option && <CheckCircle2 className="w-5 h-5" />}
+                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.workload === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
+                              {responses.workload === option && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
                             </div>
                             {option}
                           </Button>
