@@ -81,7 +81,6 @@ const navItems: NavItem[] = [
         roles: ['lead'],
         subItems: [
             { title: 'Recruitment', url: '/dashboard/team/recruitment' },
-            { title: 'Manage Team', url: '/dashboard/team/manage' },
         ],
     },
     {

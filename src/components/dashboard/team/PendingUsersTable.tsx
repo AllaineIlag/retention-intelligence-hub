@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import {
     Table,
     TableBody,
@@ -26,25 +27,36 @@ type Profile = {
     created_at: string;
 };
 
-export default function PendingUsersTable() {
-    const [users, setUsers] = useState<Profile[]>([]);
-    const [loading, setLoading] = useState(true);
+interface PendingUsersTableProps {
+    initialUsers?: Profile[];
+}
+
+export default function PendingUsersTable({ initialUsers = [] }: PendingUsersTableProps) {
+    // Seed from SSR-provided data — no initial fetch needed
+    const [users, setUsers] = useState<Profile[]>(initialUsers);
     const [processing, setProcessing] = useState<string | null>(null);
     const router = useRouter();
 
     const fetchUsers = async () => {
-        setLoading(true);
         const result = await getPendingUsers();
         if (result.success && result.data) {
             setUsers(result.data as Profile[]);
-        } else {
-            console.error('Failed to load pending users');
         }
-        setLoading(false);
     };
 
     useEffect(() => {
-        fetchUsers();
+        // Realtime: auto-refresh when a new pending profile is inserted
+        const supabase = createClient();
+        const channel = supabase
+            .channel('pending-profiles-watcher')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'profiles', filter: 'status=eq.pending' },
+                () => { fetchUsers(); }
+            )
+            .subscribe();
+
+        return () => { supabase.removeChannel(channel); };
     }, []);
 
     const handleApprove = async (userId: string) => {
@@ -61,7 +73,7 @@ export default function PendingUsersTable() {
     };
 
     const handleReject = async (userId: string) => {
-        if (!confirm('Are you sure you want to reject and delete this user?')) return;
+        if (!confirm('Reject this user? They will be denied access and cannot re-enter the system.')) return;
 
         setProcessing(userId);
         const result = await rejectUser(userId);
@@ -74,10 +86,6 @@ export default function PendingUsersTable() {
         }
         setProcessing(null);
     };
-
-    if (loading) {
-        return <div className="p-4 text-center text-muted-foreground animate-pulse">Loading pending requests...</div>;
-    }
 
     if (users.length === 0) {
         return (

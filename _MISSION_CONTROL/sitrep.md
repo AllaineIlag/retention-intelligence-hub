@@ -1,6 +1,6 @@
-**Current Mission:** Implementing Hybrid Resignation Flow
+**Current Mission:** Phase 13 — Lockdown Protocol (Auth Flow Repair)
 **Lead:** Swain
-**Status:** Planning
+**Status:** COMPLETE
 **Priority:** High
 
 ## Tactical Overview
@@ -42,8 +42,8 @@
 - [2026-02-16T15:30:00] [SWAIN]: Operation Glass Truth Phase 5 Complete. Status columns and 'Active/History' tabs implemented in Interviewer Dashboard. Visibility issues resolved.
 - [2026-02-17T01:10:00] [SWAIN]: Bug fixed. `submitExitForm` logic patched to prevent premature 'completion' of cases. Resignation flow preserved for Interviewer review.
 - [2026-02-17T02:20:00] [SWAIN]: New Directive. Initiating 'Operation Broken Lock'. Transitioning resignation workflow from 'Hybrid' to 'Phased' State Machine (`pending_exit_form` -> `pending_interview`).
-
-
-
+- [2026-02-21T21:08:00] [SWAIN]: Phase 13 initiated. Auth flow failures identified: Hard-delete on reject causing DB errors; approved interviewers cycling back to /pending on re-login. Delegated to Team Zaun and Piltover.
+- [2026-02-21T21:10:00] [VIKTOR]: `rejectUser` patched. Hard `deleteUser` replaced with soft `status: 'rejected'` brand. RLS policy confirmed open for Lead updates.
+- [2026-02-21T21:12:00] [CAITLYN]: `auth/callback` updated with rejected-user gate. `login/page.tsx` fitted with "Access Denied" panel triggered by `error=forbidden` param. Phase 13 COMPLETE.
 
 

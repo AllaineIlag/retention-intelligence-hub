@@ -67,30 +67,55 @@ export async function getTeamMembers() {
 
     if (authError || !user) return { error: 'Unauthorized' };
 
+    // LEFT join (no !inner) so interviewers without admin_details rows are included
     const { data: profiles, error } = await supabase
         .from('profiles')
         .select(`
             *,
-            admin_details!inner (
-                full_name,
-                can_export_data,
-                email_notifications,
-                notification_frequency
+            admin_details (
+                can_export_data
             )
         `)
         .in('role', ['lead', 'interviewer'])
+        .eq('status', 'active')
         .order('created_at', { ascending: false });
 
     if (error) return { error: error.message };
 
-    // Flatten for UI if needed, or keep nested. Most UI expects flat.
+    // Flatten — admin_details may be null for interviewers without a row
     const flattened = profiles?.map(p => ({
         ...p,
-        ...p.admin_details
+        can_export_data: (p.admin_details as any)?.can_export_data ?? false,
+        admin_details: undefined,
     }));
 
     return { success: true, data: flattened };
+}
 
+export async function getDeclinedAccounts() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    const { data: accounts, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, role, status, avatar_url, created_at')
+        .eq('status', 'rejected')
+        .eq('role', 'interviewer')
+        .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+
+    return { success: true, data: accounts };
 }
 
 export async function getRecentInvites() {
@@ -117,7 +142,6 @@ export async function getRecentAccounts() {
 
     if (authError || !user) return { error: 'Unauthorized' };
 
-    // Check permissions
     const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -128,28 +152,43 @@ export async function getRecentAccounts() {
 
     const { data: accounts, error } = await supabase
         .from('profiles')
-        .select(`
-            *,
-            admin_details (
-                full_name
-            )
-        `)
-        .neq('status', 'pending') // Exclude pending users (they have their own table)
-        .eq('role', 'interviewer') // Only show interviewers (exclude leads/employees)
+        .select('id, full_name, email, role, status, avatar_url, created_at')
+        .neq('status', 'pending')
+        .eq('role', 'interviewer')
         .order('created_at', { ascending: false })
         .limit(5);
 
     if (error) return { error: error.message };
 
-    // Flatten logic
-    const flattened = accounts?.map(p => ({
-        ...p,
-        full_name: p.admin_details?.full_name || 'Unknown'
-    }));
-
-    return { success: true, data: flattened };
+    return { success: true, data: accounts };
 }
 
+export async function getAllAccounts() {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) return { error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
+
+    // Return ALL non-pending interviewers (active AND rejected)
+    const { data: accounts, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, role, status, avatar_url, created_at')
+        .neq('status', 'pending')
+        .eq('role', 'interviewer')
+        .order('created_at', { ascending: false });
+
+    if (error) return { error: error.message };
+
+    return { success: true, data: accounts };
+}
 
 
 export async function getPendingUsers() {
@@ -297,17 +336,21 @@ export async function rejectUser(userId: string) {
 
     if (profile?.role !== 'lead') return { error: 'Unauthorized' };
 
-    // Get email for audit before deleting
+    // Get target user's info for audit log and email
     const { data: targetUser } = await supabase
         .from('profiles')
-        .select('email')
+        .select('email, full_name')
         .eq('id', userId)
         .single();
 
-    // Delete user from Auth (hard delete)
-    const { error } = await adminSupabase.auth.admin.deleteUser(userId);
+    // SOFT REJECT: Brand as 'rejected' — DO NOT delete the auth account.
+    // This prevents the user from re-registering and cycling back into pending.
+    const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ status: 'rejected' })
+        .eq('id', userId);
 
-    if (error) return { error: error.message };
+    if (updateError) return { error: updateError.message };
 
     // Log Audit
     await logAudit({

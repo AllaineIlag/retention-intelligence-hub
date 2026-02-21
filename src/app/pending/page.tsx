@@ -39,9 +39,28 @@ export default function PendingApprovalPage() {
     useEffect(() => {
         checkStatus();
 
-        // Poll every 10 seconds for status changes
-        const interval = setInterval(checkStatus, 10000);
-        return () => clearInterval(interval);
+        // Realtime: react instantly when the Lead approves/rejects this user
+        const supabase = createClient();
+
+        let userId: string | null = null;
+
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user) return;
+            userId = user.id;
+
+            supabase
+                .channel('my-profile-status')
+                .on(
+                    'postgres_changes',
+                    { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+                    () => { checkStatus(); }
+                )
+                .subscribe();
+        });
+
+        return () => {
+            supabase.removeAllChannels();
+        };
     }, [checkStatus]);
 
     if (status === 'loading') {

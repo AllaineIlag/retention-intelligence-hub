@@ -136,6 +136,10 @@ export async function GET(request: Request) {
                         return NextResponse.redirect(`${baseUrl}/pending`);
                     } else if (profile) {
                         // Profile exists - Check Status first, then Role
+                        if (profile.status === 'rejected') {
+                            // Branded as forbidden — bounce back with message
+                            return NextResponse.redirect(`${baseUrl}/login?error=forbidden`);
+                        }
                         if (profile.status === 'pending') {
                             return NextResponse.redirect(`${baseUrl}/pending`);
                         }

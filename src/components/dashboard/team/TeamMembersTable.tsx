@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Table,
     TableBody,
@@ -13,10 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getTeamMembers, toggleUserPermission } from '@/app/actions/user-actions';
-import { Database, RefreshCw, AlertCircle } from 'lucide-react';
+import { toggleUserPermission } from '@/app/actions/user-actions';
+import { Database, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type Profile = {
     id: string;
@@ -28,24 +34,12 @@ type Profile = {
     created_at: string;
 };
 
-export default function TeamMembersTable() {
-    const [members, setMembers] = useState<Profile[]>([]);
-    const [loading, setLoading] = useState(true);
+interface TeamMembersTableProps {
+    initialMembers?: Profile[];
+}
 
-    const fetchMembers = async () => {
-        setLoading(true);
-        const result = await getTeamMembers();
-        if (result.success && result.data) {
-            setMembers(result.data as any); // Type assertion needed due to complex DB types
-        } else {
-            toast.error('Failed to load team members');
-        }
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchMembers();
-    }, []);
+export default function TeamMembersTable({ initialMembers = [] }: TeamMembersTableProps) {
+    const [members, setMembers] = useState<Profile[]>(initialMembers);
 
     const handlePermissionToggle = async (userId: string, isChecked: boolean) => {
         // Optimistic update
@@ -58,8 +52,12 @@ export default function TeamMembersTable() {
         const result = await toggleUserPermission(userId, 'can_export_data', isChecked);
         if (result.error) {
             toast.error(result.error);
-            // Revert on error
-            fetchMembers();
+            // Revert on error — re-seed from server would require a fetch, so just flip back
+            setMembers((prev) =>
+                prev.map((m) =>
+                    m.id === userId ? { ...m, can_export_data: !isChecked } : m
+                )
+            );
         } else {
             toast.success('Permission updated');
         }
@@ -69,19 +67,16 @@ export default function TeamMembersTable() {
         <Card className="col-span-1 md:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div className="space-y-1">
-                    <CardTitle>Team Management</CardTitle>
+                    <CardTitle>Active Team</CardTitle>
                     <CardDescription>
-                        Manage access and permissions for your interviewers.
+                        Active Leads and Interviewers — manage export permissions below.
                     </CardDescription>
                 </div>
-                <Button variant="outline" size="sm" onClick={fetchMembers} disabled={loading}>
-                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                </Button>
             </CardHeader>
             <CardContent>
-                {loading && members.length === 0 ? (
-                    <div className="flex justify-center p-8">
-                        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                {members.length === 0 ? (
+                    <div className="flex justify-center p-8 text-muted-foreground text-sm">
+                        No active team members found.
                     </div>
                 ) : (
                     <div className="rounded-md border">
@@ -92,7 +87,21 @@ export default function TeamMembersTable() {
                                     <TableHead>Role</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Joined</TableHead>
-                                    <TableHead>Permissions</TableHead>
+                                    <TableHead>
+                                        <div className="flex items-center gap-1.5">
+                                            Permissions
+                                            <TooltipProvider delayDuration={200}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-[220px] text-xs">
+                                                        Controls whether this interviewer can export data (e.g. CSV reports) from the system. Leads always have full access.
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -130,27 +139,35 @@ export default function TeamMembersTable() {
                                         </TableCell>
                                         <TableCell>
                                             {member.role !== 'lead' && (
-                                                <div className="flex items-center space-x-2">
-                                                    <Switch
-                                                        id={`export-${member.id}`}
-                                                        checked={member.can_export_data || false}
-                                                        onCheckedChange={(checked) =>
-                                                            handlePermissionToggle(member.id, checked)
-                                                        }
-                                                    />
-                                                    <Database className="h-4 w-4 text-muted-foreground" />
-                                                </div>
+                                                <TooltipProvider delayDuration={200}>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="flex items-center gap-2 w-fit">
+                                                                <Switch
+                                                                    id={`export-${member.id}`}
+                                                                    checked={member.can_export_data || false}
+                                                                    onCheckedChange={(checked) =>
+                                                                        handlePermissionToggle(member.id, checked)
+                                                                    }
+                                                                />
+                                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                                    <Database className="h-3.5 w-3.5" />
+                                                                    Export Data
+                                                                </span>
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent side="top" className="text-xs">
+                                                            {member.can_export_data
+                                                                ? 'Revoke: prevent this interviewer from exporting reports'
+                                                                : 'Grant: allow this interviewer to export CSV reports'}
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             )}
+
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                                {members.length === 0 && !loading && (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="h-24 text-center">
-                                            No team members found.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
                             </TableBody>
                         </Table>
                     </div>

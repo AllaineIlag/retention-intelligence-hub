@@ -29,14 +29,19 @@ DECLARE
     i INT;
     month_date TIMESTAMP;
     resign_date TIMESTAMP;
-    status_val TEXT;
+    status_val resignation_status;
     rand_val FLOAT;
     idx INT := 0;
     
     -- Dynamic variance variables
     current_month_target INT;
     variance_factor FLOAT;
+    
+    -- Ensure schema safety
 BEGIN
+
+    SET search_path = public;
+
     -- Get all sim employees
     SELECT array_agg(id) INTO employee_ids
     FROM profiles
@@ -88,7 +93,7 @@ BEGIN
             VALUES (
                 gen_random_uuid(),
                 emp_id,
-                status_val,
+                status_val::resignation_status,
                 resign_date,
                 (resign_date + interval '14 days')
             );
@@ -104,9 +109,9 @@ BEGIN
 END $$;
 
 -- Verify
-SELECT status, COUNT(*) 
+SELECT r.status, COUNT(*) 
 FROM resignations r
 JOIN profiles p ON r.employee_id = p.id
 WHERE p.email ILIKE '%@sim.retention.com' OR p.email ILIKE '%@mock.co'
-GROUP BY status 
+GROUP BY r.status 
 ORDER BY COUNT(*) DESC;
