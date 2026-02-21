@@ -21,11 +21,11 @@ const staggerContainer = {
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="min-h-screen bg-brand-background text-zinc-100 selection:bg-brand-primary/30 selection:text-white relative overflow-hidden">
       {/* Animated Background */}
       <div className="fixed inset-0 -z-20 overflow-hidden">
-        <div className="absolute -top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-[120px] animate-pulse" />
-        <div className="absolute top-1/4 right-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[100px] animate-pulse delay-700" />
+        <div className="absolute -top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-blue-600/10 blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 right-0 h-[400px] w-[400px] rounded-full bg-blue-500/10 blur-[100px] animate-pulse delay-700" />
       </div>
 
       {/* Navbar */}
@@ -37,11 +37,11 @@ export default function LandingPage() {
       >
         <div className="container flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tighter">
-            <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="h-8 w-8 rounded-lg bg-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
               <BarChart3 className="text-white h-5 w-5" />
             </div>
-            <span>
-              Retention<span className="text-indigo-500">Hub</span>
+            <span className="font-bold text-xl tracking-tight text-foreground">
+              Retention<span className="text-brand-primary">Hub</span>
             </span>
           </div>
           <nav className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
@@ -55,7 +55,7 @@ export default function LandingPage() {
           <div className="flex gap-4">
             <Link
               href="/login"
-              className="inline-flex h-9 items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-700 hover:scale-105 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-700"
+              className="inline-flex h-9 items-center justify-center rounded-md bg-brand-primary px-4 py-2 text-sm font-medium text-white shadow-lg shadow-brand-primary/20 transition-all hover:bg-brand-primary/90 hover:scale-105 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary"
             >
               Sign In
             </Link>
@@ -76,9 +76,9 @@ export default function LandingPage() {
             >
               <motion.div
                 variants={fadeInUp}
-                className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-sm font-medium text-indigo-400 mb-8 backdrop-blur-md"
+                className="inline-flex items-center rounded-full border border-brand-primary/30 bg-brand-primary/10 px-3 py-1 text-sm font-medium text-brand-primary mb-8 backdrop-blur-md"
               >
-                <span className="flex h-2 w-2 rounded-full bg-indigo-500 mr-2 animate-pulse"></span>
+                <span className="flex h-2 w-2 rounded-full bg-brand-primary mr-2 animate-pulse"></span>
                 Retention Intelligence v6.0 Online
               </motion.div>
               <motion.h1
@@ -86,7 +86,7 @@ export default function LandingPage() {
                 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl bg-gradient-to-br from-white via-white/90 to-white/50 bg-clip-text text-transparent"
               >
                 Predict. Prevent. <br />
-                <span className="text-indigo-500">Retain.</span>
+                <span className="text-brand-primary">Retain.</span>
               </motion.h1>
               <motion.p
                 variants={fadeInUp}
@@ -98,7 +98,7 @@ export default function LandingPage() {
               <motion.div variants={fadeInUp} className="mt-10 flex gap-4">
                 <Link
                   href="/login"
-                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-indigo-600 px-8 text-sm font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-700 hover:scale-105"
+                  className="group inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all hover:bg-blue-700 hover:scale-105"
                 >
                   Access Dashboard
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -134,7 +134,7 @@ export default function LandingPage() {
               description="Enterprise-grade Role-Based Access Control ensures data privacy and compliance."
             />
             <FeatureCard
-              icon={<BarChart3 className="h-6 w-6 text-indigo-400" />}
+              icon={<BarChart3 className="h-6 w-6 text-blue-400" />}
               title="Predictive Modeling"
               description="AI-driven insights to identify at-risk employees before resignation."
             />
@@ -181,7 +181,7 @@ function FeatureCard({
       variants={fadeInUp}
       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 transition-all hover:bg-white/10 hover:border-white/20 hover:scale-[1.02]"
     >
-      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 group-hover:bg-white/10 transition-colors">
         {icon}
       </div>

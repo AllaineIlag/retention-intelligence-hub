@@ -57,9 +57,9 @@ async function TodaysBanner() {
         <div className="space-y-4">
             {/* Stats Row */}
             <div className="flex items-center gap-3">
-                <Card className="bg-indigo-500/10 border-indigo-500/20 px-4 py-2 flex flex-col items-center justify-center">
-                    <span className="text-2xl font-bold text-indigo-400 leading-none">{todayCases.length}</span>
-                    <span className="text-[10px] uppercase font-bold text-indigo-300/60 tracking-wider">Today</span>
+                <Card className="bg-blue-500/10 border-blue-500/20 px-4 py-2 flex flex-col items-center justify-center">
+                    <span className="text-2xl font-bold text-blue-400 leading-none">{todayCases.length}</span>
+                    <span className="text-[10px] uppercase font-bold text-blue-300/60 tracking-wider">Today</span>
                 </Card>
                 <Card className="bg-cyan-500/10 border-cyan-500/20 px-4 py-2 flex flex-col items-center justify-center">
                     <span className="text-2xl font-bold text-cyan-400 leading-none">{upcomingCount}</span>
@@ -70,7 +70,7 @@ async function TodaysBanner() {
             {/* Today's Interview Cards */}
             {todayCases.length > 0 && (
                 <div>
-                    <div className="flex items-center gap-2 text-indigo-400 font-bold uppercase text-xs tracking-widest mb-3">
+                    <div className="flex items-center gap-2 text-blue-400 font-bold uppercase text-xs tracking-widest mb-3">
                         <Clock className="w-4 h-4" />
                         <span>On Deck (Today)</span>
                     </div>
@@ -80,16 +80,16 @@ async function TodaysBanner() {
                             return (
                                 <Card
                                     key={c.id}
-                                    className="group overflow-hidden transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10 border-indigo-500/30 bg-indigo-500/[0.03]"
+                                    className="group overflow-hidden transition-all hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 border-blue-500/30 bg-blue-500/[0.03]"
                                 >
                                     <CardHeader className="flex flex-row items-center gap-4 pb-3">
                                         <Avatar className="h-10 w-10 border-2 border-white/10">
-                                            <AvatarFallback className="bg-indigo-500/20 text-indigo-300 font-bold text-sm">
+                                            <AvatarFallback className="bg-blue-500/20 text-blue-300 font-bold text-sm">
                                                 {employee.full_name?.charAt(0) || 'E'}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="min-w-0">
-                                            <CardTitle className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors truncate">
+                                            <CardTitle className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors truncate">
                                                 {employee.full_name || 'Employee'}
                                             </CardTitle>
                                             <CardDescription className="text-xs truncate">
@@ -99,13 +99,13 @@ async function TodaysBanner() {
                                     </CardHeader>
                                     <CardContent className="space-y-3 pt-0">
                                         <div className="flex items-center text-sm font-medium text-white/80">
-                                            <Clock className="w-3.5 h-3.5 mr-2 text-indigo-400" />
+                                            <Clock className="w-3.5 h-3.5 mr-2 text-blue-400" />
                                             {c.scheduled_interview_date
                                                 ? format(parseISO(c.scheduled_interview_date), 'h:mm a')
                                                 : 'Time TBD'}
                                         </div>
                                         <Button
-                                            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md shadow-indigo-500/20 h-9 text-xs"
+                                            className="bg-brand-primary hover:bg-brand-primary/90 text-white font-bold shadow-md shadow-blue-500/20 h-9 text-xs"
                                             asChild
                                         >
                                             <Link href={`/dashboard/interview/${c.id}`}>

@@ -31,7 +31,7 @@ export function SentimentStackedBar({ data, className }: SentimentStackedBarProp
     });
 
     return (
-        <Card className={cn("col-span-1 border border-white/5 bg-white/[0.02] shadow-sm rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border border-border bg-card/50 shadow-sm rounded-3xl relative overflow-hidden", className)}>
             <CardHeader className="pb-2">
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     Sentiment Distribution
@@ -48,16 +48,22 @@ export function SentimentStackedBar({ data, className }: SentimentStackedBarProp
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData} layout="vertical" barCategoryGap="20%">
                                 <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`}
-                                    tick={{ fill: '#71717a', fontSize: 10 }} axisLine={false} tickLine={false} />
+                                    tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                                 <YAxis type="category" dataKey="category" width={70}
-                                    tick={{ fill: '#a1a1aa', fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
+                                    tick={{ fill: 'var(--foreground)', fontSize: 11, fontWeight: 500 }} axisLine={false} tickLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: 'rgba(0,0,0,0.85)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
-                                    itemStyle={{ fontSize: '11px' }}
+                                    contentStyle={{
+                                        backgroundColor: 'var(--popover)',
+                                        borderColor: 'var(--border)',
+                                        borderRadius: '12px',
+                                        backdropFilter: 'blur(8px)',
+                                        color: 'var(--popover-foreground)'
+                                    }}
+                                    itemStyle={{ fontSize: '11px', color: 'var(--foreground)' }}
                                     formatter={(value: any) => `${value}%`}
                                 />
                                 <Legend
-                                    iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
+                                    iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '8px', color: 'var(--muted-foreground)', textTransform: 'uppercase' }}
                                 />
                                 <Bar dataKey="Low" stackId="a" fill="#f43f5e" radius={[0, 0, 0, 0]} />
                                 <Bar dataKey="Fair" stackId="a" fill="#f59e0b" />

@@ -30,7 +30,7 @@ export default function AuthCodeErrorPage() {
                 </CardContent>
                 <CardFooter>
                     <Link href="/login" className="w-full">
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                             Back to Login
                         </Button>
                     </Link>

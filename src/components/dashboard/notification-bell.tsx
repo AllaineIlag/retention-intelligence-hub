@@ -95,7 +95,7 @@ export function NotificationBell() {
             case 'success': return <div className="h-2 w-2 rounded-full bg-green-500" />
             case 'warning': return <div className="h-2 w-2 rounded-full bg-amber-500" />
             case 'error': return <div className="h-2 w-2 rounded-full bg-red-500" />
-            default: return <div className="h-2 w-2 rounded-full bg-indigo-500" />
+            default: return <div className="h-2 w-2 rounded-full bg-blue-500" />
         }
     }
 
@@ -109,19 +109,19 @@ export function NotificationBell() {
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative hover:bg-white/5 data-[state=open]:bg-white/5">
-                    <Bell className={cn("h-5 w-5 transition-colors", unreadCount > 0 ? "text-indigo-400" : "text-zinc-400")} />
+                    <Bell className={cn("h-5 w-5 transition-colors", unreadCount > 0 ? "text-blue-400" : "text-zinc-400")} />
                     {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-[#0f0f11] animate-pulse" />
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-[#0f0f11] animate-pulse" />
                     )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 border-white/10 bg-[#0f0f11]/95 backdrop-blur-xl text-white p-0 shadow-2xl rounded-xl" align="end" sideOffset={10} collisionPadding={16}>
                 <div className="flex items-center justify-between p-4 border-b border-white/5">
                     <div className="flex items-center gap-2">
-                        <Bell className="h-4 w-4 text-indigo-400" />
+                        <Bell className="h-4 w-4 text-blue-400" />
                         <h4 className="font-semibold text-sm">Notifications</h4>
                         {unreadCount > 0 && (
-                            <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-500/20">
+                            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/20">
                                 {unreadCount} New
                             </span>
                         )}
@@ -152,7 +152,7 @@ export function NotificationBell() {
                                     key={notification.id}
                                     className={cn(
                                         "p-4 transition-colors hover:bg-white/5 cursor-pointer flex gap-4 relative group",
-                                        !notification.is_read ? "bg-indigo-500/[0.03]" : ""
+                                        !notification.is_read ? "bg-blue-500/[0.03]" : ""
                                     )}
                                     onClick={() => handleMarkAsRead(notification.id, notification.link)}
                                 >
@@ -172,7 +172,7 @@ export function NotificationBell() {
                                     </div>
                                     {!notification.is_read && (
                                         <div className="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="h-2 w-2 rounded-full bg-indigo-500 ring-4 ring-indigo-500/20" />
+                                            <div className="h-2 w-2 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
                                         </div>
                                     )}
                                 </div>

@@ -29,7 +29,7 @@ export default async function ReasonForLeavingPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold tracking-tight text-white mb-6">Reason for Leaving</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-6">Reason for Leaving</h1>
 
             {/* SECTOR 1: Top KPIs */}
             <ReasonTopKpiGrid />
@@ -44,9 +44,9 @@ export default async function ReasonForLeavingPage() {
 
             <div className="grid gap-6 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
-                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl col-span-2">
+                <Card className="bg-card/50 border-border backdrop-blur-xl col-span-2">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-gray-400">Trend (Frequency over Time)</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Trend (Frequency over Time)</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">
@@ -57,9 +57,9 @@ export default async function ReasonForLeavingPage() {
 
                 {/* 2. The Cluster (Reason by Dept) */}
                 {/* 2. The Cluster (Reason by Dept) */}
-                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
+                <Card className="bg-card/50 border-border backdrop-blur-xl">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-gray-400">Cluster Analysis (Reason by Dept)</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Cluster Analysis (Reason by Dept)</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">
@@ -70,9 +70,9 @@ export default async function ReasonForLeavingPage() {
 
                 {/* 3. The Demographic (Risk Profile) */}
                 {/* 3. The Demographic (Risk Profile) */}
-                <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
+                <Card className="bg-card/50 border-border backdrop-blur-xl">
                     <CardHeader>
-                        <CardTitle className="text-sm font-medium text-gray-400">Demographic Risk (Tenure)</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Demographic Risk (Tenure)</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="mt-4">

@@ -72,7 +72,7 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
     }
 
     return (
-        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] h-full flex flex-col rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border-border bg-card/50 h-full flex flex-col rounded-3xl relative overflow-hidden", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -88,14 +88,14 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                            className="h-6 gap-1 rounded-full border border-border bg-accent/50 px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                             suppressHydrationWarning
                         >
                             {mode.toUpperCase()}
                             <ChevronDown className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[120px] border-white/10 bg-zinc-950">
+                    <DropdownMenuContent align="end" className="w-[120px] border-border bg-popover text-popover-foreground">
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
@@ -124,8 +124,8 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
-                                itemStyle={{ color: '#e4e4e7', fontSize: '12px' }}
+                                contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                                itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
                             />
                             <Legend
                                 verticalAlign="bottom"

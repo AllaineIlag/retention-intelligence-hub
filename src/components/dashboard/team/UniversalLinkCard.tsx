@@ -24,8 +24,8 @@ export default function UniversalLinkCard() {
         <Card className="border-white/5 bg-white/[0.02]">
             <CardHeader>
                 <div className="flex items-center gap-2">
-                    <div className="p-2 bg-indigo-500/10 rounded-lg">
-                        <Users className="h-5 w-5 text-indigo-500" />
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <Users className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
                         <CardTitle className="text-lg font-medium">Invite Your Team</CardTitle>
@@ -68,8 +68,8 @@ export default function UniversalLinkCard() {
                     </div>
                 </div>
 
-                <div className="rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-4">
-                    <h4 className="text-xs font-semibold text-indigo-400 mb-1 flex items-center gap-1.5">
+                <div className="rounded-lg bg-blue-500/5 border border-blue-500/10 p-4">
+                    <h4 className="text-xs font-semibold text-blue-400 mb-1 flex items-center gap-1.5">
                         <ShieldCheckIcon className="h-3.5 w-3.5" />
                         Admin Approval Required
                     </h4>

@@ -146,9 +146,9 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
         const config: Record<string, { icon: any, color: string, border: string, bg: string, label: string, spin?: boolean }> = {
             scheduled: {
                 icon: CalendarClock,
-                color: 'text-blue-400',
-                border: 'border-white/10',
-                bg: 'bg-white/5',
+                color: 'text-brand-primary',
+                border: 'border-brand-border',
+                bg: 'bg-brand-primary/5',
                 label: 'Accepted'
             },
             pending_exit_form: {
@@ -160,9 +160,9 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
             },
             pending_interview: {
                 icon: CheckCircle2,
-                color: 'text-cyan-400',
-                border: 'border-white/10',
-                bg: 'bg-white/5',
+                color: 'text-brand-secondary',
+                border: 'border-brand-border',
+                bg: 'bg-brand-secondary/5',
                 label: 'Ready for Interview'
             },
             completed: {
@@ -320,7 +320,7 @@ export function InterviewsTable({ data }: InterviewsTableProps) {
                                 <Button
                                     type="submit"
                                     disabled={isScheduling}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto"
+                                    className="bg-brand-primary hover:bg-brand-primary/90 text-white w-full sm:w-auto"
                                 >
                                     {isScheduling ? "Scheduling..." : "Confirm & Send Invite"}
                                 </Button>
@@ -416,9 +416,9 @@ function DataTable({
                                 <TableRow key={interview.id} className="hover:bg-white/5 border-white/5 group transition-colors">
                                     <TableCell className="pl-6">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9 border border-indigo-500/20">
+                                            <Avatar className="h-9 w-9 border-brand-primary/20">
                                                 <AvatarImage src={interview.employee?.avatar_url || ''} alt={interview.employee?.full_name || 'Employee'} />
-                                                <AvatarFallback className="bg-indigo-500/10 text-indigo-400 text-xs">
+                                                <AvatarFallback className="bg-brand-primary/10 text-brand-primary text-xs">
                                                     {getInitials(interview.employee?.full_name || 'U')}
                                                 </AvatarFallback>
                                             </Avatar>
@@ -454,7 +454,7 @@ function DataTable({
                                             <>
                                                 <Button
                                                     size="sm"
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-900/20"
+                                                    className="bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg shadow-brand-primary/20"
                                                     onClick={() => onSchedule(interview)}
                                                 >
                                                     Accept & Schedule

@@ -158,14 +158,14 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                     <Label className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
                         Employee's Original Answer
                     </Label>
-                    <p className="mt-2 text-indigo-100/90 font-medium leading-relaxed text-sm">
+                    <p className="mt-2 text-blue-100 font-medium leading-relaxed text-sm">
                         {getOriginalDisplay()}
                     </p>
                 </div>
 
                 {/* Interviewer's Correction — Dynamic by question_type */}
                 <div className="space-y-3 flex-1">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-indigo-400">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-blue-400">
                         Verified Answer
                     </Label>
 
@@ -181,7 +181,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                         className={cn(
                                             "flex items-center justify-between p-4 rounded-xl border transition-all text-left group",
                                             isSelected
-                                                ? "bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-500/20 text-white"
+                                                ? "bg-primary border-blue-500 shadow-lg shadow-blue-500/20 text-white"
                                                 : "bg-white/5 border-white/10 hover:bg-white/10 text-white/70 hover:text-white"
                                         )}
                                     >
@@ -234,7 +234,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                 <Checkbox
                                                     checked={checked}
                                                     onCheckedChange={(c) => handleToggle(!!c)}
-                                                    className="border-white/20 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                                    className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-blue-600"
                                                 />
                                                 <span className="text-sm text-white/80 group-hover:text-white transition-colors">{opt.label}</span>
                                             </label>
@@ -248,7 +248,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         className={cn(
                                                             'text-xs rounded-lg',
                                                             currentValues.includes('Another Job (Local)')
-                                                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                                                ? 'bg-primary hover:bg-blue-600 text-white'
                                                                 : 'border-white/10 hover:bg-white/5 text-white/70'
                                                         )}
                                                         onClick={() => {
@@ -266,7 +266,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         className={cn(
                                                             'text-xs rounded-lg',
                                                             currentValues.includes('Another Job (Abroad)')
-                                                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                                                ? 'bg-primary hover:bg-blue-600 text-white'
                                                                 : 'border-white/10 hover:bg-white/5 text-white/70'
                                                         )}
                                                         onClick={() => {
@@ -317,7 +317,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         handleSelectChange(country);
                                                         setCountryOpen(false);
                                                     }}
-                                                    className="text-white focus:bg-indigo-600 focus:text-white"
+                                                    className="text-white focus:bg-primary focus:text-white"
                                                 >
                                                     <Check
                                                         className={cn(
@@ -342,7 +342,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                 placeholder="Enter the verified answer..."
                                 value={typeof value === 'string' ? value : ''}
                                 onChange={(e) => handleTextChange(e.target.value)}
-                                className="bg-black/40 border-white/10 focus:border-indigo-500/50 focus:ring-indigo-500/20 min-h-[120px] text-white rounded-xl transition-all"
+                                className="bg-black/40 border-white/10 focus:border-primary/50 focus:ring-primary/20 min-h-[120px] text-white rounded-xl transition-all"
                             />
                             <div className="flex justify-end">
                                 <Button
@@ -350,7 +350,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                     size="sm"
                                     onClick={handleManualSave}
                                     disabled={saving || saved}
-                                    className="text-xs text-muted-foreground hover:text-indigo-400"
+                                    className="text-xs text-muted-foreground hover:text-blue-400"
                                 >
                                     <Save className="w-3 h-3 mr-1" />
                                     {saving ? 'Saving...' : saved ? 'Saved' : 'Save Now'}

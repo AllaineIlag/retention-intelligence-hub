@@ -31,11 +31,11 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.1} />
 
                     <XAxis
                         dataKey="month"
-                        stroke="#6b7280"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -43,7 +43,7 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
                     />
 
                     <YAxis
-                        stroke="#6b7280"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -51,19 +51,21 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
 
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1f2937',
-                            borderColor: '#374151',
-                            color: '#f3f4f6',
-                            borderRadius: '0.5rem'
+                            backgroundColor: 'var(--popover)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--popover-foreground)',
+                            borderRadius: '0.75rem',
+                            borderWidth: '1px',
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
                         }}
-                        itemStyle={{ color: '#e5e7eb' }}
+                        itemStyle={{ color: 'var(--foreground)' }}
                     />
 
                     <Legend
                         verticalAlign="top"
                         height={36}
                         iconType="circle"
-                        wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }}
+                        wrapperStyle={{ fontSize: '10px', color: 'var(--muted-foreground)', textTransform: 'uppercase', fontWeight: 500 }}
                     />
 
                     {options.map((opt) => (
@@ -73,7 +75,7 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
                             dataKey={opt.label}
                             stroke={opt.color}
                             strokeWidth={2}
-                            dot={{ r: 3, fill: '#1f2937', strokeWidth: 2, stroke: opt.color }}
+                            dot={{ r: 3, fill: 'var(--background)', strokeWidth: 2, stroke: opt.color }}
                             activeDot={{ r: 5, fill: opt.color }}
                         />
                     ))}

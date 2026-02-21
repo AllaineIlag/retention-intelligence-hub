@@ -107,7 +107,7 @@ export function ClusterAnalysisCard({ initialData = [], className }: ClusterAnal
             </CardHeader>
             <CardContent className="flex-1 min-h-[350px] pt-4">
                 <DepartmentClusterChart data={data} />
-                <div className="absolute top-6 right-16 p-2 rounded-full bg-indigo-500/10 text-indigo-400">
+                <div className="absolute top-6 right-16 p-2 rounded-full bg-blue-500/10 text-blue-400">
                     <BarChart2 className="h-4 w-4" />
                 </div>
             </CardContent>

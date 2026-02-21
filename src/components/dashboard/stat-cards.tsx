@@ -36,7 +36,7 @@ export function StatCards({ stats }: StatCardsProps) {
             value: stats.misunderstoodCount,
             icon: AlertCircle,
             description: 'Total corrections logged',
-            color: 'text-indigo-500',
+            color: 'text-brand-primary',
         },
     ];
 
@@ -50,12 +50,12 @@ export function StatCards({ stats }: StatCardsProps) {
                     transition={{ delay: index * 0.1 }}
                 >
                     <Card className="relative overflow-hidden border-white/5 bg-white/[0.02] backdrop-blur-sm transition-all hover:bg-white/[0.04] hover:border-white/10 group">
-                        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                                 {card.title}
                             </CardTitle>
-                            <card.icon className={`h-4 w-4 text-muted-foreground transition-colors group-hover:text-indigo-400 ${card.color || ''}`} />
+                            <card.icon className={`h-4 w-4 text-muted-foreground transition-colors group-hover:text-brand-primary ${card.color || ''}`} />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold tracking-tight">{card.value}</div>

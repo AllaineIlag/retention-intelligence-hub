@@ -105,7 +105,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
 
     if (!isMounted) {
         return (
-            <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl relative overflow-hidden", className)}>
+            <Card className={cn("col-span-1 border-border bg-card/50 rounded-3xl relative overflow-hidden", className)}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <div>
                         <CardTitle className="text-base font-medium tracking-tight">Department Breakdown</CardTitle>
@@ -120,7 +120,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
     }
 
     return (
-        <Card className={cn("col-span-1 border-white/5 bg-white/[0.02] rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border-border bg-card/50 rounded-3xl relative overflow-hidden", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -135,10 +135,10 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                 </div>
                 <div className="flex items-center gap-2">
                     <Select value={range} onValueChange={handleRangeChange}>
-                        <SelectTrigger className="w-[140px] h-8 text-xs border-white/10 bg-white/5">
+                        <SelectTrigger className="w-[140px] h-8 text-xs border-border bg-accent/50">
                             <SelectValue placeholder="Select range" />
                         </SelectTrigger>
-                        <SelectContent className="border-white/10 bg-zinc-950">
+                        <SelectContent className="border-border bg-popover text-popover-foreground">
                             <SelectItem value="7d">Last 7 Days</SelectItem>
                             <SelectItem value="30d">Last 30 Days</SelectItem>
                             <SelectItem value="3m">Last 3 Months</SelectItem>
@@ -175,9 +175,9 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                             width={100}
                         />
                         <Tooltip
-                            cursor={{ fill: 'white', opacity: 0.05 }}
-                            contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
-                            itemStyle={{ color: '#e4e4e7', fontSize: '12px' }}
+                            cursor={{ fill: 'currentColor', opacity: 0.1 }}
+                            contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                            itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
                         />
                         <Bar
                             dataKey="value"
@@ -186,7 +186,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                             barSize={32}
                             name="Exits"
                             animationDuration={1000}
-                            background={{ fill: '#ffffff', opacity: 0.02, radius: 4 }}
+                            background={{ fill: 'var(--muted)', opacity: 0.1, radius: 4 }}
                         />
                     </BarChart>
                 </ResponsiveContainer>

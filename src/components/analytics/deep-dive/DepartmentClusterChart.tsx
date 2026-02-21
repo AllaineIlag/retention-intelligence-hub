@@ -22,14 +22,13 @@ interface DepartmentClusterChartProps {
 }
 
 const COLORS = [
-    '#EF4444', // Red
+    '#0052CC', // Corporate Blue
+    '#0EA5E9', // Sky Blue
     '#F59E0B', // Amber
     '#10B981', // Emerald
-    '#8B5CF6', // Violet
-    '#3B82F6', // Blue
-    '#EC4899', // Pink
-    '#6366F1', // Indigo
     '#14B8A6', // Teal
+    '#EF4444', // Red
+    '#EC4899', // Pink
     '#84CC16', // Lime
     '#F97316', // Orange
 ];
@@ -38,8 +37,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         const total = payload[0].payload.totalCount;
         return (
-            <div className="rounded-lg border border-white/10 bg-[#0f0f11]/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-sm font-semibold text-white">{label}</p>
+            <div className="rounded-xl border border-border bg-popover/90 p-3 shadow-xl backdrop-blur-md">
+                <p className="mb-2 text-[10px] font-semibold text-muted-foreground uppercase">{label}</p>
                 <div className="space-y-1">
                     {payload.map((entry: any, index: number) => (
                         <div key={index} className="flex items-center gap-2 text-xs">
@@ -47,19 +46,19 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                                 className="h-2 w-2 rounded-full"
                                 style={{ backgroundColor: entry.color }}
                             />
-                            <span className="font-medium text-gray-300">
+                            <span className="font-medium text-muted-foreground">
                                 {entry.name}:
                             </span>
-                            <span className="font-bold text-white">
+                            <span className="font-bold text-foreground">
                                 {entry.value}
                             </span>
-                            <span className="text-gray-500">
+                            <span className="text-muted-foreground/60">
                                 ({total > 0 ? ((entry.value / total) * 100).toFixed(0) : 0}%)
                             </span>
                         </div>
                     ))}
-                    <div className="mt-2 text-xs text-gray-400 border-t border-white/10 pt-1">
-                        Total Exits: <span className="text-white font-medium">{total}</span>
+                    <div className="mt-2 text-[10px] text-muted-foreground border-t border-border pt-2 uppercase font-medium">
+                        Total Exits: <span className="text-foreground font-bold">{total}</span>
                     </div>
                 </div>
             </div>
@@ -84,11 +83,12 @@ export function DepartmentClusterChart({ data }: DepartmentClusterChartProps) {
                     <CartesianGrid
                         strokeDasharray="3 3"
                         horizontal={false}
-                        stroke="rgba(255,255,255,0.05)"
+                        stroke="var(--border)"
+                        opacity={0.1}
                     />
                     <XAxis
                         type="number"
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -97,13 +97,13 @@ export function DepartmentClusterChart({ data }: DepartmentClusterChartProps) {
                     <YAxis
                         dataKey="department"
                         type="category"
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
                         width={100}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
 
                     {allKeys.map((key, index) => (

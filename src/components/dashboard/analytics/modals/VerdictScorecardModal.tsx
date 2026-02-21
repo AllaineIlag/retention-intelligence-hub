@@ -55,11 +55,11 @@ export function VerdictScorecardModal({ score, verdict, details }: VerdictScorec
                 <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground border-b border-white/5 pb-2">Recommended Actions</h3>
                 <ul className="space-y-3">
                     <li className="flex items-start gap-3 text-sm text-gray-300">
-                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                         <span>Investigate the specific "Detractor" exit interviews for recurring themes in "Reason for Leaving".</span>
                     </li>
                     <li className="flex items-start gap-3 text-sm text-gray-300">
-                        <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-2 shrink-0" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500 mt-2 shrink-0" />
                         <span>Address the {details.passives} "Passive" respondents — these are retainable employees who felt indifferent.</span>
                     </li>
                 </ul>

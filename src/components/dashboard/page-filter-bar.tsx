@@ -30,7 +30,7 @@ export function PageFilterBar() {
                         className={cn(
                             "h-7 px-2.5 text-[10px] font-medium rounded-md transition-all duration-200",
                             pageFilter === opt.mode
-                                ? "bg-indigo-500/20 text-indigo-300 shadow-[0_0_10px_rgba(99,102,241,0.15)]"
+                                ? "bg-blue-500/20 text-blue-300 shadow-[0_0_10px_rgba(37,99,235,0.15)]"
                                 : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
                         )}
                     >

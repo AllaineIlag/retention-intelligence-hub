@@ -68,8 +68,8 @@ export function TrendComparisonChart({ title, description, data, meta, className
                         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
@@ -104,7 +104,7 @@ export function TrendComparisonChart({ title, description, data, meta, className
                                                     <span className="font-semibold">{currData.date}</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                                    <div className="text-indigo-400 font-medium">{meta?.currentLabel || 'Current'}</div>
+                                                    <div className="text-blue-400 font-medium">{meta?.currentLabel || 'Current'}</div>
                                                     <div className="text-right font-mono">{currData.current}</div>
                                                     <div className="text-[10px] text-muted-foreground col-span-2 text-right">{currData.fullDateCurrent}</div>
 
@@ -134,7 +134,7 @@ export function TrendComparisonChart({ title, description, data, meta, className
                                 type="monotone"
                                 dataKey="current"
                                 name="Current Period"
-                                stroke="#818cf8"
+                                stroke="#2563eb"
                                 strokeWidth={2}
                                 fillOpacity={1}
                                 fill="url(#colorCurrent)"

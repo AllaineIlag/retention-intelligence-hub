@@ -50,7 +50,7 @@ export default async function InterviewPage({ params }: { params: { id: string }
                 <div>
 
                     <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                        <UserCircle className="w-8 h-8 text-indigo-600" />
+                        <UserCircle className="w-8 h-8 text-blue-600" />
                         Interview: {
                             role === 'lead'
                                 ? (details?.full_name || details?.email)
@@ -73,7 +73,7 @@ export default async function InterviewPage({ params }: { params: { id: string }
 
                     <Badge className={`
             ${resignation.status === 'completed' ? 'bg-green-100 text-green-700 hover:bg-green-200' : ''}
-            ${resignation.status === 'scheduled' ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : ''}
+            ${resignation.status === 'scheduled' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : ''}
             ${resignation.status === 'pending_interview' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : ''}
             ${resignation.status === 'pending_exit_form' || resignation.status === 'pending_interview' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : ''}
             ${resignation.status === 'cancelled' ? 'bg-red-100 text-red-700 hover:bg-red-200' : ''}

@@ -17,7 +17,7 @@ interface RecentResignationsTableProps {
 export function RecentResignationsTable({ resignations }: RecentResignationsTableProps) {
     if (!resignations || resignations.length === 0) {
         return (
-            <Card className="col-span-full border-white/5 bg-white/[0.02] h-full flex flex-col">
+            <Card className="col-span-full border-border bg-card/50 h-full flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
                 </CardHeader>
@@ -29,7 +29,7 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
     }
 
     return (
-        <Card className="col-span-full border-white/5 bg-white/[0.02] h-full">
+        <Card className="col-span-full border-border bg-card/50 h-full">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
@@ -38,8 +38,8 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
             <CardContent className="p-0">
                 <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                     <Table>
-                        <TableHeader className="sticky top-0 bg-[#09090b] z-10">
-                            <TableRow className="hover:bg-transparent border-white/5">
+                        <TableHeader className="sticky top-0 bg-popover z-10">
+                            <TableRow className="hover:bg-transparent border-border">
                                 <TableHead className="w-[250px] pl-6">Employee</TableHead>
                                 <TableHead>Department</TableHead>
                                 <TableHead>Status</TableHead>
@@ -48,10 +48,10 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
                         </TableHeader>
                         <TableBody>
                             {resignations.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-white/5 border-white/5">
+                                <TableRow key={item.id} className="hover:bg-accent/50 border-border">
                                     <TableCell className="flex items-center gap-3 pl-6">
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-sm text-zinc-200">
+                                            <span className="font-medium text-sm text-foreground">
                                                 {item.employee_details?.full_name || 'Unknown'}
                                             </span>
                                             <span className="text-[10px] text-muted-foreground">
@@ -85,13 +85,13 @@ function StatusBadge({ status }: { status: string }) {
         pending: {
             icon: Loader,
             color: 'text-amber-400',
-            border: 'border-white/10',
-            bg: 'bg-white/5',
+            border: 'border-border',
+            bg: 'bg-accent/50',
             label: 'Pending'
         },
         scheduled: {
             icon: CalendarClock,
-            color: 'text-indigo-400',
+            color: 'text-blue-400',
             border: 'border-white/10',
             bg: 'bg-white/5'
         },

@@ -57,7 +57,7 @@ export default async function SettingsPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-zinc-400">Role</p>
-                                    <div className="inline-flex items-center rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-400 capitalize">
+                                    <div className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-400 capitalize">
                                         {profile?.role}
                                     </div>
                                 </div>

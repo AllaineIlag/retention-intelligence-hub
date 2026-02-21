@@ -96,7 +96,7 @@ export default async function ExitFormPage() {
                 resignation={resignationRes.data}
                 profile={profileRes.data}
                 questions={questionsRes.data || []}
-                initialResponse={responseRes.data}
+                initialResponse={responseRes.data || null}
                 readOnly={isLocked}
             />
         </div>

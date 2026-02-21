@@ -84,7 +84,7 @@ export function MoneyVsCultureCard({
     const financialPct = (financialVal / total) * 100
 
     return (
-        <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("border border-border bg-card/50 shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -100,14 +100,14 @@ export function MoneyVsCultureCard({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                                className="h-6 gap-1 rounded-full border border-border bg-accent/50 px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                                 suppressHydrationWarning
                             >
                                 {mode.toUpperCase()}
                                 <ChevronDown className="h-3 w-3" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
+                        <DropdownMenuContent align="end" className="w-[140px] border-border bg-popover text-popover-foreground">
                             <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
@@ -122,13 +122,13 @@ export function MoneyVsCultureCard({
                 </div>
             </CardHeader>
             <CardContent className="h-full flex flex-col justify-end pb-6">
-                <h3 className="text-2xl font-bold text-white mb-1 truncate" title={value}>
+                <h3 className="text-2xl font-bold text-foreground mb-1 truncate" title={value}>
                     {value}
                 </h3>
                 <p className="text-xs text-muted-foreground mb-6">{subValue}</p>
 
                 {/* Progress Bar Visual */}
-                <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden flex mb-3 ring-1 ring-white/5">
+                <div className="h-4 w-full bg-accent rounded-full overflow-hidden flex mb-3 ring-1 ring-border">
                     <div
                         style={{ width: `${financialPct}%` }}
                         className="bg-emerald-500 h-full transition-all duration-1000 ease-out"

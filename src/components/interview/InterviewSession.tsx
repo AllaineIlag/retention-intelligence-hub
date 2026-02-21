@@ -212,11 +212,11 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                 <Tabs defaultValue="questionnaire" className="flex flex-col h-full" onValueChange={(v) => setActiveTab(v)}>
                     <div className="p-4 border-b border-white/5 bg-white/[0.02]">
                         <TabsList className="w-full bg-black/30 p-1">
-                            <TabsTrigger value="personal" className="flex-1 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white gap-1.5">
+                            <TabsTrigger value="personal" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5">
                                 <User className="w-3.5 h-3.5" />
                                 Personal Info
                             </TabsTrigger>
-                            <TabsTrigger value="questionnaire" className="flex-1 text-xs font-bold data-[state=active]:bg-indigo-600 data-[state=active]:text-white gap-1.5">
+                            <TabsTrigger value="questionnaire" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5">
                                 <ClipboardList className="w-3.5 h-3.5" />
                                 Questionnaire
                             </TabsTrigger>
@@ -253,14 +253,14 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                         onClick={() => setSelectedResponseId(response.id)}
                                         disabled={questionStatus === 'skipped'}
                                         className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
-                                            ? 'bg-indigo-500/10 border-indigo-500/30'
+                                            ? 'bg-primary/10 border-primary/30'
                                             : questionStatus === 'skipped'
                                                 ? 'bg-transparent border-transparent opacity-30 grayscale cursor-not-allowed'
                                                 : 'bg-transparent border-transparent hover:bg-white/5'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start gap-2 mb-1.5">
-                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-indigo-300' :
+                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-blue-400' :
                                                 questionStatus === 'skipped' ? 'line-through text-gray-500' : 'text-gray-300'
                                                 }`}>
                                                 {response.question?.question_text || `Question ${index + 1}`}
@@ -285,7 +285,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                                 </div>
                                             )}
                                         </div>
-                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-indigo-200/50' :
+                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-blue-300/50' :
                                             questionStatus === 'skipped' ? 'text-gray-600' : 'text-muted-foreground/40'
                                             }`}>
                                             {questionStatus === 'skipped' ? 'Not Required' : getAnswerPreview(response)}
@@ -294,7 +294,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                         {isSelected && (
                                             <motion.div
                                                 layoutId="active-pill"
-                                                className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]"
                                             />
                                         )}
                                     </button>
@@ -351,7 +351,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                         className="pt-2"
                     >
                         <Button
-                            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold py-6 text-base"
+                            className="bg-brand-primary hover:bg-brand-primary/90 text-white h-11 px-6 rounded-xl shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={finishing}
                         >
@@ -379,7 +379,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleFinalize}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold"
+                            className="bg-primary hover:bg-blue-600 text-white font-bold"
                         >
                             <ThumbsUp className="w-4 h-4 mr-2" />
                             Yes, Seal It
@@ -396,7 +396,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
 // --- Constants & Config ---
 
 const PERSONAL_FIELDS = [
-    { key: 'personal_full_name', label: 'Full Name', icon: <User className="w-4 h-4 text-indigo-400" />, rawKey: 'full_name', type: 'text' },
+    { key: 'personal_full_name', label: 'Full Name', icon: <User className="w-4 h-4 text-blue-400" />, rawKey: 'full_name', type: 'text' },
     { key: 'personal_employee_number', label: 'Employee Number', icon: <Shield className="w-4 h-4 text-emerald-400" />, rawKey: 'employee_number', type: 'text' },
     { key: 'personal_business_unit', label: 'Business Unit', icon: <Briefcase className="w-4 h-4 text-orange-400" />, rawKey: 'business_unit', type: 'business_unit' },
     { key: 'personal_current_position', label: 'Current Position', icon: <Briefcase className="w-4 h-4 text-cyan-400" />, rawKey: 'current_position', type: 'position' },
@@ -464,7 +464,7 @@ function PersonalInfoSidebarItem({ field, employee, resignation, verifiedResults
         <button
             onClick={onSelect}
             className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
-                ? 'bg-indigo-500/10 border-indigo-500/30'
+                ? 'bg-primary/10 border-primary/30'
                 : 'bg-transparent border-transparent hover:bg-white/5'
                 }`}
         >
@@ -472,7 +472,7 @@ function PersonalInfoSidebarItem({ field, employee, resignation, verifiedResults
                 <div className="mt-0.5 shrink-0">{field.icon}</div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? 'text-indigo-300' : 'text-muted-foreground/60'}`}>
+                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? 'text-blue-300' : 'text-muted-foreground/60'}`}>
                             {field.label}
                         </p>
                         <div className="flex items-center gap-1">
@@ -488,7 +488,7 @@ function PersonalInfoSidebarItem({ field, employee, resignation, verifiedResults
             {isSelected && (
                 <motion.div
                     layoutId="active-pill-personal"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.6)]"
                 />
             )}
         </button>
@@ -591,7 +591,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
         }
         return (
             <input
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 text-lg text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-white/20"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 text-lg text-white outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-white/20"
                 placeholder={`Enter correct ${field.label.toLowerCase()}...`}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -610,14 +610,14 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
             className="flex-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl"
         >
             {/* Header */}
-            <div className="p-6 border-b border-white/5 bg-gradient-to-r from-indigo-500/5 to-transparent">
+            <div className="p-6 border-b border-white/5 bg-gradient-to-r from-primary/5 to-transparent">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-blue-400">
                         {field.icon}
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-white tracking-tight">{field.label}</h2>
-                        <p className="text-sm text-indigo-300/60 font-medium">Personal Information Correction</p>
+                        <p className="text-sm text-blue-300/60 font-medium">Personal Information Correction</p>
                     </div>
                 </div>
             </div>
@@ -636,8 +636,8 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                 {/* Verified Answer Input */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <p className="text-[10px] uppercase tracking-widest text-indigo-400 font-bold pl-1 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                        <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold pl-1 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
                             Verified Information
                         </p>
                         {value !== rawOriginal && (
@@ -667,7 +667,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                             className={cn(
                                 "font-bold shadow-lg transition-all",
                                 value !== (verifiedValue ?? rawOriginal)
-                                    ? "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20"
+                                    ? "bg-primary hover:bg-blue-600 text-white shadow-blue-500/20"
                                     : "bg-white/5 text-white/40 hover:bg-white/10"
                             )}
                         >

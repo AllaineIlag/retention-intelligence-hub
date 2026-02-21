@@ -31,7 +31,7 @@ function getInitials(name: string) {
 export function QualitativeFeed({ comments }: QualitativeFeedProps) {
     if (!comments || comments.length === 0) {
         return (
-            <div className="flex h-full items-center justify-center text-gray-500">
+            <div className="flex h-full items-center justify-center text-muted-foreground">
                 No comments available.
             </div>
         );
@@ -43,39 +43,39 @@ export function QualitativeFeed({ comments }: QualitativeFeedProps) {
                 {comments.map((item) => (
                     <div
                         key={item.id}
-                        className="relative rounded-lg border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.04]"
+                        className="relative rounded-xl border border-border bg-card/50 p-4 transition-all hover:bg-accent/50"
                     >
                         {/* Header: User Info */}
                         <div className="flex items-start justify-between">
                             <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8 border border-white/10">
+                                <Avatar className="h-8 w-8 border border-border">
                                     <AvatarImage src="" /> {/* Using fallback for now */}
-                                    <AvatarFallback className="bg-[#27272a] text-xs text-gray-400">
+                                    <AvatarFallback className="bg-muted text-xs text-muted-foreground">
                                         {getInitials(item.employeeName)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-200">
+                                    <p className="text-sm font-medium text-foreground">
                                         {item.employeeName}
                                     </p>
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                         {item.role} • {item.department}
                                     </p>
                                 </div>
                             </div>
-                            <span className="text-xs text-gray-600">{item.date}</span>
+                            <span className="text-xs text-muted-foreground/60">{item.date}</span>
                         </div>
 
                         {/* Content: Reason Tag + Comment */}
                         <div className="mt-3 pl-11">
                             <div className="mb-2">
-                                <Badge variant="outline" className="text-[10px] text-gray-400 border-white/10 px-2 py-0 h-5">
+                                <Badge variant="outline" className="text-[10px] text-muted-foreground border-border px-2 py-0 h-5">
                                     {item.reasonCategory}
                                 </Badge>
                             </div>
                             <div className="relative">
-                                <Quote className="absolute -left-6 -top-1 h-4 w-4 text-white/10" />
-                                <p className="text-sm leading-relaxed text-gray-300">
+                                <Quote className="absolute -left-6 -top-1 h-4 w-4 text-primary/10" />
+                                <p className="text-sm leading-relaxed text-foreground/80">
                                     {item.comment}
                                 </p>
                             </div>

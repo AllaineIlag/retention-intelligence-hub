@@ -41,13 +41,13 @@ export function DepartmentScoreChart({ data }: DepartmentScoreChartProps) {
                     layout="vertical"
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.05)" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.1} />
 
                     <XAxis
                         type="number"
                         domain={[0, 5]}
                         ticks={[1, 2, 3, 4, 5]}
-                        stroke="#6b7280"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -56,7 +56,7 @@ export function DepartmentScoreChart({ data }: DepartmentScoreChartProps) {
                     <YAxis
                         dataKey="department"
                         type="category"
-                        stroke="#9ca3af" // Lighter text for labels
+                        stroke="var(--muted-foreground)" // Lighter text for labels
                         fontSize={11}
                         width={100}
                         tickLine={false}
@@ -64,14 +64,15 @@ export function DepartmentScoreChart({ data }: DepartmentScoreChartProps) {
                     />
 
                     <Tooltip
-                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                        cursor={{ fill: 'currentColor', opacity: 0.05 }}
                         contentStyle={{
-                            backgroundColor: '#1f2937',
-                            borderColor: '#374151',
-                            color: '#f3f4f6',
-                            borderRadius: '0.5rem'
+                            backgroundColor: 'var(--popover)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--popover-foreground)',
+                            borderRadius: '0.75rem',
+                            borderWidth: '1px'
                         }}
-                        itemStyle={{ color: '#e5e7eb' }}
+                        itemStyle={{ color: 'var(--foreground)' }}
                         formatter={(value: any) => [value, 'Avg Score']}
                     />
 

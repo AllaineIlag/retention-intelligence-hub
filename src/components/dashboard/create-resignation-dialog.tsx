@@ -131,7 +131,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 rounded-xl px-3 md:px-4"
+                    className="gap-2 bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg shadow-brand-primary/20 rounded-xl px-3 md:px-4"
                     size="sm"
                 >
                     <Plus className="h-4 w-4" />
@@ -208,7 +208,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto"
+                            className="bg-brand-primary hover:bg-brand-primary/90 text-white w-full sm:w-auto"
                         >
                             {loading ? "Processing..." : "Start Process"}
                         </Button>

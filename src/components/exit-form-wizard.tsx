@@ -58,7 +58,7 @@ import {
 interface ExitFormWizardProps {
   user: { id: string; email?: string } | null;
   resignation: { id: string; exit_date: string; status: string; last_working_day?: string };
-  profile: { full_name: string } | null;
+  profile: Partial<EmployeeDetails & { full_name: string }> | null;
   questions: Question[];
   initialResponse: {
     employee_details?: Partial<EmployeeDetails>;

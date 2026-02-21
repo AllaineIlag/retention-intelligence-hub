@@ -39,7 +39,7 @@ function ratingBadge(rating: string) {
 
 export function UnhappyTable({ data, className }: UnhappyTableProps) {
     return (
-        <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("border border-border bg-card/50 shadow-sm rounded-3xl relative overflow-hidden", className)}>
             <CardHeader className="pb-2">
                 <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     The &ldquo;Unhappy&rdquo; List
@@ -57,7 +57,7 @@ export function UnhappyTable({ data, className }: UnhappyTableProps) {
                     <div className="max-h-[360px] overflow-y-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="border-b border-white/5 hover:bg-transparent">
+                                <TableRow className="border-b border-border hover:bg-transparent">
                                     <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Name</TableHead>
                                     <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Pay Rating</TableHead>
                                     <TableHead className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Workload</TableHead>
@@ -67,17 +67,17 @@ export function UnhappyTable({ data, className }: UnhappyTableProps) {
                             </TableHeader>
                             <TableBody>
                                 {data.map((row, i) => (
-                                    <TableRow key={i} className="border-b border-white/5 hover:bg-white/[0.03]">
-                                        <TableCell className="font-medium text-xs text-zinc-200">{row.name}</TableCell>
+                                    <TableRow key={i} className="border-b border-border hover:bg-accent/50">
+                                        <TableCell className="font-medium text-xs text-foreground">{row.name}</TableCell>
                                         <TableCell>{ratingBadge(row.payRating)}</TableCell>
                                         <TableCell>{ratingBadge(row.workloadRating)}</TableCell>
-                                        <TableCell className="text-xs text-zinc-400">{row.superiorName}</TableCell>
+                                        <TableCell className="text-xs text-muted-foreground">{row.superiorName}</TableCell>
                                         <TableCell className="text-right">
                                             <span className={cn(
                                                 "text-xs font-bold",
-                                                row.recommendationScore < 30 ? "text-rose-400" :
-                                                    row.recommendationScore < 50 ? "text-amber-400" :
-                                                        "text-zinc-400"
+                                                row.recommendationScore < 30 ? "text-rose-600 dark:text-rose-400" :
+                                                    row.recommendationScore < 50 ? "text-amber-600 dark:text-amber-400" :
+                                                        "text-muted-foreground"
                                             )}>
                                                 {row.recommendationScore >= 0 ? `${row.recommendationScore}/100` : 'N/A'}
                                             </span>

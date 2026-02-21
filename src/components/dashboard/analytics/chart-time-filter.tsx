@@ -17,22 +17,22 @@ export function ChartTimeFilter({ value, onChange, className }: ChartTimeFilterP
             onValueChange={(v) => onChange(v as TimeRange)}
             className={`w-auto ${className}`}
         >
-            <TabsList className="h-7 bg-white/5 border border-white/5">
+            <TabsList className="bg-brand-primary hover:bg-brand-primary/90 text-white w-full sm:w-auto">
                 <TabsTrigger
                     value="7d"
-                    className="text-[10px] px-2 h-5 data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
+                    className="text-[10px] px-2 h-5 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                 >
                     7d
                 </TabsTrigger>
                 <TabsTrigger
                     value="30d"
-                    className="text-[10px] px-2 h-5 data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
+                    className="text-[10px] px-2 h-5 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                 >
                     30d
                 </TabsTrigger>
                 <TabsTrigger
                     value="3m"
-                    className="text-[10px] px-2 h-5 data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
+                    className="text-[10px] px-2 h-5 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
                 >
                     3m
                 </TabsTrigger>

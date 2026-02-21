@@ -77,7 +77,6 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
 
     const progress = Math.min((rate / 3) * 100, 100);
     const color = rate > 2.2 ? '#f43f5e' : '#10b981';
-    const TRACK_COLOR = '#27272a';
 
     const data = [
         { name: 'Value', value: progress },
@@ -96,7 +95,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
     }
 
     return (
-        <Card className={cn("border border-white/5 bg-white/[0.02] shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("border border-border bg-card/50 shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -111,14 +110,14 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                            className="h-6 gap-1 rounded-full border border-border bg-accent/50 px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                             suppressHydrationWarning
                         >
                             {mode.toUpperCase()}
                             <ChevronDown className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
+                    <DropdownMenuContent align="end" className="w-[140px] border-border bg-popover text-popover-foreground">
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
@@ -130,7 +129,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
             </CardHeader>
             <CardContent className="flex items-end justify-between pb-4 pt-0">
                 <div className="flex flex-col">
-                    <span className="text-2xl font-bold tracking-tight text-white">{rate.toFixed(1)}%</span>
+                    <span className="text-2xl font-bold tracking-tight text-foreground">{rate.toFixed(1)}%</span>
                     <span className="text-[10px] text-muted-foreground uppercase font-medium mt-1">
                         {getLabel()}
                     </span>
@@ -153,7 +152,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
                                 cornerRadius={3}
                             >
                                 <Cell key="value" fill={color} />
-                                <Cell key="remaining" fill={TRACK_COLOR} />
+                                <Cell key="remaining" className="fill-muted/20" />
                             </Pie>
                         </PieChart>
                     </ResponsiveContainer>

@@ -7,6 +7,7 @@ import { CreateResignationDialog } from '@/components/dashboard/create-resignati
 import { NotificationBell } from '@/components/dashboard/notification-bell';
 import { RoleBadgeMenu } from '@/components/dashboard/role-badge-menu';
 import { MobileActionsMenu } from '@/components/dashboard/mobile-actions-menu';
+import { ThemeToggle } from '@/components/dashboard/theme-toggle';
 
 import { PageFilterProvider } from '@/components/dashboard/page-filter-context';
 import { NavPageFilter } from '@/components/dashboard/nav-page-filter';
@@ -65,7 +66,7 @@ export default async function DashboardLayout({
                 <div className="flex h-screen overflow-hidden bg-background" suppressHydrationWarning>
                     <CustomSidebar role={role} email={user.email || 'Unknown'} pendingCount={pendingCount} />
                     <div className="flex flex-1 flex-col overflow-hidden">
-                        <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6 bg-[#0f0f11]/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-300">
+                        <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6 glass sticky top-0 z-20 transition-all duration-300">
                             <div className="flex items-center gap-2 md:gap-4 min-w-0">
                                 <CustomSidebarTrigger />
                                 <DashboardHeader />
@@ -85,6 +86,7 @@ export default async function DashboardLayout({
                                         <CreateResignationDialog />
                                     </div>
 
+                                    <ThemeToggle />
                                     <NotificationBell />
 
                                     {/* Interactive Role Badge with dropdown */}

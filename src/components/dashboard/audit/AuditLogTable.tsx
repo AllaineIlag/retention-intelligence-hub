@@ -57,7 +57,7 @@ export function AuditLogTable({ logs }: AuditLogTableProps) {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div className="space-y-1">
                     <CardTitle className="flex items-center gap-2">
-                        <ShieldCheck className="h-5 w-5 text-indigo-400" />
+                        <ShieldCheck className="h-5 w-5 text-blue-400" />
                         System Audit Logs
                     </CardTitle>
                     <CardDescription>

@@ -245,8 +245,8 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
     return (
         <>
             {/* Header */}
-            <div className="flex h-16 items-center gap-3 border-b border-white/5 px-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/40 border border-white/10">
+            <div className="flex h-16 items-center gap-3 border-b px-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/40 border border-border">
                     <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <AnimatePresence>
@@ -367,7 +367,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                         </CollapsibleTrigger>
                                         <CollapsibleContent>
                                             {!isCollapsed && (
-                                                <ul className="mt-1 space-y-1 px-2 border-l border-white/10 ml-4">
+                                                <ul className="mt-1 space-y-1 px-2 border-l ml-4">
                                                     {item.subItems?.map((sub) => {
                                                         const isSubActive = pathname === sub.url;
                                                         return (
@@ -418,27 +418,27 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
             </nav>
 
             {/* Footer */}
-            <div className="border-t border-white/5 p-3">
+            <div className="border-t p-3">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button
-                            className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/5 overflow-hidden"
+                            className="flex w-full items-center gap-3 rounded-lg p-2 transition-colors hover:bg-accent/50 overflow-hidden"
                             suppressHydrationWarning
                         >
                             <Avatar className="h-9 w-9 shrink-0">
-                                <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-xs font-medium text-white">
+                                <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-xs font-medium text-white text-popover-foreground">
                                     {getInitials(email)}
                                 </AvatarFallback>
                             </Avatar>
                             {!isCollapsed && (
                                 <div className="flex-1 min-w-0 text-left">
-                                    <p className="truncate text-sm font-medium text-white">{email}</p>
+                                    <p className="truncate text-sm font-medium text-foreground">{email}</p>
                                     <p className="text-xs capitalize text-muted-foreground">{role}</p>
                                 </div>
                             )}
                         </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" side="top" className="w-56">
+                    <DropdownMenuContent align="end" side="top" className="w-56 bg-popover border-border text-popover-foreground">
                         <form action="/auth/signout" method="post">
                             <DropdownMenuItem asChild>
                                 <button type="submit" className="w-full cursor-pointer">
@@ -475,7 +475,7 @@ export function CustomSidebar({ role, email, pendingCount = 0 }: CustomSidebarPr
             <Sheet open={isMobileOpen} onOpenChange={closeMobile}>
                 <SheetContent
                     side="left"
-                    className="w-[280px] p-0 bg-[#0a0a0a] border-r border-white/5 [&>button]:hidden shadow-2xl shadow-indigo-500/5"
+                    className="w-[280px] p-0 bg-sidebar border-r border-sidebar-border [&>button]:hidden shadow-2xl shadow-indigo-500/5"
                 >
                     <SheetHeader className="sr-only">
                         <SheetTitle>Navigation Menu</SheetTitle>
@@ -502,12 +502,12 @@ export function CustomSidebar({ role, email, pendingCount = 0 }: CustomSidebarPr
             animate={isCollapsed ? 'collapsed' : 'expanded'}
             variants={sidebarVariants}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="relative hidden md:flex h-screen flex-col border-r border-white/10 bg-[#0d0d0d]"
+            className="relative hidden md:flex h-screen flex-col border-r bg-sidebar"
         >
             {/* Toggle Button */}
             <button
                 onClick={toggleSidebar}
-                className="absolute -right-3 top-20 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-[#0d0d0d] text-muted-foreground shadow-md transition-colors hover:bg-white/5 hover:text-white"
+                className="absolute -right-3 top-20 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-md transition-colors hover:bg-accent hover:text-foreground"
             >
                 {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
             </button>

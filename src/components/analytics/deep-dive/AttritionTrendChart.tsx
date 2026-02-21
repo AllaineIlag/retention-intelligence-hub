@@ -21,11 +21,11 @@ interface AttritionTrendChartProps {
 }
 
 const COLORS = [
+    '#0052CC', // Corporate Blue
     '#EF4444', // Red (Voluntary)
     '#F59E0B', // Amber (Involuntary)
     '#10B981', // Emerald
-    '#3B82F6', // Blue
-    '#8B5CF6', // Violet
+    '#0EA5E9', // Sky Blue
 ];
 
 interface CustomTooltipProps {
@@ -37,8 +37,8 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-lg border border-white/10 bg-[#0f0f11]/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-sm font-semibold text-white">{label}</p>
+            <div className="rounded-xl border border-border bg-popover/90 p-3 shadow-xl backdrop-blur-md">
+                <p className="mb-2 text-[10px] font-semibold text-muted-foreground uppercase">{label}</p>
                 <div className="space-y-1">
                     {payload.map((entry: any, index: number) => (
                         <div key={index} className="flex items-center gap-2 text-xs">
@@ -46,10 +46,10 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
                                 className="h-2 w-2 rounded-full"
                                 style={{ backgroundColor: entry.color }}
                             />
-                            <span className="font-medium text-gray-300">
+                            <span className="font-medium text-muted-foreground">
                                 {entry.name}:
                             </span>
-                            <span className="text-white">
+                            <span className="text-foreground">
                                 {entry.value}
                             </span>
                         </div>
@@ -75,24 +75,25 @@ export function AttritionTrendChart({ data }: AttritionTrendChartProps) {
                     <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="rgba(255,255,255,0.05)"
+                        stroke="var(--border)"
+                        opacity={0.1}
                     />
                     <XAxis
                         dataKey="month"
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                         dy={10}
                     />
                     <YAxis
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
                         dx={-10}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 2 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--border)', strokeWidth: 2, opacity: 0.2 }} />
                     <Legend
                         wrapperStyle={{ paddingTop: '20px' }}
                         iconType="circle"
@@ -104,7 +105,7 @@ export function AttritionTrendChart({ data }: AttritionTrendChartProps) {
                             dataKey={key}
                             stroke={COLORS[index % COLORS.length]}
                             strokeWidth={2}
-                            dot={{ r: 4, fill: '#0f0f11', strokeWidth: 2 }}
+                            dot={{ r: 4, fill: 'var(--background)', strokeWidth: 2 }}
                             activeDot={{ r: 6, strokeWidth: 0 }}
                         />
                     ))}

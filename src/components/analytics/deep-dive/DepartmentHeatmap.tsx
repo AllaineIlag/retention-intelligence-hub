@@ -23,17 +23,17 @@ interface DepartmentHeatmapProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-lg border border-white/10 bg-[#0f0f11]/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-sm font-semibold text-white">{label}</p>
+            <div className="rounded-lg border border-border bg-popover/90 p-3 shadow-xl backdrop-blur-md">
+                <p className="mb-2 text-sm font-semibold text-foreground">{label}</p>
                 <div className="flex items-center gap-2 text-xs">
                     <div
                         className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: payload[0].payload.color }} // Use cell color
                     />
-                    <span className="font-medium text-gray-300">
+                    <span className="font-medium text-muted-foreground">
                         Total Exits:
                     </span>
-                    <span className="font-bold text-white">
+                    <span className="font-bold text-foreground">
                         {payload[0].value}
                     </span>
                 </div>
@@ -70,11 +70,12 @@ export function DepartmentHeatmap({ data }: DepartmentHeatmapProps) {
                     <CartesianGrid
                         strokeDasharray="3 3"
                         horizontal={false} // Vertical grid lines only for horizontal bars
-                        stroke="rgba(255,255,255,0.05)"
+                        stroke="var(--border)"
+                        opacity={0.1}
                     />
                     <XAxis
                         type="number"
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -83,13 +84,13 @@ export function DepartmentHeatmap({ data }: DepartmentHeatmapProps) {
                     <YAxis
                         dataKey="department"
                         type="category"
-                        stroke="#71717a"
+                        stroke="var(--muted-foreground)"
                         fontSize={11} // Slightly smaller for long names
                         tickLine={false}
                         axisLine={false}
                         width={100} // Ensure space for labels
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} />
                     <Bar
                         dataKey="count"
                         radius={[0, 4, 4, 0]} // Round right corners

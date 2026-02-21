@@ -141,7 +141,7 @@ export function CardFilter({ onFilterChange, defaultFilters }: CardFilterProps) 
                         <Button
                             size="sm"
                             onClick={handleApply}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
                         >
                             Apply Filters
                         </Button>

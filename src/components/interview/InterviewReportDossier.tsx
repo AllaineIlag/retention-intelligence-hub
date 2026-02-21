@@ -107,7 +107,7 @@ export function InterviewReportDossier({ resignation, verifiedResults, responses
                 <Card className="bg-black/40 border-white/10 backdrop-blur-md h-fit">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <User className="w-4 h-4 text-indigo-400" />
+                            <User className="w-4 h-4 text-blue-400" />
                             Personal Information
                         </CardTitle>
                         <CardDescription>Verified employee details</CardDescription>
@@ -119,7 +119,7 @@ export function InterviewReportDossier({ resignation, verifiedResults, responses
                                 const { value, isModified } = getVerifiedPersonalInfo(field);
                                 return (
                                     <div key={field.key} className="p-4 flex items-start gap-3 group hover:bg-white/[0.02] transition-colors">
-                                        <div className="mt-0.5 text-white/40 group-hover:text-indigo-400 transition-colors">
+                                        <div className="mt-0.5 text-white/40 group-hover:text-blue-400 transition-colors">
                                             {field.icon}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -151,7 +151,7 @@ export function InterviewReportDossier({ resignation, verifiedResults, responses
                 <Card className="lg:col-span-2 bg-black/40 border-white/10 backdrop-blur-md">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-lg">
-                            <FileText className="w-4 h-4 text-indigo-400" />
+                            <FileText className="w-4 h-4 text-blue-400" />
                             Questionnaire Record
                         </CardTitle>
                         <CardDescription>Final verified responses</CardDescription>
@@ -187,7 +187,7 @@ export function InterviewReportDossier({ resignation, verifiedResults, responses
                                         <div key={response.id} className="p-6 space-y-3 hover:bg-white/[0.02]">
                                             <div className="flex items-start justify-between gap-4">
                                                 <h3 className="text-sm font-medium text-white/90 leading-relaxed">
-                                                    <span className="text-indigo-500 font-bold mr-2">Q{index + 1}.</span>
+                                                    <span className="text-blue-500 font-bold mr-2">Q{index + 1}.</span>
                                                     {response.question?.question_text}
                                                 </h3>
                                             </div>

@@ -14,11 +14,11 @@ interface DemographicRiskChartProps {
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="rounded-lg border border-white/10 bg-[#0f0f11]/90 p-3 shadow-xl backdrop-blur-md">
-                <p className="mb-2 text-sm font-semibold text-white">{payload[0].name}</p>
+            <div className="rounded-xl border border-border bg-popover/90 p-3 shadow-xl backdrop-blur-md">
+                <p className="mb-2 text-[10px] font-semibold text-muted-foreground uppercase">{payload[0].name}</p>
                 <div className="flex items-center gap-2 text-xs">
-                    <span className="font-medium text-gray-300">Exits:</span>
-                    <span className="font-bold text-white">{payload[0].value}</span>
+                    <span className="font-medium text-muted-foreground">Exits:</span>
+                    <span className="font-bold text-foreground">{payload[0].value}</span>
                 </div>
             </div>
         );
@@ -53,14 +53,14 @@ export function DemographicRiskChart({ data }: DemographicRiskChartProps) {
                         height={36}
                         iconType="circle"
                         formatter={(value, entry: any) => (
-                            <span className="text-gray-400 text-xs ml-1">{value}</span>
+                            <span className="text-muted-foreground text-xs ml-1">{value}</span>
                         )}
                     />
                 </PieChart>
             </ResponsiveContainer>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+18px)] text-center pointer-events-none">
-                <div className="text-2xl font-bold text-white">{total}</div>
-                <div className="text-xs text-gray-500 uppercase tracking-wider">Total</div>
+                <div className="text-2xl font-bold text-foreground">{total}</div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">Total</div>
             </div>
         </div>
     );

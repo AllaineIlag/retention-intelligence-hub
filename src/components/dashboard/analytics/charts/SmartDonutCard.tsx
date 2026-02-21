@@ -20,11 +20,11 @@ interface SmartDonutCardProps {
 }
 
 const COLORS = [
-    '#6366f1', // Indigo
+    '#0052CC', // Corporate Blue
     '#10b981', // Emerald
     '#f59e0b', // Amber
+    '#0EA5E9', // Sky Blue
     '#14b8a6', // Teal
-    '#8b5cf6', // Violet
 ]
 
 export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData = [], className }: SmartDonutCardProps) {
@@ -91,27 +91,27 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
     const total = data.reduce((acc, curr) => acc + curr.value, 0)
 
     return (
-        <Card className={cn("flex flex-col border-white/5 bg-white/[0.02] min-h-0 rounded-3xl shadow-sm hover:bg-white/[0.04] transition-colors duration-300 overflow-hidden relative", className)}>
+        <Card className={cn("flex flex-col border-border bg-card/50 min-h-0 rounded-3xl shadow-sm hover:bg-accent/5 transition-colors duration-300 overflow-hidden relative", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                 </div>
             )}
-            <CardHeader className="py-3 px-5 shrink-0 flex flex-row items-center justify-between border-b border-white/5 space-y-0">
-                <CardTitle className="text-sm font-medium text-zinc-100">{title}</CardTitle>
+            <CardHeader className="py-3 px-5 shrink-0 flex flex-row items-center justify-between border-b border-border space-y-0">
+                <CardTitle className="text-sm font-medium text-foreground">{title}</CardTitle>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 gap-1 rounded-full border border-white/5 bg-white/5 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:bg-white/10 hover:text-zinc-300"
+                            className="h-6 gap-1 rounded-full border border-border bg-accent/50 px-2 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                             suppressHydrationWarning
                         >
                             {mode.toUpperCase()}
                             <ChevronDown className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
+                    <DropdownMenuContent align="end" className="w-[140px] border-border bg-popover text-popover-foreground">
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
@@ -142,14 +142,14 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                                itemStyle={{ color: '#fff' }}
+                                contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                                itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
                             />
                         </PieChart>
                     </ResponsiveContainer>
                     {/* Center Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-lg font-bold text-white leading-none">{total}</span>
+                        <span className="text-lg font-bold text-foreground leading-none">{total}</span>
                         <span className="text-[10px] text-muted-foreground uppercase">{unit}</span>
                     </div>
                 </div>
@@ -163,7 +163,7 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
                                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12px] text-zinc-400 truncate" title={item.name}>{item.name}</span>
+                                <span className="text-[12px] text-muted-foreground truncate" title={item.name}>{item.name}</span>
                             </div>
                         </div>
                     ))}

@@ -27,10 +27,10 @@ function LoginForm() {
         <Card className="w-full max-w-md border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl relative z-10">
             <CardHeader className="space-y-3 text-center">
                 <div className="flex justify-center">
-                    <div className={`rounded-2xl p-4 ring-1 ring-white/10 ${isForbidden ? 'bg-gradient-to-br from-red-500/20 to-rose-500/20' : 'bg-gradient-to-br from-indigo-500/20 to-purple-500/20'}`}>
+                    <div className={`rounded-2xl p-4 ring-1 ring-white/10 ${isForbidden ? 'bg-gradient-to-br from-red-500/20 to-rose-500/20' : 'bg-gradient-to-br from-blue-500/20 to-sky-500/20'}`}>
                         {isForbidden
                             ? <ShieldX className="h-8 w-8 text-red-400" />
-                            : <Lock className="h-8 w-8 text-indigo-400" />
+                            : <Lock className="h-8 w-8 text-blue-400" />
                         }
                     </div>
                 </div>
@@ -91,8 +91,8 @@ function LoginForm() {
                             </Button>
 
                             {urlMessage && (
-                                <Alert className="bg-indigo-500/10 text-indigo-300 border-indigo-500/20 p-3">
-                                    <AlertCircle className="h-4 w-4 text-indigo-400" />
+                                <Alert className="bg-brand-card p-4 rounded-full border border-brand-border/50 group-hover:border-brand-primary/50 transition-colors shadow-2xl">
+                                    <Lock className="w-8 h-8 text-brand-primary" />
                                     <AlertDescription className="ml-2 text-xs">{urlMessage}</AlertDescription>
                                 </Alert>
                             )}
@@ -115,11 +115,11 @@ function LoginForm() {
 
 export default function LoginPage() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+        <div className="relative min-h-screen flex items-center justify-center bg-brand-background p-4 overflow-hidden selection:bg-brand-primary/30">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
             <Suspense fallback={
                 <div className="flex items-center justify-center text-white">
-                    <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 </div>
             }>
                 <LoginForm />

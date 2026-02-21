@@ -43,12 +43,12 @@ export function MisunderstoodWidget({ initialData }: MisunderstoodWidgetProps) {
 
     return (
         <Card className="col-span-1 border-white/5 bg-white/[0.02] backdrop-blur-sm shadow-xl relative group overflow-hidden h-[400px] flex flex-col">
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <CardHeader className="pb-4 flex flex-row items-start justify-between space-y-0">
                 <div>
                     <CardTitle className="flex items-center gap-2 text-lg font-bold text-white tracking-tight">
-                        <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
-                            <AlertCircle className="h-4 w-4 text-indigo-400" />
+                        <div className="p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <AlertCircle className="h-4 w-4 text-blue-400" />
                         </div>
                         Perception Gap
                     </CardTitle>
@@ -76,11 +76,11 @@ export function MisunderstoodWidget({ initialData }: MisunderstoodWidgetProps) {
                                 <div key={item.questionKey} className="space-y-2">
                                     <div className="flex justify-between items-end gap-4 overflow-hidden">
                                         <span className="font-medium text-sm text-gray-200 truncate">{item.questionText}</span>
-                                        <span className="text-[10px] font-bold text-indigo-400 shrink-0 uppercase tracking-widest bg-indigo-400/5 px-2 py-0.5 rounded border border-indigo-400/10">{item.count}</span>
+                                        <span className="text-[10px] font-bold text-blue-400 shrink-0 uppercase tracking-widest bg-blue-400/5 px-2 py-0.5 rounded border border-blue-400/10">{item.count}</span>
                                     </div>
                                     <Progress
                                         value={(item.count / maxCount) * 100}
-                                        className="h-1 bg-white/5 [&>div]:bg-gradient-to-r [&>div]:from-indigo-600 [&>div]:to-indigo-400 [&>div]:shadow-[0_0_8px_rgba(99,102,241,0.4)]"
+                                        className="h-1 bg-white/5 [&>div]:bg-gradient-to-r [&>div]:from-blue-600 [&>div]:to-blue-400 [&>div]:shadow-[0_0_8px_rgba(37,99,235,0.4)]"
                                     />
                                 </div>
                             ))}

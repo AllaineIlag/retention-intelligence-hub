@@ -250,7 +250,7 @@ function MobileResignationTrigger({
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto"
+                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
                         >
                             {loading ? 'Processing...' : 'Start Process'}
                         </Button>

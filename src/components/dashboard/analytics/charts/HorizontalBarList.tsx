@@ -15,13 +15,13 @@ interface HorizontalBarListProps {
     colorClass?: string;
 }
 
-export function HorizontalBarList({ title, description, data, totalResponses, className, colorClass = "bg-indigo-500" }: HorizontalBarListProps) {
+export function HorizontalBarList({ title, description, data, totalResponses, className, colorClass = "bg-blue-600" }: HorizontalBarListProps) {
     const displayData = data.slice(0, 8); // Top 8
     const maxVal = displayData[0]?.value || 1;
 
     return (
         <Card className={cn("col-span-1 h-full flex flex-col overflow-hidden relative border-white/5 bg-white/[0.02]", className)}>
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent opacity-50" />
+            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-50" />
             <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium tracking-tight">{title}</CardTitle>
                 {description && <CardDescription className="text-xs">{description}</CardDescription>}

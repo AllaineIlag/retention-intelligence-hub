@@ -65,7 +65,7 @@ export default function PendingApprovalPage() {
 
     if (status === 'loading') {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a]">
+            <div className="flex min-h-screen items-center justify-center bg-brand-background">
                 <Loader2 className="h-8 w-8 text-zinc-500 animate-spin" />
             </div>
         );
@@ -73,10 +73,10 @@ export default function PendingApprovalPage() {
 
     if (status === 'active') {
         return (
-            <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+            <div className="flex min-h-screen items-center justify-center bg-brand-background p-4 font-sans">
                 <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
                 <div className="relative z-10 w-full max-w-md">
-                    <Card className="border-green-500/20 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl">
+                    <Card className="border-green-500/20 bg-brand-card/80 backdrop-blur-xl shadow-2xl">
                         <CardHeader className="space-y-4 text-center">
                             <div className="flex justify-center">
                                 <div className="rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 p-4 ring-1 ring-green-500/20">
@@ -111,10 +111,10 @@ export default function PendingApprovalPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+        <div className="flex min-h-screen items-center justify-center bg-brand-background p-4 font-sans">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
             <div className="relative z-10 w-full max-w-md">
-                <Card className="border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl">
+                <Card className="border-brand-border bg-brand-card/80 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-4 text-center">
                         <div className="flex justify-center">
                             <div className="rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 p-4 ring-1 ring-white/10">
@@ -131,7 +131,7 @@ export default function PendingApprovalPage() {
                     <CardContent className="space-y-6">
                         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 space-y-3">
                             <div className="flex items-start gap-3">
-                                <Mail className="h-5 w-5 text-indigo-400 mt-0.5 shrink-0" />
+                                <Mail className="h-5 w-5 text-brand-primary mt-0.5 shrink-0" />
                                 <p className="text-sm text-zinc-300 leading-relaxed">
                                     You will receive an <strong className="text-white">email notification</strong> once your access has been approved. Please check your inbox.
                                 </p>

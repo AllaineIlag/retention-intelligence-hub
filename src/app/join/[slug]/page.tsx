@@ -23,14 +23,14 @@ export default function InvitePage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-[#0a0a0a] p-4 font-sans">
+        <div className="flex min-h-screen items-center justify-center bg-brand-background p-4 font-sans">
             <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
             <div className="relative z-10 w-full max-w-md">
-                <Card className="border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl">
+                <Card className="border-brand-border bg-brand-card/80 backdrop-blur-xl shadow-2xl">
                     <CardHeader className="space-y-3 text-center">
                         <div className="flex justify-center">
-                            <div className="rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 p-4 ring-1 ring-white/10">
-                                <Users className="h-8 w-8 text-indigo-400" />
+                            <div className="rounded-2xl bg-gradient-to-br from-brand-primary/20 to-brand-secondary/20 p-4 ring-1 ring-brand-border">
+                                <Users className="h-8 w-8 text-brand-primary" />
                             </div>
                         </div>
                         <CardTitle className="text-2xl font-bold tracking-tight text-white">
@@ -69,14 +69,14 @@ export default function InvitePage() {
                                     <div className="w-full border-t border-white/10" />
                                 </div>
                                 <div className="relative flex justify-center text-xs">
-                                    <span className="bg-[#0f0f11] px-2 text-zinc-500">or</span>
+                                    <span className="bg-brand-card px-2 text-zinc-500">or</span>
                                 </div>
                             </div>
                             <p className="text-center text-xs text-zinc-500">
                                 Already have an account?{' '}
                                 <a
                                     href="/login"
-                                    className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors underline-offset-4 hover:underline"
+                                    className="text-brand-primary hover:text-brand-secondary font-medium transition-colors underline-offset-4 hover:underline"
                                 >
                                     Sign in here →
                                 </a>

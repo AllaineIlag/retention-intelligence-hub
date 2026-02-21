@@ -11,6 +11,7 @@ import {
 } from "@react-email/components";
 import * as React from "react";
 import { format } from "date-fns";
+import { BRAND_COLORS } from "@/constants/brand";
 
 interface ResignationScheduledEmailProps {
     employeeName: string;
@@ -118,7 +119,7 @@ const btnContainer = {
 };
 
 const button = {
-    backgroundColor: "#4f46e5", // Indigo-600
+    backgroundColor: BRAND_COLORS.primary, // Corporate Blue
     borderRadius: "6px",
     color: "#fff",
     fontSize: "16px",

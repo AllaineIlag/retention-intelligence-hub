@@ -74,10 +74,10 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
         <div className="relative">
             <div className="absolute top-[-3.5rem] right-0 z-10 flex gap-2">
                 <Select value={range} onValueChange={handleRangeChange}>
-                    <SelectTrigger className="h-8 w-[130px] bg-white/5 border-white/10 text-xs">
+                    <SelectTrigger className="h-8 w-[130px] bg-accent/50 border-border text-xs">
                         <SelectValue placeholder="Select range" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="border-border bg-popover text-popover-foreground">
                         <SelectItem value="7d">Last 7 Days</SelectItem>
                         <SelectItem value="30d">Last 30 Days</SelectItem>
                         <SelectItem value="3m">Last 3 Months</SelectItem>

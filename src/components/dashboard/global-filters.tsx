@@ -96,7 +96,7 @@ export function GlobalFilters() {
                 onValueChange={(v) => updateFilters(date, v)}
             >
                 <SelectTrigger className="w-[180px] border-white/5 bg-white/[0.02] hover:bg-white/[0.05] rounded-xl px-3 h-9 text-sm">
-                    <Building2 className="mr-2 h-4 w-4 text-indigo-400" />
+                    <Building2 className="mr-2 h-4 w-4 text-blue-400" />
                     <SelectValue placeholder="All Departments" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-white/10 rounded-xl">

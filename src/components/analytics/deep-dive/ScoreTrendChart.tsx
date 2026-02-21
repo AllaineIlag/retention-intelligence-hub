@@ -38,11 +38,11 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
                         </linearGradient>
                     </defs>
 
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.1} />
 
                     <XAxis
                         dataKey="month"
-                        stroke="#6b7280"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -50,7 +50,7 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
                     />
 
                     <YAxis
-                        stroke="#6b7280"
+                        stroke="var(--muted-foreground)"
                         fontSize={12}
                         tickLine={false}
                         axisLine={false}
@@ -60,12 +60,14 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
 
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1f2937',
-                            borderColor: '#374151',
-                            color: '#f3f4f6',
-                            borderRadius: '0.5rem'
+                            backgroundColor: 'var(--popover)',
+                            borderColor: 'var(--border)',
+                            color: 'var(--popover-foreground)',
+                            borderRadius: '0.75rem',
+                            borderWidth: '1px',
+                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
                         }}
-                        itemStyle={{ color: '#e5e7eb' }}
+                        itemStyle={{ color: 'var(--foreground)' }}
                         formatter={(value: any) => [value, 'Avg Score']}
                     />
 
@@ -79,7 +81,7 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
                         dataKey="average"
                         stroke={color}
                         strokeWidth={3}
-                        dot={{ r: 4, fill: '#1f2937', strokeWidth: 2, stroke: color }}
+                        dot={{ r: 4, fill: 'var(--background)', strokeWidth: 2, stroke: color }}
                         activeDot={{ r: 6, fill: color }}
                     />
                 </LineChart>

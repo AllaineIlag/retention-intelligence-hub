@@ -224,7 +224,7 @@ export function ResignationOpsCard({ resignation, employeeName, employeeEmail }:
                             <span>Last Working Day: {resignation.last_working_day ? format(new Date(resignation.last_working_day), 'PPP') : 'N/A'}</span>
                         </div>
 
-                        <Button className="w-full gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20" asChild>
+                        <Button className="w-full gap-2 bg-primary hover:bg-blue-600 text-white shadow-md shadow-blue-500/20" asChild>
                             <Link href={`/dashboard/interview/${resignation.id}`}>
                                 <ExternalLink className="w-4 h-4" />
                                 Launch Live Interview Protocol
