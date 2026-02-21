@@ -131,13 +131,14 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 rounded-xl"
+                    className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 rounded-xl px-3 md:px-4"
+                    size="sm"
                 >
                     <Plus className="h-4 w-4" />
-                    <span>Log Resignation</span>
+                    <span className="hidden md:inline">Log Resignation</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] border-white/10 bg-[#0f0f11] text-white">
+            <DialogContent className="sm:max-w-[500px] border-white/10 bg-[#0f0f11] text-white rounded-2xl">
                 <DialogHeader>
                     <DialogTitle>Log New Resignation</DialogTitle>
                     <DialogDescription className="text-zinc-400">

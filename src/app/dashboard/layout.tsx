@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { CreateResignationDialog } from '@/components/dashboard/create-resignation-dialog';
 import { NotificationBell } from '@/components/dashboard/notification-bell';
+import { RoleBadgeMenu } from '@/components/dashboard/role-badge-menu';
+import { MobileActionsMenu } from '@/components/dashboard/mobile-actions-menu';
 
 import { PageFilterProvider } from '@/components/dashboard/page-filter-context';
 import { NavPageFilter } from '@/components/dashboard/nav-page-filter';
@@ -64,21 +66,29 @@ export default async function DashboardLayout({
                     <CustomSidebar role={role} email={user.email || 'Unknown'} pendingCount={pendingCount} />
                     <div className="flex flex-1 flex-col overflow-hidden">
                         <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/5 px-4 md:px-6 bg-[#0f0f11]/50 backdrop-blur-xl sticky top-0 z-10 transition-all duration-300">
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 md:gap-4 min-w-0">
                                 <CustomSidebarTrigger />
                                 <DashboardHeader />
                                 <NavPageFilter />
                             </div>
 
-                            <div className="flex items-center gap-4 md:gap-6">
+                            <div className="flex items-center gap-2 md:gap-4 min-w-0 shrink-0">
                                 {/* Actions Group */}
-                                <div className="flex items-center gap-3">
-                                    <NotificationBell />
-                                    <CreateResignationDialog />
+                                <div className="flex items-center gap-2 md:gap-3">
+                                    {/* Mobile: consolidated actions menu */}
+                                    <div className="md:hidden">
+                                        <MobileActionsMenu />
+                                    </div>
 
-                                    <span className="ml-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-indigo-400 border border-indigo-500/20">
-                                        {role}
-                                    </span>
+                                    {/* Desktop: individual action buttons */}
+                                    <div className="hidden md:block">
+                                        <CreateResignationDialog />
+                                    </div>
+
+                                    <NotificationBell />
+
+                                    {/* Interactive Role Badge with dropdown */}
+                                    <RoleBadgeMenu role={role} email={user.email || 'Unknown'} />
                                 </div>
                             </div>
                         </header>

@@ -60,11 +60,15 @@ const EXIT_FORM_QUESTION_ORDER = [
     'reason_for_leaving',
     'reason_for_leaving_country',
     'why_more_desirable',
+    'why_more_desirable_other',
     'career_growth',
     'rate_of_pay',
     'benefits',
+    'benefits_comment',
     'workload',
+    'workload_comment',
     'recommendation',
+    'recommendation_reason',
 ];
 
 export function InterviewSession({ resignation, responses: rawResponses, verifiedResults }: InterviewSessionProps) {
@@ -95,6 +99,13 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
     // Employee details from the resignation join
     const employee = (resignation as any).employee_details || {};
 
+    // Auto-advance if the currently selected question becomes skipped due to a verification change
+    useEffect(() => {
+        if (selectedResponse && isQuestionSkipped(selectedResponse)) {
+            handleNext();
+        }
+    }, [verifiedResults, selectedResponseId]);
+
     const handleFinalize = async () => {
         setShowConfirmDialog(false);
         setFinishing(true);
@@ -118,17 +129,63 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
         return '(No answer)';
     };
 
-    // Navigate to next question with auto-save check
+    // Helper: Determine if a question should be skipped based on verified answers of previous questions
+    const isQuestionSkipped = (response: any): boolean => {
+        const key = response.question?.question_key;
+
+        // 1. Country Question skip logic
+        if (key === 'reason_for_leaving_country') {
+            const reasonVerified = verifiedResults.find(v => v.question_key === 'reason_for_leaving');
+            if (reasonVerified) {
+                const val = reasonVerified.response_value;
+                const asArray = Array.isArray(val) ? val : String(val).split(',').map(s => s.trim());
+                return !asArray.some(v => v.includes('(Abroad)'));
+            }
+            // Fallback to original if not verified yet
+            const reasonOriginal = rawResponses.find(r => r.question?.question_key === 'reason_for_leaving');
+            const originalVal = reasonOriginal?.selected_options || [];
+            return !originalVal.some((v: string) => v.includes('(Abroad)'));
+        }
+
+        // 2. Desirability "Other" skip logic
+        if (key === 'why_more_desirable_other') {
+            const whyVerified = verifiedResults.find(v => v.question_key === 'why_more_desirable');
+            if (whyVerified) {
+                const val = whyVerified.response_value;
+                const asArray = Array.isArray(val) ? val : String(val).split(',').map(s => s.trim());
+                return !asArray.includes('Other');
+            }
+            const whyOriginal = rawResponses.find(r => r.question?.question_key === 'why_more_desirable');
+            const originalVal = whyOriginal?.selected_options || [];
+            return !originalVal.includes('Other');
+        }
+
+        return false;
+    };
+
+    // Navigate to next question with auto-save and skip check
     const handleNext = async () => {
-        if (selectedIndex < responses.length - 1) {
+        let nextIndex = selectedIndex + 1;
+
+        // Skip over questions that are no longer applicable
+        while (nextIndex < responses.length) {
+            if (!isQuestionSkipped(responses[nextIndex])) {
+                break;
+            }
+            nextIndex++;
+        }
+
+        if (nextIndex < responses.length) {
             // Give a tiny moment for any debounced saves to start
             await new Promise(resolve => setTimeout(resolve, 100));
-            setSelectedResponseId(responses[selectedIndex + 1].id);
+            setSelectedResponseId(responses[nextIndex].id);
         }
     };
 
-    // Helper: Determine question status (confirmed / modified / unreviewed)
-    const getQuestionStatus = (response: any): 'confirmed' | 'modified' | 'unreviewed' => {
+    // Helper: Determine question status (confirmed / modified / unreviewed / skipped)
+    const getQuestionStatus = (response: any): 'confirmed' | 'modified' | 'unreviewed' | 'skipped' => {
+        if (isQuestionSkipped(response)) return 'skipped';
+
         const questionKey = response.question?.question_key;
         const verified = verifiedResults.find(v => v.question_key === questionKey);
 
@@ -194,16 +251,25 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                     <button
                                         key={response.id}
                                         onClick={() => setSelectedResponseId(response.id)}
+                                        disabled={questionStatus === 'skipped'}
                                         className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
                                             ? 'bg-indigo-500/10 border-indigo-500/30'
-                                            : 'bg-transparent border-transparent hover:bg-white/5'
+                                            : questionStatus === 'skipped'
+                                                ? 'bg-transparent border-transparent opacity-30 grayscale cursor-not-allowed'
+                                                : 'bg-transparent border-transparent hover:bg-white/5'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start gap-2 mb-1.5">
-                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-indigo-300' : 'text-gray-300'}`}>
+                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-indigo-300' :
+                                                questionStatus === 'skipped' ? 'line-through text-gray-500' : 'text-gray-300'
+                                                }`}>
                                                 {response.question?.question_text || `Question ${index + 1}`}
                                             </span>
-                                            {questionStatus === 'modified' ? (
+                                            {questionStatus === 'skipped' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[9px] text-white/40 font-bold uppercase tracking-tighter">N/A</span>
+                                                </div>
+                                            ) : questionStatus === 'modified' ? (
                                                 <div className="flex items-center gap-1">
                                                     <Pencil className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                                                     <span className="text-[9px] text-amber-400/60 font-bold uppercase tracking-tighter">Edit</span>
@@ -219,8 +285,10 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                                 </div>
                                             )}
                                         </div>
-                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-indigo-200/50' : 'text-muted-foreground/40'}`}>
-                                            {getAnswerPreview(response)}
+                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-indigo-200/50' :
+                                            questionStatus === 'skipped' ? 'text-gray-600' : 'text-muted-foreground/40'
+                                            }`}>
+                                            {questionStatus === 'skipped' ? 'Not Required' : getAnswerPreview(response)}
                                         </p>
 
                                         {isSelected && (

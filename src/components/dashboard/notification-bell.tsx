@@ -115,7 +115,7 @@ export function NotificationBell() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-96 border-white/10 bg-[#0f0f11]/95 backdrop-blur-xl text-white p-0 shadow-2xl rounded-xl mr-4" align="end" sideOffset={10}>
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 border-white/10 bg-[#0f0f11]/95 backdrop-blur-xl text-white p-0 shadow-2xl rounded-xl" align="end" sideOffset={10} collisionPadding={16}>
                 <div className="flex items-center justify-between p-4 border-b border-white/5">
                     <div className="flex items-center gap-2">
                         <Bell className="h-4 w-4 text-indigo-400" />
