@@ -138,33 +138,33 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     <span className="hidden md:inline">Log Resignation</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] border-white/10 bg-[#0f0f11] text-white rounded-2xl">
+            <DialogContent className="sm:max-w-[500px] border-border bg-background text-foreground rounded-2xl">
                 <DialogHeader>
                     <DialogTitle>Log New Resignation</DialogTitle>
-                    <DialogDescription className="text-zinc-400">
+                    <DialogDescription className="text-muted-foreground">
                         Manually initiate the exit process. System will invite the employee via email.
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="grid gap-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="name" className="text-zinc-300">Employee Name</Label>
-                            <Input id="name" name="name" placeholder="John Doe" className="border-white/10 bg-white/5 text-white" required />
+                            <Label htmlFor="name" className="text-muted-foreground">Employee Name</Label>
+                            <Input id="name" name="name" placeholder="John Doe" className="border-border bg-muted/20 text-foreground" required />
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="email" className="text-zinc-300">Work Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="border-white/10 bg-white/5 text-white" required />
+                            <Label htmlFor="email" className="text-muted-foreground">Work Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="border-border bg-muted/20 text-foreground" required />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="department" className="text-zinc-300">Department</Label>
+                            <Label htmlFor="department" className="text-muted-foreground">Department</Label>
                             <Select value={selectedDept} onValueChange={setSelectedDept} required>
-                                <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                                <SelectTrigger className="border-border bg-muted/20 text-foreground">
                                     <SelectValue placeholder="Select Dept" />
                                 </SelectTrigger>
-                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                <SelectContent className="border-border bg-popover text-popover-foreground">
                                     {DEPARTMENTS.map((d) => (
                                         <SelectItem key={d} value={d}>{d}</SelectItem>
                                     ))}
@@ -172,12 +172,12 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                             </Select>
                         </div>
                         <div className="grid gap-2">
-                            <Label htmlFor="businessUnit" className="text-zinc-300">Business Unit</Label>
+                            <Label htmlFor="businessUnit" className="text-muted-foreground">Business Unit</Label>
                             <Select value={selectedBU} onValueChange={setSelectedBU} required>
-                                <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                                <SelectTrigger className="border-border bg-muted/20 text-foreground">
                                     <SelectValue placeholder="Select BU" />
                                 </SelectTrigger>
-                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                <SelectContent className="border-border bg-popover text-popover-foreground">
                                     {BUSINESS_UNITS.map((bu) => (
                                         <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                                     ))}
@@ -187,12 +187,12 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="supervisor" className="text-zinc-300">Intermediate Supervisor</Label>
+                        <Label htmlFor="supervisor" className="text-muted-foreground">Intermediate Supervisor</Label>
                         <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor} required>
-                            <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                            <SelectTrigger className="border-border bg-muted/20 text-foreground">
                                 <SelectValue placeholder="Select Supervisor" />
                             </SelectTrigger>
-                            <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                            <SelectContent className="border-border bg-popover text-popover-foreground">
                                 {INTERMEDIATE_SUPERVISORS.map((s) => (
                                     <SelectItem key={s} value={s}>{s}</SelectItem>
                                 ))}
@@ -201,8 +201,8 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="lastWorkingDay" className="text-zinc-300">Last Working Day</Label>
-                        <Input id="lastWorkingDay" name="lastWorkingDay" type="date" className="border-white/10 bg-white/5 text-white" required />
+                        <Label htmlFor="lastWorkingDay" className="text-muted-foreground">Last Working Day</Label>
+                        <Input id="lastWorkingDay" name="lastWorkingDay" type="date" className="border-border bg-muted/20 text-foreground" required />
                     </div>
                     <DialogFooter className="mt-4">
                         <Button

@@ -82,11 +82,11 @@ export function AppSidebar({ role, email }: AppSidebarProps) {
         <Sidebar collapsible="icon">
             <SidebarHeader className="p-4">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <div className="h-8 w-8 rounded-lg bg-brand-primary flex items-center justify-center shadow-lg shadow-brand-primary/20">
                         <BarChart3 className="text-white h-5 w-5" />
                     </div>
                     <span className="font-bold text-lg group-data-[collapsible=icon]:hidden">
-                        Retention<span className="text-indigo-500">Hub</span>
+                        Retention<span className="text-brand-primary">Hub</span>
                     </span>
                 </Link>
             </SidebarHeader>
@@ -116,9 +116,9 @@ export function AppSidebar({ role, email }: AppSidebarProps) {
             <SidebarFooter className="p-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <button className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent transition-colors">
+                        <button className="flex w-full items-center gap-3 rounded-lg p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors">
                             <Avatar className="h-8 w-8">
-                                <AvatarFallback className="bg-indigo-600 text-white text-xs">
+                                <AvatarFallback className="bg-brand-primary text-white text-xs">
                                     {getInitials(email)}
                                 </AvatarFallback>
                             </Avatar>

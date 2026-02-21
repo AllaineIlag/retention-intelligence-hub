@@ -16,7 +16,13 @@ interface DestinationExitsCardProps {
     className?: string
 }
 
-const COLORS = ['#14b8a6', '#10b981', '#6366f1', '#8b5cf6', '#f43f5e']
+const COLORS = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)'
+]
 
 export function DestinationExitsCard({ initialData = [], className }: DestinationExitsCardProps) {
     const [data, setData] = useState(initialData)
@@ -129,10 +135,17 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
                             />
                             <Legend
                                 verticalAlign="bottom"
-                                height={36}
+                                align="center"
                                 iconType="circle"
                                 iconSize={8}
-                                wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                                wrapperStyle={{
+                                    paddingTop: '20px',
+                                    fontSize: '12px',
+                                    color: 'var(--muted-foreground)'
+                                }}
+                                formatter={(value: string) => (
+                                    <span className="text-muted-foreground">{value}</span>
+                                )}
                             />
                         </PieChart>
                     </ResponsiveContainer>

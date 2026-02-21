@@ -13,14 +13,16 @@
   --popover-foreground: oklch(0.12 0 0);
 
   /* Primary Brand: Corporate Blue (Pure Blue) */
-  --primary: oklch(0.45 0.2 250);
+  --primary: oklch(0.45 0.18 242);
+  /* papaltan */
+  /* Base Brand (Standard) */
   --primary-foreground: oklch(0.985 0 0);
 
   --secondary: oklch(0.92 0 0);
   --secondary-foreground: oklch(0.2 0 0);
 
   --muted: oklch(0.92 0 0);
-  --muted-foreground: oklch(0.45 0 0);
+  --muted-foreground: oklch(0.4 0 0);
 
   --accent: oklch(0.9 0 0);
   --accent-foreground: oklch(0.12 0 0);
@@ -30,14 +32,16 @@
 
   --border: oklch(0.85 0 0);
   --input: oklch(0.85 0 0);
-  --ring: oklch(0.45 0.2 250 / 0.4);
+  --ring: oklch(0.45 0.18 242 / 0.4);
   --radius: 0.625rem;
 
   /* Soft background to reduce eye strain */
   --background: oklch(0.94 0 0);
-  --foreground: oklch(0.12 0 0);
+  --foreground: oklch(0.1 0 0);
 
   --chart-1: oklch(0.45 0.2 250);
+  /* papaltan */
+  /* Light Mode Selective State Text/Icon */
   /* Primary Brand Blue */
   --chart-2: oklch(0.6 0.15 250);
   --chart-3: oklch(0.4 0.15 200);
@@ -47,21 +51,25 @@
   /* Sidebar: Professional Depth */
   --sidebar: oklch(0.93 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.45 0.2 250);
+  --sidebar-primary: oklch(0.45 0.18 242);
+  /* papaltan */
+  /* Light Mode Selective State Background */
   /* Clear Brand Blue Active */
   --sidebar-primary-foreground: oklch(1 0 0);
 
-  /* Sidebar hover */
-  --sidebar-accent: oklch(0.88 0 0);
-  --sidebar-accent-foreground: oklch(0.12 0 0);
+  /* Sidebar hover/active */
+  --sidebar-accent: oklch(0.92 0 0);
+  --sidebar-accent-foreground: var(--foreground);
 
   --sidebar-border: oklch(0.85 0 0);
-  --sidebar-ring: oklch(0.45 0.2 250 / 0.5);
+  --sidebar-ring: oklch(0.45 0.18 242 / 0.5);
 
   /* --- BRAND SEMANTICS (PILTOVER) --- */
   /* Focus: Centralized points of change for the Hand of Noxus. */
-  --brand-primary: oklch(0.45 0.2 250);
-  /* Corporate Blue (Hue 250) */
+  --brand-primary: oklch(0.45 0.18 242);
+  /* papaltan */
+  /* Sidebar Logo & Main Accents */
+  /* Corporate Blue (Hue 242) */
   --brand-secondary: oklch(0.7 0.12 190);
   /* Sky Accent (Hue 190) */
   --brand-background: oklch(0.1 0 0);
@@ -204,17 +212,21 @@ body {
 
   --sidebar-foreground: oklch(0.985 0 0);
 
-  --sidebar-primary: oklch(0.45 0.2 250);
+  --sidebar-primary: oklch(0.75 0.18 242);
+  /* papaltan */
+  /* Boosted lightness (0.75) for Dark Mode legibility */
 
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.12 0 0);
 
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.25 0 0);
 
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent-foreground: var(--foreground);
+  /* papaltan */
+  /* Boosted lightness (0.75) for Dark Mode legibility */
 
   --sidebar-border: oklch(1 0 0 / 10%);
 
-  --sidebar-ring: oklch(0.45 0.2 250 / 0.5);
+  --sidebar-ring: oklch(0.75 0.18 242 / 0.5);
 
   /* Dark Mode Brand Overrides (if any) */
   --brand-background: oklch(0.1 0 0);

@@ -246,7 +246,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
         <>
             {/* Header */}
             <div className="flex h-16 items-center gap-3 border-b px-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-500 shadow-lg shadow-indigo-500/40 border border-border">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary shadow-lg shadow-brand-primary/20 border border-brand-primary/10">
                     <BarChart3 className="h-5 w-5 text-white" />
                 </div>
                 <AnimatePresence>
@@ -258,7 +258,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                             transition={{ duration: 0.2 }}
                             className="text-lg font-bold"
                         >
-                            Retention<span className="text-indigo-500">Hub</span>
+                            Retention<span className="text-brand-primary">Hub</span>
                         </motion.span>
                     )}
                 </AnimatePresence>
@@ -289,7 +289,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                         const content = (
                             <>
                                 <Icon
-                                    className={`h-5 w-5 shrink-0 transition-colors ${active ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-white'
+                                    className={`h-5 w-5 shrink-0 transition-colors ${active ? 'text-sidebar-accent-foreground' : 'text-muted-foreground group-hover:text-sidebar-accent-foreground'
                                         }`}
                                 />
                                 <AnimatePresence>
@@ -318,11 +318,14 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                     </span>
                                 )}
                                 {active && !hasSubItems && (
-                                    <motion.div
-                                        layoutId="activeIndicator"
-                                        className="absolute left-0 h-6 w-[3px] rounded-r-full bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.8)]"
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    />
+                                    <>
+                                        <div className="absolute inset-x-1 inset-y-0.5 rounded-lg bg-sidebar-accent -z-10" />
+                                        <motion.div
+                                            layoutId="activeIndicator"
+                                            className="absolute left-0 h-6 w-[3px] rounded-r-full bg-brand-primary shadow-[0_0_8px_var(--brand-primary)]"
+                                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                        />
+                                    </>
                                 )}
                                 {hasSubItems && !isCollapsed && (
                                     <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -330,9 +333,9 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                             </>
                         );
 
-                        const commonClasses = `group flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 cursor-pointer ${active
-                            ? 'bg-indigo-600/10 text-indigo-400'
-                            : 'text-muted-foreground hover:bg-white/5 hover:text-white'
+                        const commonClasses = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 cursor-pointer ${active
+                            ? 'text-sidebar-accent-foreground'
+                            : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                             }`;
 
                         const linkContent = hasSubItems ? (
@@ -376,8 +379,8 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                                                                     href={sub.url}
                                                                     onClick={onNavClick}
                                                                     className={`flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors ${isSubActive
-                                                                        ? 'text-indigo-400 font-medium bg-indigo-500/10'
-                                                                        : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                                                                        ? 'text-sidebar-accent-foreground font-medium bg-sidebar-accent'
+                                                                        : 'text-muted-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent'
                                                                         }`}
                                                                 >
                                                                     <span>{sub.title}</span>
@@ -426,7 +429,7 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
                             suppressHydrationWarning
                         >
                             <Avatar className="h-9 w-9 shrink-0">
-                                <AvatarFallback className="bg-gradient-to-br from-indigo-600 to-purple-600 text-xs font-medium text-white text-popover-foreground">
+                                <AvatarFallback className="bg-brand-primary text-xs font-medium text-white shadow-sm shadow-brand-primary/20">
                                     {getInitials(email)}
                                 </AvatarFallback>
                             </Avatar>

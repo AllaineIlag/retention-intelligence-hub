@@ -17,11 +17,22 @@ export function MobileActionsMenu() {
     const pathname = usePathname();
     const [filterOpen, setFilterOpen] = React.useState(false);
     const [resignOpen, setResignOpen] = React.useState(false);
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Filter is only relevant on dashboard and deep-dive pages
     const isDashboard = pathname === '/dashboard';
     const isDeepDive = pathname.startsWith('/dashboard/deep-dive');
     const showFilter = isDashboard || isDeepDive;
+
+    if (!isMounted) {
+        return (
+            <div className="h-9 w-9 bg-muted/30 border border-border/50 rounded-xl" />
+        );
+    }
 
     return (
         <>
@@ -30,7 +41,7 @@ export function MobileActionsMenu() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="h-9 w-9 p-0 text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl"
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground bg-muted/30 hover:bg-muted/50 border border-border/50 rounded-xl"
                     >
                         <LayoutGrid className="h-4 w-4" />
                         <span className="sr-only">Actions</span>
@@ -38,26 +49,26 @@ export function MobileActionsMenu() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="end"
-                    className="w-48 border-white/10 bg-[#0f0f11] text-white shadow-2xl shadow-black/50"
+                    className="w-48 border-border bg-popover text-popover-foreground shadow-2xl"
                 >
                     {showFilter && (
                         <>
                             <DropdownMenuItem
                                 onClick={() => setFilterOpen(true)}
-                                className="gap-2 text-zinc-300 hover:text-white focus:text-white focus:bg-white/5 cursor-pointer"
+                                className="gap-2 text-muted-foreground hover:text-foreground focus:text-foreground focus:bg-accent cursor-pointer"
                             >
                                 <Filter className="h-4 w-4" />
                                 Filter
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-white/5" />
+                            <DropdownMenuSeparator className="bg-border" />
                         </>
                     )}
 
                     <DropdownMenuItem
                         onClick={() => setResignOpen(true)}
-                        className="gap-2 text-zinc-300 hover:text-white focus:text-white focus:bg-white/5 cursor-pointer"
+                        className="gap-2 text-muted-foreground hover:text-foreground focus:text-foreground focus:bg-accent cursor-pointer"
                     >
-                        <FilePlus className="h-4 w-4" />
+                        <FilePlus className="h-4 w-4 text-brand-primary" />
                         Log Resignation
                     </DropdownMenuItem>
 
@@ -76,10 +87,10 @@ export function MobileActionsMenu() {
 
             {/* Mobile Filter Dialog (centered) */}
             <Dialog open={filterOpen} onOpenChange={setFilterOpen}>
-                <DialogContent className="max-w-xs border-white/10 bg-[#0f0f11] text-white rounded-2xl">
+                <DialogContent className="max-w-xs border-border bg-background text-foreground rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-white text-sm font-semibold">Time Range Filter</DialogTitle>
-                        <DialogDescription className="text-zinc-500 text-xs">
+                        <DialogTitle className="text-foreground text-sm font-semibold">Time Range Filter</DialogTitle>
+                        <DialogDescription className="text-muted-foreground text-xs">
                             Select a date range for dashboard data
                         </DialogDescription>
                     </DialogHeader>
@@ -180,7 +191,7 @@ function MobileResignationTrigger({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-[500px] border-white/10 bg-[#0f0f11] text-white rounded-2xl">
+            <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-[500px] border-border bg-background text-foreground rounded-2xl">
                 <DialogHeader>
                     <DialogTitle>Log New Resignation</DialogTitle>
                     <DialogDescription className="text-zinc-400">
@@ -203,10 +214,10 @@ function MobileResignationTrigger({
                         <div className="grid gap-2">
                             <Label htmlFor="mob-department" className="text-zinc-300">Department</Label>
                             <Select value={selectedDept} onValueChange={setSelectedDept} required>
-                                <SelectTrigger className="border-white/10 bg-white/5 text-white">
+                                <SelectTrigger className="border-border bg-muted/20 text-foreground">
                                     <SelectValue placeholder="Select Dept" />
                                 </SelectTrigger>
-                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                <SelectContent className="border-border bg-popover text-popover-foreground">
                                     {DEPARTMENTS.map((d) => (
                                         <SelectItem key={d} value={d}>{d}</SelectItem>
                                     ))}
@@ -250,7 +261,7 @@ function MobileResignationTrigger({
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto"
+                            className="bg-brand-primary hover:bg-brand-primary/90 text-white w-full sm:w-auto"
                         >
                             {loading ? 'Processing...' : 'Start Process'}
                         </Button>

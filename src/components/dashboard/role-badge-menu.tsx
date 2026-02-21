@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Settings, LogOut, ChevronDown } from 'lucide-react';
 import {
@@ -17,12 +18,23 @@ interface RoleBadgeMenuProps {
 
 export function RoleBadgeMenu({ role, email }: RoleBadgeMenuProps) {
     const router = useRouter();
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleSignOut = async () => {
         await fetch('/auth/signout', { method: 'POST' });
         router.push('/login');
         router.refresh();
     };
+
+    if (!isMounted) {
+        return (
+            <div className="h-7 md:h-8 w-12 md:w-20 rounded-full bg-blue-500/10 border border-blue-500/20" />
+        );
+    }
 
     return (
         <DropdownMenu>

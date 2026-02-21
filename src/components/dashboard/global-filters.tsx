@@ -95,11 +95,11 @@ export function GlobalFilters() {
                 value={dept || "all"}
                 onValueChange={(v) => updateFilters(date, v)}
             >
-                <SelectTrigger className="w-[180px] border-white/5 bg-white/[0.02] hover:bg-white/[0.05] rounded-xl px-3 h-9 text-sm">
-                    <Building2 className="mr-2 h-4 w-4 text-blue-400" />
+                <SelectTrigger className="w-[180px] border-border bg-muted/20 hover:bg-muted/40 rounded-xl px-3 h-9 text-sm">
+                    <Building2 className="mr-2 h-4 w-4 text-brand-primary" />
                     <SelectValue placeholder="All Departments" />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-white/10 rounded-xl">
+                <SelectContent className="bg-background border-border rounded-xl">
                     <SelectItem value="all">All Departments</SelectItem>
                     {departments.map((d) => (
                         <SelectItem key={d} value={d}>

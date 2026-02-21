@@ -20,7 +20,7 @@ export function PageFilterBar() {
 
     return (
         <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300">
-            <div className="flex items-center gap-1 bg-white/5 rounded-lg p-1 border border-white/5">
+            <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-1 border border-border/50">
                 {FILTER_OPTIONS.map((opt) => (
                     <Button
                         key={opt.mode}
@@ -30,8 +30,8 @@ export function PageFilterBar() {
                         className={cn(
                             "h-7 px-2.5 text-[10px] font-medium rounded-md transition-all duration-200",
                             pageFilter === opt.mode
-                                ? "bg-blue-500/20 text-blue-300 shadow-[0_0_10px_rgba(37,99,235,0.15)]"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                                ? "bg-brand-primary/20 text-brand-primary shadow-[0_0_10px_rgba(37,99,235,0.1)]"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
                     >
                         {opt.label}
@@ -44,7 +44,7 @@ export function PageFilterBar() {
                     variant="ghost"
                     size="sm"
                     onClick={resetPageFilter}
-                    className="h-7 w-7 p-0 text-zinc-500 hover:text-red-400 hover:bg-white/5 rounded-md transition-all duration-200"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500 hover:bg-muted/50 rounded-md transition-all duration-200"
                     title="Reset Filter"
                 >
                     <X className="w-3.5 h-3.5" />

@@ -100,7 +100,7 @@ export function NotificationBell() {
     }
 
     if (!isMounted) return (
-        <Button variant="ghost" size="icon" className="relative text-zinc-400">
+        <Button variant="ghost" size="icon" className="relative text-muted-foreground">
             <Bell className="h-5 w-5" />
         </Button>
     )
@@ -108,20 +108,20 @@ export function NotificationBell() {
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative hover:bg-white/5 data-[state=open]:bg-white/5">
-                    <Bell className={cn("h-5 w-5 transition-colors", unreadCount > 0 ? "text-blue-400" : "text-zinc-400")} />
+                <Button variant="ghost" size="icon" className="relative hover:bg-accent data-[state=open]:bg-accent">
+                    <Bell className={cn("h-5 w-5 transition-colors", unreadCount > 0 ? "text-brand-primary" : "text-muted-foreground")} />
                     {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-[#0f0f11] animate-pulse" />
+                        <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-primary ring-2 ring-background animate-pulse" />
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 border-white/10 bg-[#0f0f11]/95 backdrop-blur-xl text-white p-0 shadow-2xl rounded-xl" align="end" sideOffset={10} collisionPadding={16}>
-                <div className="flex items-center justify-between p-4 border-b border-white/5">
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 border-border bg-popover/95 backdrop-blur-xl text-popover-foreground p-0 shadow-2xl rounded-xl" align="end" sideOffset={10} collisionPadding={16}>
+                <div className="flex items-center justify-between p-4 border-b border-border">
                     <div className="flex items-center gap-2">
-                        <Bell className="h-4 w-4 text-blue-400" />
+                        <Bell className="h-4 w-4 text-brand-primary" />
                         <h4 className="font-semibold text-sm">Notifications</h4>
                         {unreadCount > 0 && (
-                            <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-500/20">
+                            <span className="bg-brand-primary/10 text-brand-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-brand-primary/20">
                                 {unreadCount} New
                             </span>
                         )}
@@ -130,7 +130,7 @@ export function NotificationBell() {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 text-xs text-muted-foreground hover:text-white"
+                            className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-accent"
                             onClick={handleMarkAllRead}
                         >
                             Mark all read
@@ -140,19 +140,19 @@ export function NotificationBell() {
 
                 <ScrollArea className="h-[400px]">
                     {notifications.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-center text-zinc-500 space-y-3">
+                        <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground/50 space-y-3">
                             <Bell className="h-10 w-10 opacity-10" />
-                            <p className="text-sm font-medium text-zinc-400">All caught up</p>
-                            <p className="text-xs max-w-[180px]">No new notifications to display at this time.</p>
+                            <p className="text-sm font-medium text-muted-foreground">All caught up</p>
+                            <p className="text-xs max-w-[180px] text-muted-foreground/70">No new notifications to display at this time.</p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-white/5">
+                        <div className="divide-y divide-border">
                             {notifications.map((notification) => (
                                 <div
                                     key={notification.id}
                                     className={cn(
-                                        "p-4 transition-colors hover:bg-white/5 cursor-pointer flex gap-4 relative group",
-                                        !notification.is_read ? "bg-blue-500/[0.03]" : ""
+                                        "p-4 transition-colors hover:bg-accent cursor-pointer flex gap-4 relative group",
+                                        !notification.is_read ? "bg-brand-primary/[0.03]" : ""
                                     )}
                                     onClick={() => handleMarkAsRead(notification.id, notification.link)}
                                 >
@@ -160,19 +160,19 @@ export function NotificationBell() {
                                         {getIcon(notification.type)}
                                     </div>
                                     <div className="space-y-1 flex-1">
-                                        <p className={cn("text-sm leading-tight", !notification.is_read ? "font-medium text-zinc-100" : "text-zinc-400")}>
+                                        <p className={cn("text-sm leading-tight", !notification.is_read ? "font-medium text-foreground" : "text-muted-foreground")}>
                                             {notification.title}
                                         </p>
-                                        <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">
+                                        <p className="text-xs text-muted-foreground/80 leading-relaxed line-clamp-2">
                                             {notification.message}
                                         </p>
-                                        <p className="text-[10px] text-zinc-600 font-mono pt-1">
+                                        <p className="text-[10px] text-muted-foreground/60 font-mono pt-1">
                                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                         </p>
                                     </div>
                                     {!notification.is_read && (
                                         <div className="shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="h-2 w-2 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
+                                            <div className="h-2 w-2 rounded-full bg-brand-primary ring-4 ring-brand-primary/20" />
                                         </div>
                                     )}
                                 </div>
