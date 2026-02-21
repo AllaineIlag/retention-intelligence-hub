@@ -145,7 +145,7 @@ export function TopExitReasonCard({ initialValue = "No Data", initialPercent = 0
                                 dataKey="value"
                                 stroke="none"
                             >
-                                <Cell key="value" fill="#f59e0b" />
+                                <Cell key="value" fill="var(--chart-warning)" />
                                 <Cell key="remaining" className="fill-muted/20" />
                             </Pie>
                         </PieChart>

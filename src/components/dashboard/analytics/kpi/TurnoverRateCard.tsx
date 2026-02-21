@@ -76,7 +76,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
     };
 
     const progress = Math.min((rate / 3) * 100, 100);
-    const color = rate > 2.2 ? '#f43f5e' : '#10b981';
+    const color = rate > 2.2 ? 'var(--chart-danger)' : 'var(--chart-2)';
 
     const data = [
         { name: 'Value', value: progress },

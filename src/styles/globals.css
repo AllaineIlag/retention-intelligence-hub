@@ -40,13 +40,25 @@
   --foreground: oklch(0.1 0 0);
 
   --chart-1: oklch(0.45 0.2 250);
-  /* papaltan */
-  /* Light Mode Selective State Text/Icon */
-  /* Primary Brand Blue */
-  --chart-2: oklch(0.6 0.15 250);
-  --chart-3: oklch(0.4 0.15 200);
-  --chart-4: oklch(0.8 0.1 250);
-  --chart-5: oklch(0.7 0.15 190);
+  /* Primary Blue */
+  --chart-2: oklch(0.6 0.18 145);
+  /* Teal/Emerald */
+  --chart-3: oklch(0.55 0.15 200);
+  /* Cyan */
+  --chart-4: oklch(0.75 0.16 80);
+  /* Amber */
+  --chart-5: oklch(0.60 0.23 25);
+  /* Rose/Red */
+
+  /* Semantic Chart Tokens */
+  --chart-danger: oklch(0.60 0.23 25);
+  /* Resignations / Negative Trend */
+  --chart-warning: oklch(0.78 0.18 85);
+  /* Target / Warning Threshold */
+  --chart-axis: oklch(0.55 0 0);
+  /* Axis Ticks / Grid Lines */
+  --chart-bg-stripe: oklch(0.92 0 0);
+  /* Bar Background Stripe */
 
   /* Sidebar: Professional Depth */
   --sidebar: oklch(0.93 0 0);
@@ -127,6 +139,12 @@
   --color-brand-background: var(--brand-background);
   --color-brand-card: var(--brand-card);
   --color-brand-border: var(--brand-border);
+
+  /* Semantic Chart Utilities */
+  --color-chart-danger: var(--chart-danger);
+  --color-chart-warning: var(--chart-warning);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-bg-stripe: var(--chart-bg-stripe);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -231,6 +249,16 @@ body {
   /* Dark Mode Brand Overrides (if any) */
   --brand-background: oklch(0.1 0 0);
   --brand-card: oklch(0.13 0 0);
+
+  /* Dark Mode Semantic Chart Overrides */
+  --chart-danger: oklch(0.65 0.24 25);
+  /* Brighter Rose for dark backgrounds */
+  --chart-warning: oklch(0.82 0.18 85);
+  /* Brighter Amber for dark backgrounds */
+  --chart-axis: oklch(0.45 0 0);
+  /* Dimmer axis ticks in dark mode */
+  --chart-bg-stripe: oklch(0.25 0 0);
+  /* Dark bar background stripe */
 }
 
 @layer base {

@@ -77,7 +77,13 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
             if (response.success && response.data) {
                 setData(response.data.map((d, i) => ({
                     ...d,
-                    fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#f59e0b'][i % 5]
+                    fill: [
+                        'var(--chart-1)',
+                        'var(--chart-2)',
+                        'var(--chart-3)',
+                        'var(--chart-4)',
+                        'var(--chart-5)'
+                    ][i % 5]
                 })));
             }
         } catch (error) {
@@ -162,7 +168,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
-                            stroke="#a1a1aa"
+                            stroke="var(--chart-axis)"
                             hide
                         />
                         <YAxis
@@ -171,7 +177,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
-                            stroke="#a1a1aa"
+                            stroke="var(--chart-axis)"
                             width={100}
                         />
                         <Tooltip
@@ -181,7 +187,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                         />
                         <Bar
                             dataKey="value"
-                            fill="#14b8a6"
+                            fill="var(--chart-1)"
                             radius={[0, 4, 4, 0]}
                             barSize={32}
                             name="Exits"

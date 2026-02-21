@@ -143,9 +143,16 @@ async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
         getTurnoverTrends(trendFilters)
     ]);
 
+    const CHART_COLORS = [
+        'var(--chart-1)',
+        'var(--chart-2)',
+        'var(--chart-3)',
+        'var(--chart-4)',
+        'var(--chart-5)',
+    ];
     const deptData = deptRes.success ? deptRes.data?.map((d, i) => ({
         ...d,
-        fill: ['#6366f1', '#8b5cf6', '#14b8a6', '#10b981', '#f59e0b'][i % 5]
+        fill: CHART_COLORS[i % CHART_COLORS.length]
     })) : [];
 
     const monthData = trendRes.success ? trendRes.data || [] : [];

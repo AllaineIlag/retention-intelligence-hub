@@ -129,7 +129,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                stroke="#52525b"
+                                stroke="var(--chart-axis)"
                                 dy={10}
                             />
                             <YAxis
@@ -144,13 +144,13 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                             />
                             <ReferenceLine
                                 y={TARGET_THRESHOLD}
-                                stroke="#fbbf24"
+                                stroke="var(--chart-warning)"
                                 strokeDasharray="3 3"
-                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: '#fbbf24', fontSize: 10 }}
+                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: 'var(--chart-warning)', fontSize: 10 }}
                             />
                             <Bar
                                 dataKey="resignations"
-                                fill="#f43f5e"
+                                fill="var(--chart-danger)"
                                 radius={[4, 4, 0, 0]}
                                 barSize={60}
                                 name="Resignations"
@@ -161,8 +161,8 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorResignations" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="var(--chart-danger)" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="var(--chart-danger)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <XAxis
@@ -170,14 +170,14 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                stroke="#52525b"
+                                stroke="var(--chart-axis)"
                                 dy={10}
                             />
                             <YAxis
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                stroke="#52525b"
+                                stroke="var(--chart-axis)"
                             />
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
                             <Tooltip
@@ -193,7 +193,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                             <Area
                                 type="monotone"
                                 dataKey="resignations"
-                                stroke="#f43f5e"
+                                stroke="var(--chart-danger)"
                                 fillOpacity={1}
                                 fill="url(#colorResignations)"
                                 name="Resignations"

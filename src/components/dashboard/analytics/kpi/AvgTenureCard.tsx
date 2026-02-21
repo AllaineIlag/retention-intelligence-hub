@@ -141,7 +141,7 @@ export function AvgTenureCard({ initialValue = 0, className }: AvgTenureCardProp
                                 dataKey="value"
                                 stroke="none"
                             >
-                                <Cell key="value" fill="#6366f1" />
+                                <Cell key="value" fill="var(--chart-1)" />
                                 <Cell key="remaining" className="fill-muted/20" />
                             </Pie>
                         </PieChart>

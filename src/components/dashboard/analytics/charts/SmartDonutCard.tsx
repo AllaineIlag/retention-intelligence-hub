@@ -20,11 +20,11 @@ interface SmartDonutCardProps {
 }
 
 const COLORS = [
-    '#0052CC', // Corporate Blue
-    '#10b981', // Emerald
-    '#f59e0b', // Amber
-    '#0EA5E9', // Sky Blue
-    '#14b8a6', // Teal
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
 ]
 
 export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData = [], className }: SmartDonutCardProps) {
@@ -168,7 +168,7 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
                         </div>
                     ))}
                     {data.length === 0 && (
-                        <span className="text-xs text-zinc-500 italic">No Data</span>
+                        <span className="text-xs text-muted-foreground italic">No Data</span>
                     )}
                 </div>
             </CardContent>

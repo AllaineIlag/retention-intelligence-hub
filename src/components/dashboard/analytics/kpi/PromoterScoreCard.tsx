@@ -94,7 +94,7 @@ export function PromoterScoreCard({ initialPercent = 0, className }: PromoterSco
         }
     }
 
-    const color = percent >= 50 ? '#10b981' : '#f43f5e'
+    const color = percent >= 50 ? 'var(--chart-2)' : 'var(--chart-danger)'
     const chartData = [
         { name: 'Value', value: percent },
         { name: 'Remaining', value: 100 - percent },
