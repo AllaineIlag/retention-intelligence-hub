@@ -82,18 +82,27 @@ export function StepSummary({
 
                 {/* Section 2: Questionnaire Responses */}
                 <Card>
-                    <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Questionnaire Responses" onEdit={() => onEdit('questions')} readOnly={readOnly} />
+                    <CardHeader className="bg-muted/30 pb-4 border-b border-border/50">
+                        {/* We use a plain header here to remove the global Edit button */}
+                        <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
+                            Questionnaire Responses
+                        </h3>
                     </CardHeader>
-                    <CardContent className="pt-6 space-y-6">
-                        <div className="space-y-3 relative group">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-semibold text-primary/80">Reason for Leaving</h4>
-                                {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 0)}><Edit2 className="w-3 h-3" /></Button>}
+                    <CardContent className="pt-6 space-y-8">
+
+                        {/* Subsection 1: Reason for Leaving */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Reason for Leaving</h4>
+                                {!readOnly && (
+                                    <Button variant="ghost" size="sm" onClick={() => onEdit('questions', 0)} className="h-8 px-3 text-muted-foreground hover:text-primary bg-muted/20">
+                                        <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                                    </Button>
+                                )}
                             </div>
-                            <div className="pl-4 border-l-2 border-primary/20 space-y-2">
-                                <div className="text-sm">
-                                    <span className="font-medium">Primary Reason:</span>
+                            <div className="pl-4 border-l-2 border-primary/20 space-y-3">
+                                <div>
+                                    <span className="text-sm font-medium">Primary Reason:</span>
                                     <div className="flex flex-wrap gap-2 mt-1">
                                         {responses.reason_for_leaving?.map((reason, idx) => (
                                             <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -103,23 +112,28 @@ export function StepSummary({
                                     </div>
                                 </div>
                                 {responses.reason_for_leaving_country && (
-                                    <div className="text-sm mt-1">
+                                    <div className="text-sm">
                                         <span className="font-medium text-muted-foreground">Destination Country: </span>
-                                        {responses.reason_for_leaving_country}
+                                        <span>{responses.reason_for_leaving_country}</span>
                                     </div>
                                 )}
                             </div>
                         </div>
 
+                        {/* Subsection 2: New Opportunity (Conditional) */}
                         {(responses.why_more_desirable?.length || 0) > 0 && (
-                            <div className="space-y-3 relative group">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-semibold text-primary/80">New Opportunity</h4>
-                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 1)}><Edit2 className="w-3 h-3" /></Button>}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">New Opportunity</h4>
+                                    {!readOnly && (
+                                        <Button variant="ghost" size="sm" onClick={() => onEdit('questions', 1)} className="h-8 px-3 text-muted-foreground hover:text-primary bg-muted/20">
+                                            <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                                        </Button>
+                                    )}
                                 </div>
-                                <div className="pl-4 border-l-2 border-primary/20 space-y-2">
-                                    <div className="text-sm">
-                                        <span className="font-medium">Why Desirable:</span>
+                                <div className="pl-4 border-l-2 border-primary/20 space-y-3">
+                                    <div>
+                                        <span className="text-sm font-medium">Why Desirable:</span>
                                         <div className="flex flex-wrap gap-2 mt-1">
                                             {responses.why_more_desirable?.map((r, idx) => (
                                                 <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
@@ -130,58 +144,79 @@ export function StepSummary({
                                     </div>
                                     {responses.why_more_desirable_other && (
                                         <div className="text-sm mt-1 italic text-muted-foreground">
-                                            Other: &quot;{responses.why_more_desirable_other}&quot;
+                                            Other: "{responses.why_more_desirable_other}"
                                         </div>
                                     )}
                                 </div>
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-3 relative group">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-semibold text-primary/80">Work Experience</h4>
-                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 2)}><Edit2 className="w-3 h-3" /></Button>}
-                                </div>
-                                <div className="pl-4 border-l-2 border-primary/20 space-y-2">
-                                    <div className="text-sm"><span className="font-medium text-muted-foreground">Career Growth:</span> {responses.career_growth}</div>
-                                    <div className="text-sm"><span className="font-medium text-muted-foreground">Rate of Pay:</span> {responses.rate_of_pay}</div>
-                                </div>
+                        {/* Subsection 3: Work Experience */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Work Experience</h4>
+                                {!readOnly && (
+                                    <Button variant="ghost" size="sm" onClick={() => onEdit('questions', 2)} className="h-8 px-3 text-muted-foreground hover:text-primary bg-muted/20">
+                                        <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                                    </Button>
+                                )}
                             </div>
-
-                            <div className="space-y-3 relative group">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-semibold text-primary/80">Environment</h4>
-                                    {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 4)}><Edit2 className="w-3 h-3" /></Button>}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/20">
+                                <div className="text-sm">
+                                    <span className="font-medium text-muted-foreground block mb-1">Career Growth:</span>
+                                    <span className="font-medium">{responses.career_growth || '—'}</span>
                                 </div>
-                                <div className="pl-4 border-l-2 border-primary/20 space-y-2">
-                                    <div className="text-sm">
-                                        <span className="font-medium text-muted-foreground">Benefits:</span> {responses.benefits}
-                                        {responses.benefits_comment && <div className="mt-0.5 italic text-muted-foreground text-xs">&quot;{responses.benefits_comment}&quot;</div>}
-                                    </div>
-                                    <div className="text-sm">
-                                        <span className="font-medium text-muted-foreground">Workload:</span> {responses.workload}
-                                        {responses.workload_comment && <div className="mt-0.5 italic text-muted-foreground text-xs">&quot;{responses.workload_comment}&quot;</div>}
-                                    </div>
+                                <div className="text-sm">
+                                    <span className="font-medium text-muted-foreground block mb-1">Rate of Pay:</span>
+                                    <span className="font-medium">{responses.rate_of_pay || '—'}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="space-y-3 relative group">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-semibold text-primary/80">Final Thoughts</h4>
-                                {!readOnly && <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('questions', 6)}><Edit2 className="w-3 h-3" /></Button>}
+                        {/* Subsection 4: Environment */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Environment</h4>
+                                {!readOnly && (
+                                    <Button variant="ghost" size="sm" onClick={() => onEdit('questions', 4)} className="h-8 px-3 text-muted-foreground hover:text-primary bg-muted/20">
+                                        <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                                    </Button>
+                                )}
                             </div>
-                            <div className="pl-4 border-l-2 border-primary/20 space-y-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/20">
                                 <div className="text-sm">
+                                    <span className="font-medium text-muted-foreground block mb-1">Benefits:</span>
+                                    <span className="font-medium">{responses.benefits || '—'}</span>
+                                    {responses.benefits_comment && <div className="mt-1 italic text-muted-foreground text-xs">"{responses.benefits_comment}"</div>}
+                                </div>
+                                <div className="text-sm">
+                                    <span className="font-medium text-muted-foreground block mb-1">Workload:</span>
+                                    <span className="font-medium">{responses.workload || '—'}</span>
+                                    {responses.workload_comment && <div className="mt-1 italic text-muted-foreground text-xs">"{responses.workload_comment}"</div>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Subsection 5: Final Thoughts */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-2">
+                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Final Thoughts</h4>
+                                {!readOnly && (
+                                    <Button variant="ghost" size="sm" onClick={() => onEdit('questions', 6)} className="h-8 px-3 text-muted-foreground hover:text-primary bg-muted/20">
+                                        <Edit2 className="w-3.5 h-3.5 mr-2" /> Edit
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="pl-4 border-l-2 border-primary/20 space-y-3">
+                                <div className="text-sm flex items-center gap-2">
                                     <span className="font-medium text-muted-foreground">Recommend Company?</span>
-                                    <span className={`ml-2 font-bold ${responses.recommendation === "Yes" ? "text-green-600" : "text-red-500"}`}>
-                                        {responses.recommendation}
+                                    <span className={`font-bold ${responses.recommendation === "Yes" ? "text-green-600" : "text-red-500"}`}>
+                                        {responses.recommendation || '—'}
                                     </span>
                                 </div>
                                 {responses.recommendation_reason && (
-                                    <div className="text-sm mt-1 p-3 bg-muted rounded-md italic text-muted-foreground">
-                                        &quot;{responses.recommendation_reason}&quot;
+                                    <div className="text-sm p-3 bg-muted rounded-md italic text-muted-foreground">
+                                        "{responses.recommendation_reason}"
                                     </div>
                                 )}
                             </div>

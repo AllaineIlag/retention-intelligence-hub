@@ -581,11 +581,10 @@ export function ExitFormWizard({
 
               {currentStep === 1 && (
                 <div className="space-y-6 py-2">
-                  <div className="text-center space-y-2 mb-6">
+                  <div className="text-center mb-6">
                     <h3 className="text-xl font-bold tracking-tight text-primary">
                       Question {questionnaireStep + 1} of {QUESTIONNAIRE_STEPS_COUNT}
                     </h3>
-                    <Progress value={((questionnaireStep + 1) / QUESTIONNAIRE_STEPS_COUNT) * 100} className="h-1.5 w-1/3 mx-auto bg-primary/20" />
                   </div>
 
                   {/* Step 2.1: Reason for Leaving */}
@@ -718,9 +717,9 @@ export function ExitFormWizard({
 
                   {/* Step 2.2: Why More Desirable */}
                   {questionnaireStep === 1 && (
-                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">Why is the new position more desirable? (Select all that apply)</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-3">
                         {[
                           "Higher salary",
                           "More convenient location",
@@ -730,15 +729,15 @@ export function ExitFormWizard({
                           <Button
                             key={option}
                             variant={responses.why_more_desirable?.includes(option) ? "default" : "outline"}
-                            className="justify-start h-auto min-h-[3.5rem] py-3 px-4 text-base sm:text-[15px] whitespace-normal text-left"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                             onClick={() => toggleSelection('why_more_desirable', option)}
                           >
-                            {responses.why_more_desirable?.includes(option) && <CheckCircle2 className="w-4 h-4 mr-2 shrink-0" />}
                             <span className="flex-1">{option}</span>
+                            {responses.why_more_desirable?.includes(option) && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                           </Button>
                         ))}
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 pt-2">
                         <FieldLabel>Others (Optional)</FieldLabel>
                         <textarea
                           className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -803,20 +802,18 @@ export function ExitFormWizard({
 
                   {/* Step 2.5: Benefits */}
                   {questionnaireStep === 4 && (
-                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How were the benefits?</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                      <div className="flex flex-col gap-3 mb-6">
                         {["Very adequate", "Adequate", "Inadequate"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.benefits === option ? "default" : "outline"}
-                            className="h-auto py-4 sm:h-24 text-base flex-col gap-2 whitespace-normal"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ benefits: option })}
                           >
-                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.benefits === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
-                              {responses.benefits === option && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
-                            </div>
-                            {option}
+                            <span className="flex-1">{option}</span>
+                            {responses.benefits === option && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                           </Button>
                         ))}
                       </div>
@@ -834,20 +831,18 @@ export function ExitFormWizard({
 
                   {/* Step 2.6: Workload */}
                   {questionnaireStep === 5 && (
-                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">How was your workload?</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                      <div className="flex flex-col gap-3 mb-6">
                         {["Too much", "Just enough", "Minimal"].map((option) => (
                           <Button
                             key={option}
                             variant={responses.workload === option ? "default" : "outline"}
-                            className="h-auto py-4 sm:h-24 text-base flex-col gap-2 whitespace-normal"
+                            className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                             onClick={() => updateResponse({ workload: option })}
                           >
-                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 flex items-center justify-center ${responses.workload === option ? "border-primary-foreground bg-primary-foreground/20" : "border-muted-foreground"}`}>
-                              {responses.workload === option && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
-                            </div>
-                            {option}
+                            <span className="flex-1">{option}</span>
+                            {responses.workload === option && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                           </Button>
                         ))}
                       </div>
@@ -865,38 +860,37 @@ export function ExitFormWizard({
 
                   {/* Step 2.7: Recommendation */}
                   {questionnaireStep === 6 && (
-                    <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4">
+                    <div className="space-y-6 max-w-lg mx-auto animate-in fade-in slide-in-from-right-4">
                       <h4 className="text-lg font-medium text-center">Would you recommend this company to your friends?</h4>
-                      <div className="flex flex-wrap gap-4 sm:gap-6 justify-center my-6">
+                      <div className="flex flex-col gap-3 my-6">
                         <Button
                           variant={responses.recommendation === "Yes" ? "default" : "outline"}
-                          className="w-32 h-32 rounded-2xl flex-col gap-3 text-xl"
+                          className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                           onClick={() => updateResponse({ recommendation: "Yes" })}
                         >
-                          <CheckCircle2 className="w-10 h-10" />
-                          Yes
+                          <span className="flex-1">Yes</span>
+                          {responses.recommendation === "Yes" && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                         </Button>
                         <Button
-                          variant={responses.recommendation === "No" ? "outline" : "outline"}
-                          className={`w-32 h-32 rounded-2xl flex-col gap-3 text-xl ${responses.recommendation === "No" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:text-destructive-foreground border-destructive" : ""}`}
+                          variant={responses.recommendation === "No" ? "destructive" : "outline"}
+                          className="justify-between h-auto min-h-[3.5rem] py-4 text-base px-6 whitespace-normal text-left"
                           onClick={() => updateResponse({ recommendation: "No" })}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-circle"><circle cx="12" cy="12" r="10" /><path d="m15 9-6 6" /><path d="m9 9 6 6" /></svg>
-                          No
+                          <span className="flex-1">No</span>
+                          {responses.recommendation === "No" && <CheckCircle2 className="w-5 h-5 ml-4 shrink-0" />}
                         </Button>
                       </div>
 
-                      {responses.recommendation && (
-                        <div className="space-y-2 pt-4 animate-in fade-in slide-in-from-bottom-2">
-                          <FieldLabel>Comments (Optional)</FieldLabel>
-                          <textarea
-                            className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder="Is there anything else you'd like to share?"
-                            value={responses.recommendation_reason}
-                            onChange={(e) => updateResponse({ recommendation_reason: e.target.value })}
-                          />
-                        </div>
-                      )}
+                      <div className="space-y-2 pt-2">
+                        <FieldLabel>Comments (Optional)</FieldLabel>
+                        <textarea
+                          className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          placeholder={responses.recommendation ? "Is there anything else you'd like to share?" : "Please select an option above first."}
+                          value={responses.recommendation_reason}
+                          onChange={(e) => updateResponse({ recommendation_reason: e.target.value })}
+                          disabled={!responses.recommendation}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
