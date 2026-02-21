@@ -44,6 +44,29 @@ export async function GET(request: Request) {
                         console.log('[Gatekeeper] Processing Invite Slug:', inviteSlug, 'for user:', user.email);
 
                         if (inviteSlug === 'hr-team') {
+                            // ── EXISTING ACCOUNT GUARD ──────────────────────────────────
+                            // If this user already has a profile, skip the invite flow entirely
+                            // and redirect them to the right place. No upsert, no spam, no confusion.
+                            const { data: existingProfile } = await supabase
+                                .from('profiles')
+                                .select('role, status')
+                                .eq('id', user.id)
+                                .single();
+
+                            if (existingProfile) {
+                                console.log('[Gatekeeper] Existing account hit invite link. Status:', existingProfile.status, 'Role:', existingProfile.role);
+
+                                if (existingProfile.status === 'rejected') {
+                                    return NextResponse.redirect(`${baseUrl}/login?error=forbidden`);
+                                }
+                                if (existingProfile.status === 'pending') {
+                                    return NextResponse.redirect(`${baseUrl}/pending?toast=already_registered`);
+                                }
+                                // Active staff — send them home
+                                return NextResponse.redirect(`${baseUrl}/dashboard?toast=already_member`);
+                            }
+                            // ── END GUARD ────────────────────────────────────────────────
+
                             // HR/Interviewer Invite -> Create as Pending Interviewer
                             const { error: upsertError } = await supabase.from('profiles').upsert({
                                 id: user.id,
@@ -69,6 +92,7 @@ export async function GET(request: Request) {
 
                             return NextResponse.redirect(`${baseUrl}/pending`);
                         }
+
 
                         if (inviteSlug === 'exit-process') {
                             // Employee Invite -> Check against Resignations (Exit Case)

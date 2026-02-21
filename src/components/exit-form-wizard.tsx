@@ -94,16 +94,15 @@ export function ExitFormWizard({
   const [canAcceptTerms, setCanAcceptTerms] = useState(false);
   const [isEditingFromSummary, setIsEditingFromSummary] = useState(false);
 
-  // Initialize form state
   const [details, setDetails] = useState<EmployeeDetails>({
-    employee_number: initialResponse?.employee_details?.employee_number || '',
+    employee_number: initialResponse?.employee_details?.employee_number || profile?.employee_number || '',
     employee_name: initialResponse?.employee_details?.employee_name || profile?.full_name || '',
-    date_hired: initialResponse?.employee_details?.date_hired || '',
-    position_when_hired: initialResponse?.employee_details?.position_when_hired || '',
-    current_position: initialResponse?.employee_details?.current_position || '',
-    business_unit: initialResponse?.employee_details?.business_unit || '',
-    intermediate_supervisor: initialResponse?.employee_details?.intermediate_supervisor || '',
-    department: initialResponse?.employee_details?.department || '',
+    date_hired: initialResponse?.employee_details?.date_hired || profile?.date_hired || '',
+    position_when_hired: initialResponse?.employee_details?.position_when_hired || profile?.position_when_hired || '',
+    current_position: initialResponse?.employee_details?.current_position || profile?.current_position || '',
+    business_unit: initialResponse?.employee_details?.business_unit || profile?.business_unit || '',
+    intermediate_supervisor: initialResponse?.employee_details?.intermediate_supervisor || profile?.intermediate_supervisor || '',
+    department: initialResponse?.employee_details?.department || profile?.department || '',
     date_of_resignation: initialResponse?.employee_details?.date_of_resignation || resignation?.last_working_day || '',
   });
 
@@ -194,6 +193,8 @@ export function ExitFormWizard({
     updateResponse({ [field]: newList });
   };
 
+  const MAX_REASONS = 3;
+
   const handleReasonToggle = (option: string) => {
     const currentList = responses.reason_for_leaving || [];
 
@@ -209,11 +210,16 @@ export function ExitFormWizard({
           reason_for_leaving_country: ""
         });
       } else {
-        // Check: Add base "Another Job"
+        // Check: Enforce cap before adding
+        if (currentList.length >= MAX_REASONS) return;
         updateResponse({ reason_for_leaving: [...currentList, "Another Job"] });
       }
       return;
     }
+
+    // Check for cap before adding a new selection
+    const isAlreadySelected = currentList.includes(option);
+    if (!isAlreadySelected && currentList.length >= MAX_REASONS) return;
 
     toggleSelection('reason_for_leaving', option);
   };
@@ -281,14 +287,14 @@ export function ExitFormWizard({
     if (hasUnsavedChanges.current) {
       setIsSaving(true);
       try {
-        const result = await saveExitForm({
+        await saveExitForm({
           resignation_id: resignation.id,
           employee_details: details,
           questionnaire_responses: responses
         });
-        if (result.success) {
-          hasUnsavedChanges.current = false;
-        }
+        // NOTE: Do NOT reset hasUnsavedChanges here.
+        // Intermediate saves are checkpoints, not completion.
+        // The beforeunload warning must stay active until final submit.
       } catch (err) {
         console.error("Save error during navigation:", err);
       } finally {
@@ -342,14 +348,13 @@ export function ExitFormWizard({
     if (hasUnsavedChanges.current) {
       setIsSaving(true);
       try {
-        const result = await saveExitForm({
+        await saveExitForm({
           resignation_id: resignation.id,
           employee_details: details,
           questionnaire_responses: responses
         });
-        if (result.success) {
-          hasUnsavedChanges.current = false;
-        }
+        // NOTE: Do NOT reset hasUnsavedChanges here.
+        // Keep the warning alive until final submit.
       } catch (err) {
         console.error("Save error during Return:", err);
       } finally {
@@ -590,7 +595,20 @@ export function ExitFormWizard({
                   {/* Step 2.1: Reason for Leaving */}
                   {questionnaireStep === 0 && (
                     <div className="space-y-4 max-w-3xl mx-auto animate-in fade-in slide-in-from-right-4">
-                      <h4 className="text-lg font-medium text-center mb-6">What is your primary reason for leaving? (Select all that apply)</h4>
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <h4 className="text-lg font-medium">What is your primary reason for leaving? (Select up to 3 that apply most)</h4>
+                          <p className="text-xs text-muted-foreground mt-1">You can only select up to 3 reasons.</p>
+                        </div>
+                        <div className={cn(
+                          "shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full border tabular-nums transition-colors",
+                          (responses.reason_for_leaving?.length || 0) >= MAX_REASONS
+                            ? "bg-amber-500/10 border-amber-500/40 text-amber-400"
+                            : "bg-muted border-border text-muted-foreground"
+                        )}>
+                          {responses.reason_for_leaving?.length || 0} / {MAX_REASONS}
+                        </div>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {[
                           "Another Job",
@@ -603,26 +621,36 @@ export function ExitFormWizard({
                           "Dislike company procedure",
                           "Differences/Difficulty with Superior",
                           "Differences/Difficulty with Co-Employees"
-                        ].map((option) => (
-                          <Button
-                            key={option}
-                            variant={responses.reason_for_leaving?.some(r => r.startsWith(option)) ? "default" : "outline"}
-                            className="h-auto py-3 justify-start px-4 text-left whitespace-normal transition-all hover:scale-[1.01]"
-                            onClick={() => handleReasonToggle(option)}
-                          >
-                            <div className="flex items-center gap-2 w-full">
-                              <div className={cn(
-                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
-                                responses.reason_for_leaving?.some(r => r.startsWith(option))
-                                  ? "bg-primary-foreground border-primary-foreground"
-                                  : "border-muted-foreground"
-                              )}>
-                                {responses.reason_for_leaving?.some(r => r.startsWith(option)) && <CheckCircle2 className="w-3 h-3 text-primary" />}
+                        ].map((option) => {
+                          const isSelected = responses.reason_for_leaving?.some(r => r.startsWith(option));
+                          const isAtCap = (responses.reason_for_leaving?.length || 0) >= MAX_REASONS;
+                          const isDisabled = !isSelected && isAtCap;
+                          return (
+                            <Button
+                              key={option}
+                              variant={isSelected ? "default" : "outline"}
+                              className={cn(
+                                "h-auto py-3 justify-start px-4 text-left whitespace-normal transition-all",
+                                !isDisabled && "hover:scale-[1.01]",
+                                isDisabled && "opacity-40 cursor-not-allowed"
+                              )}
+                              onClick={() => handleReasonToggle(option)}
+                              disabled={isDisabled}
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <div className={cn(
+                                  "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                  isSelected
+                                    ? "bg-primary-foreground border-primary-foreground"
+                                    : "border-muted-foreground"
+                                )}>
+                                  {isSelected && <CheckCircle2 className="w-3 h-3 text-primary" />}
+                                </div>
+                                {option}
                               </div>
-                              {option}
-                            </div>
-                          </Button>
-                        ))}
+                            </Button>
+                          );
+                        })}
                       </div>
 
                       {/* Logic for Another Job sub-options */}
@@ -654,11 +682,18 @@ export function ExitFormWizard({
                             </Button>
                           </div>
 
-                          {/* Highlight when user hasn't made a location selection */}
                           {responses.reason_for_leaving?.some(r => r === "Another Job") && (
                             <p className="text-xs text-destructive animate-pulse font-medium flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-destructive inline-block" />
                               Please specify Local or Abroad to proceed.
+                            </p>
+                          )}
+
+                          {/* Abroad selected but no country chosen yet */}
+                          {responses.reason_for_leaving.includes("Another Job (Abroad)") && !responses.reason_for_leaving_country && (
+                            <p className="text-xs text-amber-400 animate-pulse font-medium flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                              Please select the country of your new job to proceed.
                             </p>
                           )}
 

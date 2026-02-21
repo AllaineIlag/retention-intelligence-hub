@@ -89,13 +89,13 @@ export async function getResignation() {
 }
 
 // Get exit response (Actually returns the Form Snapshot from Resignation)
-export async function getExitResponse(resignationId: string) {
-    const supabase = await createClient();
+export async function getExitResponse(resignationId: string): Promise<{ success: boolean; data?: ExitFormData; error?: string }> {
+    const adminClient = createAdminClient();
 
     // 1. Fetch form_snapshot from resignation
-    const { data, error } = await supabase
+    const { data, error } = await adminClient
         .from('resignations')
-        .select('form_snapshot')
+        .select('form_snapshot, last_working_day')
         .eq('id', resignationId)
         .single();
 
@@ -103,12 +103,54 @@ export async function getExitResponse(resignationId: string) {
         return { success: false, error: 'Failed to load form data' };
     }
 
-    // If snapshot exists, return it. Otherwise return empty structure.
-    if (data?.form_snapshot) {
-        return { success: true, data: data.form_snapshot };
+    let snapshot = data?.form_snapshot as ExitFormData || {};
+
+    // 2. SELF-HEALING: If snapshot is empty or missing responses, reconstruct from granular results
+    if (!snapshot.questionnaire_responses || Object.keys(snapshot.questionnaire_responses).length === 0) {
+        const { data: results } = await adminClient
+            .from('exit_questionnaires_result')
+            .select(`
+                response_text,
+                selected_options,
+                comment,
+                questions (question_key)
+            `)
+            .eq('resignation_id', resignationId);
+
+        if (results && results.length > 0) {
+            const reconstructedResponses: QuestionnaireResponses = {};
+
+            results.forEach((row: any) => {
+                const key = row.questions?.question_key;
+                if (!key) return;
+
+                // Map to QuestionnaireResponses structure
+                if (Array.isArray(row.selected_options)) {
+                    reconstructedResponses[key as keyof QuestionnaireResponses] = row.selected_options as any;
+                } else {
+                    reconstructedResponses[key as keyof QuestionnaireResponses] = row.response_text as any;
+                }
+
+                // Restore comments/followers
+                if (row.comment) {
+                    if (key === 'benefits') reconstructedResponses.benefits_comment = row.comment;
+                    if (key === 'workload') reconstructedResponses.workload_comment = row.comment;
+                    if (key === 'recommendation') reconstructedResponses.recommendation_reason = row.comment;
+                    if (key === 'why_more_desirable') reconstructedResponses.why_more_desirable_other = row.comment;
+                    if (key === 'reason_for_leaving') reconstructedResponses.reason_for_leaving_country = row.comment;
+                }
+            });
+
+            snapshot.questionnaire_responses = reconstructedResponses;
+            // Also ensure resignation date is synced if missing from snapshot
+            if (!snapshot.employee_details) snapshot.employee_details = {} as any;
+            if (!snapshot.employee_details!.date_of_resignation) {
+                snapshot.employee_details!.date_of_resignation = data.last_working_day || '';
+            }
+        }
     }
 
-    return { success: true, data: {} };
+    return { success: true, data: snapshot };
 }
 
 // Save exit form progress
@@ -133,7 +175,9 @@ export async function saveExitForm(formData: ExitFormData) {
 
     // 1. Save Snapshot (Summary Data) to Resignation
     // This is the Source of Truth for the Form Wizard state
-    const { error: snapshotError } = await supabase
+    // Use adminClient to bypass RLS issues on the resignation table for employees
+    const adminClient = createAdminClient();
+    const { error: snapshotError } = await adminClient
         .from('resignations')
         .update({
             form_snapshot: formData as any, // Cast to JSONB
@@ -255,13 +299,15 @@ export async function submitExitForm(resignationId: string) {
     if (checkError || !existing) return { success: false, error: 'Unauthorized' };
 
     // Update resignation status to pending_interview
+    // NOTE: Removed the .eq('status', 'scheduled') guard — employees in 'pending_exit_form'
+    // status would silently fail that check. We update regardless of current status
+    // (ownership is already verified via the RLS SELECT above).
     const adminClient = createAdminClient();
-
     const { error: resignationError } = await adminClient
         .from('resignations')
         .update({ status: 'pending_interview' })
         .eq('id', resignationId)
-        .eq('status', 'scheduled');
+        .not('status', 'in', '("locked","completed")');
 
     if (resignationError) {
         return { success: false, error: resignationError.message };

@@ -8,6 +8,7 @@ import { NotificationBell } from '@/components/dashboard/notification-bell';
 
 import { PageFilterProvider } from '@/components/dashboard/page-filter-context';
 import { NavPageFilter } from '@/components/dashboard/nav-page-filter';
+import { InviteToastHandler } from '@/components/dashboard/invite-toast-handler';
 
 export default async function DashboardLayout({
     children,
@@ -81,7 +82,10 @@ export default async function DashboardLayout({
                                 </div>
                             </div>
                         </header>
-                        <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
+                        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+                            <InviteToastHandler />
+                            {children}
+                        </main>
                     </div>
                 </div>
             </PageFilterProvider>

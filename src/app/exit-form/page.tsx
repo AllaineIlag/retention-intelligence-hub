@@ -49,9 +49,33 @@ export default async function ExitFormPage() {
     }
 
     const resignation = resignationRes.data;
+
+    // Terminal state: interview is done. Show a completion screen, not the form.
+    if (resignation.status === 'completed') {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background px-4">
+                <div className="text-center space-y-6 max-w-md">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 border border-green-500/30 mx-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                    </div>
+                    <div className="space-y-2">
+                        <h1 className="text-2xl font-bold text-white">Thank you.</h1>
+                        <p className="text-zinc-400 leading-relaxed">
+                            Your exit interview has been completed.<br />
+                            Your responses have been recorded.
+                        </p>
+                        <p className="text-xs text-zinc-600 pt-2">— HR Team</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     let isLocked = false;
 
-    if (resignation.status === 'locked' || resignation.status === 'completed') {
+    if (resignation.status === 'locked' || resignation.status === 'pending_interview') {
         isLocked = true;
     } else if (resignation.status === 'scheduled' && resignation.scheduled_interview_date) {
         const interviewDate = new Date(resignation.scheduled_interview_date);
@@ -63,6 +87,7 @@ export default async function ExitFormPage() {
             isLocked = true;
         }
     }
+
 
     return (
         <div className="min-h-screen bg-background/50 dark:bg-background py-12 px-4 sm:px-6 lg:px-8">

@@ -64,7 +64,25 @@ export default function InvitePage() {
                             <p className="text-center text-xs text-zinc-500">
                                 By joining, you agree to our Terms of Service and Privacy Policy.
                             </p>
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-white/10" />
+                                </div>
+                                <div className="relative flex justify-center text-xs">
+                                    <span className="bg-[#0f0f11] px-2 text-zinc-500">or</span>
+                                </div>
+                            </div>
+                            <p className="text-center text-xs text-zinc-500">
+                                Already have an account?{' '}
+                                <a
+                                    href="/login"
+                                    className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors underline-offset-4 hover:underline"
+                                >
+                                    Sign in here →
+                                </a>
+                            </p>
                         </div>
+
                     </CardContent>
                     <CardFooter className="justify-center border-t border-white/5 py-4">
                         <div className="flex items-center text-xs text-zinc-500">
