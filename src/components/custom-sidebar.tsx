@@ -3,9 +3,9 @@
 import { useState, createContext, useContext, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
-    BarChart3,
     Home,
     Users,
     Activity,
@@ -246,9 +246,14 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
         <>
             {/* Header */}
             <div className="flex h-16 items-center gap-3 border-b px-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-primary shadow-lg shadow-brand-primary/20 border border-brand-primary/10">
-                    <BarChart3 className="h-5 w-5 text-white" />
-                </div>
+                <motion.div
+                    initial={false}
+                    animate={{ width: isCollapsed ? 36 : 50, paddingLeft: isCollapsed ? 0 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex shrink-0 items-center justify-center overflow-hidden"
+                >
+                    <Image src="/tdk-logo.png" alt="Logo" width={50} height={36} className="object-contain" />
+                </motion.div>
                 <AnimatePresence>
                     {!isCollapsed && (
                         <motion.span

@@ -4,9 +4,11 @@ import { Suspense, useEffect, useState, useTransition } from 'react';
 import { loginWithGoogle } from './actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Loader2, Lock, ShieldX } from 'lucide-react';
+import { AlertCircle, Loader2, ShieldX, Info } from 'lucide-react';
+import Image from 'next/image';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSearchParams } from 'next/navigation';
+import { ThemeToggle } from '@/components/dashboard/theme-toggle';
 
 function LoginForm() {
     const [isVerifyingGoogle, startVerifyGoogle] = useTransition();
@@ -24,36 +26,41 @@ function LoginForm() {
     }, [searchParams]);
 
     return (
-        <Card className="w-full max-w-md border-white/10 bg-[#0f0f11]/80 backdrop-blur-xl shadow-2xl relative z-10">
-            <CardHeader className="space-y-3 text-center">
-                <div className="flex justify-center">
-                    <div className={`rounded-2xl p-4 ring-1 ring-white/10 ${isForbidden ? 'bg-gradient-to-br from-red-500/20 to-rose-500/20' : 'bg-gradient-to-br from-blue-500/20 to-sky-500/20'}`}>
-                        {isForbidden
-                            ? <ShieldX className="h-8 w-8 text-red-400" />
-                            : <Lock className="h-8 w-8 text-blue-400" />
-                        }
-                    </div>
+        <Card className="w-full max-w-md border-border bg-card/80 backdrop-blur-xl shadow-2xl relative z-10">
+            <CardHeader className="space-y-4 text-center pb-6">
+                <div className="flex justify-center mb-2">
+                    {isForbidden ? (
+                        <div className="rounded-2xl p-4 ring-1 ring-border bg-destructive/10">
+                            <ShieldX className="h-8 w-8 text-destructive" />
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center p-3 rounded-2xl bg-accent/30 border border-border shadow-sm">
+                            <Image src="/tdk-logo.png" alt="TDK Logo" width={64} height={46} className="object-contain" priority />
+                        </div>
+                    )}
                 </div>
-                <CardTitle className="text-2xl font-bold tracking-tight text-white">
-                    {isForbidden ? 'Access Denied' : 'Welcome'}
-                </CardTitle>
-                <CardDescription className="text-zinc-400">
-                    {isForbidden
-                        ? 'Your account is not authorized to access this system.'
-                        : 'Sign in to access the Retention Intelligence Hub'
-                    }
-                </CardDescription>
+                <div className="space-y-1">
+                    <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+                        {isForbidden ? 'Access Denied' : 'Welcome Back'}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground font-medium">
+                        {isForbidden
+                            ? 'Your account is not authorized to access this system.'
+                            : 'Sign in to access the Retention Intelligence Hub'
+                        }
+                    </CardDescription>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
 
                     {/* FORBIDDEN NOTICE */}
                     {isForbidden && (
-                        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-5 text-center space-y-3">
-                            <p className="text-sm text-red-300 font-medium leading-relaxed">
+                        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 text-center space-y-3">
+                            <p className="text-sm text-destructive font-semibold leading-relaxed">
                                 This system is private and restricted to authorized company personnel only.
                             </p>
-                            <p className="text-xs text-zinc-400 leading-relaxed">
+                            <p className="text-xs text-muted-foreground leading-relaxed italic">
                                 If you are part of the company and believe this is an error, please contact your HR department for an authorized invitation link.
                             </p>
                             <Button
@@ -61,7 +68,7 @@ function LoginForm() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setIsForbidden(false)}
-                                className="mt-2 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 text-xs"
+                                className="mt-2 border-border/50 bg-accent/30 text-accent-foreground hover:bg-accent/50 text-xs"
                             >
                                 Try a different account
                             </Button>
@@ -70,7 +77,18 @@ function LoginForm() {
 
                     {/* GOOGLE LOGIN */}
                     {!isForbidden && (
-                        <div className="space-y-4">
+                        <div className="space-y-5">
+                            {urlMessage && (
+                                <Alert className="bg-sky-500/10 border-sky-500/20 text-sky-400 flex items-center p-3 rounded-lg shadow-sm">
+                                    <Info className="w-4 h-4 shrink-0" />
+                                    <div className="ml-3">
+                                        <AlertDescription className="text-xs font-medium leading-relaxed">
+                                            {urlMessage}
+                                        </AlertDescription>
+                                    </div>
+                                </Alert>
+                            )}
+
                             <Button
                                 type="button"
                                 variant="outline"
@@ -78,7 +96,7 @@ function LoginForm() {
                                     await loginWithGoogle();
                                 })}
                                 disabled={isVerifyingGoogle}
-                                className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10 hover:text-white h-12 relative text-base font-medium transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="w-full bg-primary text-primary-foreground border-transparent hover:bg-primary/90 h-11 relative text-[15px] font-medium transition-all shadow-md"
                             >
                                 {isVerifyingGoogle ? (
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -87,25 +105,20 @@ function LoginForm() {
                                         <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
                                     </svg>
                                 )}
-                                Continue with Google
+                                Sign in with Google
                             </Button>
 
-                            {urlMessage && (
-                                <Alert className="bg-brand-card p-4 rounded-full border border-brand-border/50 group-hover:border-brand-primary/50 transition-colors shadow-2xl">
-                                    <Lock className="w-8 h-8 text-brand-primary" />
-                                    <AlertDescription className="ml-2 text-xs">{urlMessage}</AlertDescription>
-                                </Alert>
-                            )}
-
-                            <p className="text-[12px] text-zinc-500 text-center px-6">
-                                Only authorized emails are permitted for system access.
-                            </p>
+                            <div className="pt-2">
+                                <p className="text-[12px] text-muted-foreground text-center px-6 leading-tight">
+                                    Only authorized emails are permitted for system access.
+                                </p>
+                            </div>
                         </div>
                     )}
                 </div>
             </CardContent>
-            <CardFooter className="justify-center border-t border-white/5 py-4">
-                <p className="text-xs text-zinc-500">
+            <CardFooter className="justify-center border-t border-border/10 py-4">
+                <p className="text-xs text-muted-foreground/60 transition-opacity hover:opacity-100 italic">
                     Protected by Retention Intelligence System
                 </p>
             </CardFooter>
@@ -115,11 +128,15 @@ function LoginForm() {
 
 export default function LoginPage() {
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-brand-background p-4 overflow-hidden selection:bg-brand-primary/30">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
+        <div className="relative min-h-screen flex items-center justify-center bg-background p-4 overflow-hidden selection:bg-primary/30 text-foreground transition-colors duration-300">
+            <div className="absolute top-4 right-4 z-50">
+                <ThemeToggle />
+            </div>
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,var(--color-background),transparent)] opacity-40 dark:opacity-100" />
             <Suspense fallback={
-                <div className="flex items-center justify-center text-white">
-                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                <div className="flex flex-col items-center justify-center gap-4 text-foreground">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm font-medium animate-pulse">Initializing Security...</p>
                 </div>
             }>
                 <LoginForm />

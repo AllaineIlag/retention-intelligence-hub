@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from 'recharts';
 
 
 interface DemographicRiskData {
@@ -46,6 +46,18 @@ export function DemographicRiskChart({ data }: DemographicRiskChartProps) {
                         {data.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
+                        <Label
+                            content={({ viewBox }) => {
+                                const { cx, cy } = viewBox as any;
+                                return (
+                                    <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle">
+                                        <tspan x={cx} dy="-0.2em" className="text-3xl font-bold fill-foreground">{total}</tspan>
+                                        <tspan x={cx} dy="1.5em" className="text-[10px] font-semibold fill-muted-foreground uppercase tracking-widest">Total</tspan>
+                                    </text>
+                                );
+                            }}
+                            position="center"
+                        />
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
@@ -58,10 +70,6 @@ export function DemographicRiskChart({ data }: DemographicRiskChartProps) {
                     />
                 </PieChart>
             </ResponsiveContainer>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[calc(50%+18px)] text-center pointer-events-none">
-                <div className="text-2xl font-bold text-foreground">{total}</div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider">Total</div>
-            </div>
         </div>
     );
 }
