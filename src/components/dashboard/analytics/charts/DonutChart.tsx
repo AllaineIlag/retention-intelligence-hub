@@ -14,7 +14,23 @@ interface DonutChartProps {
     colors?: string[];
 }
 
-const DEFAULT_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7'];
+const DEFAULT_COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
+
+const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+        const item = payload[0].payload;
+        return (
+            <div className="bg-popover border border-border px-3 py-2 rounded-xl shadow-lg ring-1 ring-black/5">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">{item.name}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <span className="opacity-70 uppercase tracking-wider font-medium">Count :</span>
+                    <span className="font-bold text-foreground">{item.value}</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
 
 export function DonutChart({ title, description, data, totalResponses, className, colors = DEFAULT_COLORS }: DonutChartProps) {
     // Calculate dominant percentage for center text
@@ -30,7 +46,16 @@ export function DonutChart({ title, description, data, totalResponses, className
             <CardContent className="flex-1 min-h-[200px] relative">
                 {data.length > 0 ? (
                     <div className="h-[200px] w-full relative">
-                        <ResponsiveContainer width="100%" height="100%">
+                        {/* Center Text (Behind) */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+                            <span className="text-3xl font-bold tracking-tighter">{centerPercentage}%</span>
+                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 truncate max-w-[100px] text-center">
+                                {dominantItem?.name}
+                            </span>
+                        </div>
+
+                        {/* Donut Chart (Front) - higher z-index for tooltips */}
+                        <ResponsiveContainer width="100%" height="100%" className="z-10">
                             <PieChart>
                                 <Pie
                                     data={data}
@@ -46,18 +71,11 @@ export function DonutChart({ title, description, data, totalResponses, className
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
-                                    itemStyle={{ color: '#e4e4e7', fontSize: '12px' }}
-                                    formatter={(value: any) => [`${value} responses`, 'Count'] as [string, string]}
+                                    content={<CustomTooltip />}
+                                    offset={50}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <span className="text-3xl font-bold tracking-tighter">{centerPercentage}%</span>
-                            <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 truncate max-w-[100px] text-center">
-                                {dominantItem?.name}
-                            </span>
-                        </div>
                     </div>
                 ) : (
                     <div className="flex h-full items-center justify-center text-muted-foreground text-xs uppercase tracking-widest">No Data</div>

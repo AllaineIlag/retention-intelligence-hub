@@ -29,7 +29,7 @@ export function DepartmentChart({ data, className }: DepartmentChartProps) {
                 {data.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data} layout="vertical" margin={{ left: 0, right: 30 }}>
-                            <CartesianGrid strokeDasharray="3 3" opacity={0.1} horizontal={false} />
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--chart-grid)" />
                             <XAxis type="number" hide />
                             <YAxis
                                 dataKey="name"
@@ -42,7 +42,7 @@ export function DepartmentChart({ data, className }: DepartmentChartProps) {
                             />
                             <Tooltip
                                 cursor={{ fill: 'white', opacity: 0.05 }}
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
+                                contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '6px' }}
                                 itemStyle={{ color: '#e4e4e7', fontSize: '12px' }}
                             />
                             <Bar

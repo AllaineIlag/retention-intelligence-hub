@@ -58,7 +58,7 @@ export function TurnoverTrendsChart() {
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                             <XAxis
                                 dataKey="name"
                                 stroke="#525252"

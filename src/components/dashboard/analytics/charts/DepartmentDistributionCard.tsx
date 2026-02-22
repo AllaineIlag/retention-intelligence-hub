@@ -162,7 +162,7 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
                         layout="vertical"
                         margin={{ left: 0, right: 20, top: 0, bottom: 0 }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.1} horizontal={false} />
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--chart-grid)" />
                         <XAxis
                             type="number"
                             fontSize={11}

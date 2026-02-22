@@ -230,7 +230,7 @@ function MobileResignationTrigger({
                                 <SelectTrigger className="border-white/10 bg-white/5 text-white">
                                     <SelectValue placeholder="Select BU" />
                                 </SelectTrigger>
-                                <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                                <SelectContent className="border-border bg-popover text-popover-foreground">
                                     {BUSINESS_UNITS.map((bu) => (
                                         <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                                     ))}
@@ -245,7 +245,7 @@ function MobileResignationTrigger({
                             <SelectTrigger className="border-white/10 bg-white/5 text-white">
                                 <SelectValue placeholder="Select Supervisor" />
                             </SelectTrigger>
-                            <SelectContent className="border-white/10 bg-[#18181b] text-white">
+                            <SelectContent className="border-border bg-popover text-popover-foreground">
                                 {INTERMEDIATE_SUPERVISORS.map((s) => (
                                     <SelectItem key={s} value={s}>{s}</SelectItem>
                                 ))}

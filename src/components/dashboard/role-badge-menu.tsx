@@ -32,7 +32,7 @@ export function RoleBadgeMenu({ role, email }: RoleBadgeMenuProps) {
 
     if (!isMounted) {
         return (
-            <div className="h-7 md:h-8 w-12 md:w-20 rounded-full bg-blue-500/10 border border-blue-500/20" />
+            <div className="h-7 md:h-8 w-12 md:w-20 rounded-full bg-brand-primary/10 border border-brand-primary/20" />
         );
     }
 
@@ -40,7 +40,7 @@ export function RoleBadgeMenu({ role, email }: RoleBadgeMenuProps) {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 {/* Full badge on md+, compact on mobile */}
-                <button className="flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-medium uppercase tracking-wide text-blue-400 transition-colors hover:bg-blue-500/20 hover:border-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 cursor-pointer px-2 py-1 md:px-3">
+                <button className="flex items-center gap-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-xs font-medium uppercase tracking-wide text-brand-primary transition-colors hover:bg-brand-primary/20 hover:border-brand-primary/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/50 cursor-pointer px-2 py-1 md:px-3">
                     <span className="hidden md:inline">{role}</span>
                     <span className="inline md:hidden font-bold">{role[0]}</span>
                     <ChevronDown className="h-3 w-3 opacity-60" />

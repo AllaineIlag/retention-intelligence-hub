@@ -57,7 +57,7 @@ export function PushPullChart({ title, subtitle, data, colors, className, action
                             margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
                             barCategoryGap={20}
                         >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.2} />
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--chart-grid)" />
                             <XAxis type="number" hide />
                             <YAxis
                                 dataKey="name"

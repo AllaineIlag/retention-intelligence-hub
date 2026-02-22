@@ -27,6 +27,22 @@ const COLORS = [
     'var(--chart-5)',
 ]
 
+const CustomTooltip = ({ active, payload, unit }: any) => {
+    if (active && payload && payload.length) {
+        const data = payload[0].payload;
+        return (
+            <div className="bg-popover border border-border px-3 py-2 rounded-xl shadow-lg ring-1 ring-black/5">
+                <p className="text-[12px] font-semibold text-foreground leading-tight">{data.name}</p>
+                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1.5">
+                    <span className="opacity-70 uppercase tracking-wider font-medium">{unit} :</span>
+                    <span className="font-bold text-foreground">{data.value}</span>
+                </p>
+            </div>
+        );
+    }
+    return null;
+};
+
 export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData = [], className }: SmartDonutCardProps) {
     const [data, setData] = useState<TurnoverDataPoint[]>(initialData)
     const [mode, setMode] = useState<'7d' | '30d' | '3m' | '6m' | '12m' | 'ytd'>('30d')
@@ -124,7 +140,19 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
             <CardContent className="flex flex-1 items-center pb-4 px-2 min-h-0 mt-4">
                 {/* Donut Chart (Left) */}
                 <div className="relative w-1/2 h-full min-h-[100px] flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height="100%">
+                    
+                    {/* Center Text - Pushed to back with z-0 and placed before the chart */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+                        <span className="text-xl font-bold text-foreground tracking-tight leading-none uppercase">
+                            {total}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground uppercase font-medium mt-1">
+                            {unit}
+                        </span>
+                    </div>
+
+                    {/* Chart - Pulled to front with z-10 */}
+                    <ResponsiveContainer width="100%" height="100%" className="relative z-10">
                         <PieChart>
                             <Pie
                                 data={data}
@@ -138,20 +166,19 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
                                 cornerRadius={4}
                             >
                                 {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={COLORS[index % COLORS.length]}
+                                        stroke="none"
+                                    />
                                 ))}
                             </Pie>
                             <Tooltip
-                                contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
-                                itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
+                                content={<CustomTooltip unit={unit} />}
+                                offset={50}
                             />
                         </PieChart>
                     </ResponsiveContainer>
-                    {/* Center Text */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-lg font-bold text-foreground leading-none">{total}</span>
-                        <span className="text-[10px] text-muted-foreground uppercase">{unit}</span>
-                    </div>
                 </div>
 
                 {/* Legend (Right) */}

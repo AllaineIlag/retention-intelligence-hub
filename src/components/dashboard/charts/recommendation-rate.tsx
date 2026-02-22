@@ -7,7 +7,7 @@ import { getRecommendationStats } from '@/app/actions/dashboard';
 import { ChartTimeFilter, TimeRange } from '@/components/dashboard/analytics/chart-time-filter';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const COLORS = ['#10b981', '#f43f5e', '#94a3b8']; // Green, Red, Gray
+const COLORS = ['var(--chart-2)', 'var(--chart-danger)', 'var(--muted-foreground)']; // Green, Red, Gray
 
 export function RecommendationRateChart() {
     const [timeRange, setTimeRange] = useState<TimeRange>('30d');
@@ -80,12 +80,12 @@ export function RecommendationRateChart() {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: 'rgba(10, 10, 10, 0.8)',
+                                        backgroundColor: 'var(--popover)',
                                         backdropFilter: 'blur(12px)',
                                         borderRadius: '12px',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        border: '1px solid var(--border)',
                                         boxShadow: '0 10px 25px -5px rgba(0,0,0,0.5)',
-                                        color: '#fff'
+                                        color: 'var(--popover-foreground)'
                                     }}
                                 />
                                 <Legend

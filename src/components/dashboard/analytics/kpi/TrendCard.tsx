@@ -71,7 +71,7 @@ export function TrendCard({ initialData = [], className }: TrendCardProps) {
     const allKeys = Array.from(new Set(data.flatMap(d => Object.keys(d).filter(k => k !== 'month'))));
 
     // Generate colors dynamically or use a preset palette
-    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+    const COLORS = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
     const options = allKeys.map((key, i) => ({
         label: key,
         color: COLORS[i % COLORS.length]
@@ -103,7 +103,7 @@ export function TrendCard({ initialData = [], className }: TrendCardProps) {
                             <ChevronDown className="h-3 w-3" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[140px] border-white/10 bg-zinc-950">
+                    <DropdownMenuContent align="end" className="w-[140px] border-border bg-popover">
                         <DropdownMenuItem onClick={() => handleToggle('7d')} className="text-xs">Last 7 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('30d')} className="text-xs">Last 30 Days</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleToggle('3m')} className="text-xs">Last 3 Months</DropdownMenuItem>
@@ -115,7 +115,7 @@ export function TrendCard({ initialData = [], className }: TrendCardProps) {
             </CardHeader>
             <CardContent className="flex-1 min-h-[300px] pt-4">
                 <MultiSeriesTrendChart data={data} options={options} />
-                <div className="absolute top-6 right-16 p-2 rounded-full bg-blue-500/10 text-blue-400">
+                <div className="absolute top-6 right-16 p-2 rounded-full bg-primary/10 text-primary">
                     <LineChart className="h-4 w-4" />
                 </div>
             </CardContent>

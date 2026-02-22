@@ -123,7 +123,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                 <ResponsiveContainer width="100%" height="100%">
                     {data.length === 1 ? (
                         <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
                             <XAxis
                                 dataKey="name"
                                 fontSize={12}
@@ -136,7 +136,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                stroke="#52525b"
+                                stroke="var(--chart-axis)"
                             />
                             <Tooltip
                                 contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
@@ -144,9 +144,9 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                             />
                             <ReferenceLine
                                 y={TARGET_THRESHOLD}
-                                stroke="var(--chart-warning)"
+                                stroke="var(--chart-target)"
                                 strokeDasharray="3 3"
-                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: 'var(--chart-warning)', fontSize: 10 }}
+                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: 'var(--chart-target)', fontSize: 10 }}
                             />
                             <Bar
                                 dataKey="resignations"
@@ -179,16 +179,16 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
                                 axisLine={false}
                                 stroke="var(--chart-axis)"
                             />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
                             <Tooltip
                                 contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '12px' }}
                                 itemStyle={{ color: 'var(--popover-foreground)', fontSize: '12px' }}
                             />
                             <ReferenceLine
                                 y={TARGET_THRESHOLD}
-                                stroke="#fbbf24"
+                                stroke="var(--chart-target)"
                                 strokeDasharray="3 3"
-                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: '#fbbf24', fontSize: 10 }}
+                                label={{ position: 'insideTopRight', value: '2% Target (100)', fill: 'var(--chart-target)', fontSize: 10 }}
                             />
                             <Area
                                 type="monotone"

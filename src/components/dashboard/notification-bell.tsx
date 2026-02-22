@@ -92,15 +92,15 @@ export function NotificationBell() {
 
     const getIcon = (type: string) => {
         switch (type) {
-            case 'success': return <div className="h-2 w-2 rounded-full bg-green-500" />
-            case 'warning': return <div className="h-2 w-2 rounded-full bg-amber-500" />
-            case 'error': return <div className="h-2 w-2 rounded-full bg-red-500" />
-            default: return <div className="h-2 w-2 rounded-full bg-blue-500" />
+            case 'success': return <div className="h-2 w-2 rounded-full bg-status-success" />
+            case 'warning': return <div className="h-2 w-2 rounded-full bg-status-warning" />
+            case 'error': return <div className="h-2 w-2 rounded-full bg-status-error" />
+            default: return <div className="h-2 w-2 rounded-full bg-status-info" />
         }
     }
 
     if (!isMounted) return (
-        <Button variant="ghost" size="icon" className="relative text-muted-foreground">
+        <Button variant="ghost" size="icon" className="h-9 w-9 p-0 rounded-xl border border-border/50 bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
             <Bell className="h-5 w-5" />
         </Button>
     )
@@ -108,8 +108,8 @@ export function NotificationBell() {
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative hover:bg-accent data-[state=open]:bg-accent">
-                    <Bell className={cn("h-5 w-5 transition-colors", unreadCount > 0 ? "text-brand-primary" : "text-muted-foreground")} />
+                <Button variant="ghost" size="icon" className={cn("relative h-9 w-9 p-0 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors data-[state=open]:bg-muted/50", unreadCount > 0 ? "text-brand-primary" : "text-muted-foreground hover:text-foreground")}>
+                    <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
                         <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-brand-primary ring-2 ring-background animate-pulse" />
                     )}

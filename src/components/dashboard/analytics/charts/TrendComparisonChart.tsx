@@ -68,11 +68,11 @@ export function TrendComparisonChart({ title, description, data, meta, className
                         <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
                             <XAxis
                                 dataKey="date"
                                 stroke="#71717a"
@@ -89,7 +89,7 @@ export function TrendComparisonChart({ title, description, data, meta, className
                                 allowDecimals={false}
                             />
                             <Tooltip
-                                contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '6px' }}
+                                contentStyle={{ backgroundColor: 'var(--popover)', border: '1px solid var(--border)', borderRadius: '6px' }}
                                 labelStyle={{ color: '#a1a1aa', marginBottom: '8px' }}
                                 content={({ active, payload, label }) => {
                                     if (active && payload && payload.length) {
@@ -123,7 +123,7 @@ export function TrendComparisonChart({ title, description, data, meta, className
                                 type="monotone"
                                 dataKey="previous"
                                 name="Previous Period"
-                                stroke="#52525b"
+                                stroke="var(--chart-axis)"
                                 strokeDasharray="5 5"
                                 strokeWidth={2}
                                 fill="none"
@@ -134,7 +134,7 @@ export function TrendComparisonChart({ title, description, data, meta, className
                                 type="monotone"
                                 dataKey="current"
                                 name="Current Period"
-                                stroke="#2563eb"
+                                stroke="var(--chart-1)"
                                 strokeWidth={2}
                                 fillOpacity={1}
                                 fill="url(#colorCurrent)"

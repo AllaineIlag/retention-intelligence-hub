@@ -1,5 +1,5 @@
-**Current Mission:** Phase 13 — Lockdown Protocol (Auth Flow Repair)
-**Lead:** Swain
+**Current Mission:** Interview Schedule UI Enhancements (Export Filters)
+**Lead:** Swain / Piltover
 **Status:** COMPLETE
 **Priority:** High
 
@@ -45,5 +45,10 @@
 - [2026-02-21T21:08:00] [SWAIN]: Phase 13 initiated. Auth flow failures identified: Hard-delete on reject causing DB errors; approved interviewers cycling back to /pending on re-login. Delegated to Team Zaun and Piltover.
 - [2026-02-21T21:10:00] [VIKTOR]: `rejectUser` patched. Hard `deleteUser` replaced with soft `status: 'rejected'` brand. RLS policy confirmed open for Lead updates.
 - [2026-02-21T21:12:00] [CAITLYN]: `auth/callback` updated with rejected-user gate. `login/page.tsx` fitted with "Access Denied" panel triggered by `error=forbidden` param. Phase 13 COMPLETE.
-
-
+- [2026-02-22T21:30:00] [SWAIN]: Analysis complete. Request classified as UI/Frontend. Piltover executed changes directly: removed hardcoded colors, standardized header styling (MobileActionsMenu, ThemeToggle, NotificationBell), and extracted status tokens. Audit COMPLETE.
+- [2026-02-22T22:00:00] [SWAIN]: Directive received: Clean up Interview Schedule UI. Confirmed no sorting on row level. Delegated to Team Piltover.
+- [2026-02-22T22:05:00] [PILTOVER]: Implemented Export capabilities (CSV, JSON, PDF via window.print handler) directly in `InterviewsTable`. Integrated Shadcn `Select` component for time range filtering (`Last 7 Days`, `Last 30 Days`, etc.). UI Cleanup COMPLETE.
+- [2026-02-23T00:10:00] [PILTOVER]: Confirmed 20-row limit in UI is soft (random seed output) and not a backend row cap. Converted `InterviewsTable` into a fixed-height (`h-[calc(100vh-320px)]`), internally scrollable container. Applied sticky styling to `<TableHeader>` to preserve column visibility during scroll.
+- [2026-02-23T01:30:00] [PILTOVER]: Added interactive column sorting for Employee, Status, and Date. Implemented client-side infinite scrolling using IntersectionObserver to lazily render data chunks (20 rows at a time). Output pending user code review.
+- [2026-02-23T01:53:00] [SWAIN]: Directive received: Expand Export parameters to include Status and Department routing. Delegating execution to Team Piltover.
+- [2026-02-23T02:07:00] [PILTOVER]: Operation 'Light & Dark' completed. Stripped hardcoded static colors (`bg-[#0f0f11]`, `text-white`, `border-white/10`, etc.) from the Interview Schedule UI (`interviews-table.tsx`). Fully aligned UI to use application-wide semantic tokens (`bg-card`, `bg-popover`, `border-border`, `text-foreground`) enforcing correct light/dark switchability.

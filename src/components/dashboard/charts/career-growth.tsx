@@ -57,21 +57,21 @@ export function CareerGrowthChart() {
 
     // Custom coloring logic
     const getColor = (name: string) => {
-        if (name.includes('Very good')) return '#10b981'; // Emerald 500
-        if (name.includes('Good')) return '#34d399';      // Emerald 400
-        if (name.includes('Little')) return '#fbbf24';    // Amber 400
-        if (name.includes('Very little')) return '#f87171'; // Rose 400
-        if (name.includes('No chances')) return '#ef4444';  // Rose 500
-        return '#94a3b8'; // Slate 400
+        if (name.includes('Very good')) return 'var(--chart-2)';
+        if (name.includes('Good')) return 'var(--chart-1)';
+        if (name.includes('Little')) return 'var(--chart-3)';
+        if (name.includes('Very little')) return 'var(--chart-4)';
+        if (name.includes('No chances')) return 'var(--chart-danger)';
+        return 'var(--muted-foreground)';
     };
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-xl">
-                    <p className="text-slate-200 font-medium text-sm">{label}</p>
-                    <p className="text-white font-bold text-lg">
-                        {payload[0].value} <span className="text-xs text-slate-400 font-normal">Responses</span>
+                <div className="bg-popover border border-border p-2 rounded-lg shadow-xl">
+                    <p className="text-popover-foreground font-medium text-sm">{label}</p>
+                    <p className="text-foreground font-bold text-lg">
+                        {payload[0].value} <span className="text-xs text-muted-foreground font-normal">Responses</span>
                     </p>
                 </div>
             );
@@ -105,13 +105,13 @@ export function CareerGrowthChart() {
                             layout="vertical"
                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#ffffff10" />
+                            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--chart-grid)" />
                             <XAxis type="number" hide />
                             <YAxis
                                 dataKey="name"
                                 type="category"
                                 width={100}
-                                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                                tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                                 tickLine={false}
                                 axisLine={false}
                             />

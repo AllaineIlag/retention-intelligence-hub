@@ -12,8 +12,8 @@
   --popover: oklch(0.985 0 0);
   --popover-foreground: oklch(0.12 0 0);
 
-  /* Primary Brand: Corporate Blue (Pure Blue) */
-  --primary: oklch(0.45 0.18 242);
+  /* Primary Brand: Reference Blue (#455DDC) */
+  --primary: oklch(0.53 0.19 263);
   /* papaltan */
   /* Base Brand (Standard) */
   --primary-foreground: oklch(0.985 0 0);
@@ -32,38 +32,49 @@
 
   --border: oklch(0.85 0 0);
   --input: oklch(0.85 0 0);
-  --ring: oklch(0.45 0.18 242 / 0.4);
+  --ring: oklch(0.53 0.19 263 / 0.4);
   --radius: 0.625rem;
 
-  /* Soft background to reduce eye strain */
-  --background: oklch(0.94 0 0);
-  --foreground: oklch(0.1 0 0);
+  /* Soft professional background */
+  --background: oklch(0.98 0.005 263);
+  --foreground: oklch(0.12 0.02 263);
 
-  --chart-1: oklch(0.45 0.2 250);
-  /* Primary Blue */
-  --chart-2: oklch(0.6 0.18 145);
-  /* Teal/Emerald */
-  --chart-3: oklch(0.55 0.15 200);
-  /* Cyan */
-  --chart-4: oklch(0.75 0.16 80);
-  /* Amber */
-  --chart-5: oklch(0.60 0.23 25);
-  /* Rose/Red */
+  /* Reference-matched palette from provided image (#455DDC, #F73463, etc.) */
+  --chart-1: oklch(0.53 0.19 263);
+  /* Vibrant Blue (#455DDC) */
+  --chart-2: oklch(0.76 0.17 167);
+  /* Vibrant Teal (#43D1A7) */
+  --chart-3: oklch(0.72 0.20 54);
+  /* Vibrant Orange (#FF862E) */
+  --chart-4: oklch(0.57 0.24 292);
+  /* Vibrant Purple (#9646EF) */
+  --chart-5: oklch(0.60 0.24 15);
+  /* Vibrant Rose (#F73463) */
 
   /* Semantic Chart Tokens */
-  --chart-danger: oklch(0.60 0.23 25);
-  /* Resignations / Negative Trend */
-  --chart-warning: oklch(0.78 0.18 85);
-  /* Target / Warning Threshold */
+  --chart-danger: oklch(0.60 0.24 15);
+  /* Rose (#F73463) */
+  --chart-warning: oklch(0.72 0.20 54);
+  /* Orange (#FF862E) */
+  --chart-target: oklch(0.65 0.22 54);
+  /* Punchy Gold/Amber — High visibility for targets in Light Mode */
   --chart-axis: oklch(0.55 0 0);
   /* Axis Ticks / Grid Lines */
+  --chart-grid: oklch(0.85 0.01 263);
+  /* Visible but subtle grid lines for Light Mode */
   --chart-bg-stripe: oklch(0.92 0 0);
   /* Bar Background Stripe */
 
-  /* Sidebar: Professional Depth */
-  --sidebar: oklch(0.93 0 0);
-  --sidebar-foreground: oklch(0.15 0 0);
-  --sidebar-primary: oklch(0.45 0.18 242);
+  /* Status Tokens */
+  --status-success: oklch(0.62 0.15 150);
+  --status-warning: oklch(0.72 0.20 54);
+  --status-error: oklch(0.60 0.24 15);
+  --status-info: oklch(0.53 0.19 263);
+
+  /* Sidebar: Professional Depth (Subtle Blue Tint) */
+  --sidebar: oklch(0.96 0.01 263);
+  --sidebar-foreground: oklch(0.15 0.02 263);
+  --sidebar-primary: oklch(0.53 0.19 263);
   /* papaltan */
   /* Light Mode Selective State Background */
   /* Clear Brand Blue Active */
@@ -74,7 +85,7 @@
   --sidebar-accent-foreground: var(--foreground);
 
   --sidebar-border: oklch(0.85 0 0);
-  --sidebar-ring: oklch(0.45 0.18 242 / 0.5);
+  --sidebar-ring: oklch(0.53 0.19 263 / 0.5);
 
   /* --- BRAND SEMANTICS (PILTOVER) --- */
   /* Focus: Centralized points of change for the Hand of Noxus. */
@@ -140,11 +151,19 @@
   --color-brand-card: var(--brand-card);
   --color-brand-border: var(--brand-border);
 
+
+
   /* Semantic Chart Utilities */
   --color-chart-danger: var(--chart-danger);
   --color-chart-warning: var(--chart-warning);
   --color-chart-axis: var(--chart-axis);
   --color-chart-bg-stripe: var(--chart-bg-stripe);
+
+  /* Status Utilities */
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-error: var(--status-error);
+  --color-status-info: var(--status-info);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -216,15 +235,17 @@ body {
   --input: oklch(1 0 0 / 20%);
   --ring: oklch(0.556 0 0);
 
-  --chart-1: oklch(0.488 0.243 264.376);
-
-  --chart-2: oklch(0.696 0.17 162.48);
-
-  --chart-3: oklch(0.769 0.188 70.08);
-
-  --chart-4: oklch(0.627 0.265 303.9);
-
-  --chart-5: oklch(0.645 0.246 16.439);
+  /* Dark Mode: Attenuated vibrant palette — same hues, lower chroma for comfort */
+  --chart-1: oklch(0.58 0.14 263);
+  /* Muted Vibrant Blue */
+  --chart-2: oklch(0.70 0.12 167);
+  /* Muted Vibrant Teal */
+  --chart-3: oklch(0.76 0.14 54);
+  /* Muted Vibrant Orange */
+  --chart-4: oklch(0.62 0.15 292);
+  /* Muted Vibrant Purple */
+  --chart-5: oklch(0.63 0.15 15);
+  /* Muted Vibrant Rose */
 
   --sidebar: oklch(0.205 0 0);
 
@@ -250,13 +271,17 @@ body {
   --brand-background: oklch(0.1 0 0);
   --brand-card: oklch(0.13 0 0);
 
-  /* Dark Mode Semantic Chart Overrides */
-  --chart-danger: oklch(0.65 0.24 25);
-  /* Brighter Rose for dark backgrounds */
-  --chart-warning: oklch(0.82 0.18 85);
-  /* Brighter Amber for dark backgrounds */
+  /* Dark Mode Semantic Chart Overrides — attenuated vibrant */
+  --chart-danger: oklch(0.63 0.15 15);
+  /* Muted Vibrant Rose */
+  --chart-warning: oklch(0.76 0.14 54);
+  /* Muted Vibrant Orange */
+  --chart-target: oklch(0.76 0.14 54);
+  /* Same as Warning for Dark Mode threshold visibility */
   --chart-axis: oklch(0.45 0 0);
   /* Dimmer axis ticks in dark mode */
+  /* Visible grid lines for Dark Mode comfort */
+  --chart-grid: oklch(0.35 0.01 263);
   --chart-bg-stripe: oklch(0.25 0 0);
   /* Dark bar background stripe */
 }
