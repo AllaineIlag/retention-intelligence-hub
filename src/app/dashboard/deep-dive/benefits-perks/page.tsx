@@ -22,49 +22,34 @@ export default async function BenefitsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-6">Benefits & Perks</h1>
+            {/* Header handled by root layout */}
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl col-span-2">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Response Trend (Count over Time)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <MultiSeriesTrendDeepDive
-                            initialData={trendData}
-                            options={options}
-                            questionKey={questionKey}
-                        />
-                    </CardContent>
-                </Card>
+                <div className="col-span-1 md:col-span-2">
+                    <MultiSeriesTrendDeepDive
+                        initialData={trendData}
+                        options={options}
+                        questionKey={questionKey}
+                    />
+                </div>
 
                 {/* 2. The Heatmap (Department) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Department (Average Score)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DepartmentScoreDeepDive
-                            initialData={deptData}
-                            questionKey={questionKey}
-                        />
-                    </CardContent>
-                </Card>
+                <div>
+                    <DepartmentScoreDeepDive
+                        initialData={deptData}
+                        questionKey={questionKey}
+                    />
+                </div>
 
                 {/* 3. The Correlation (Root Cause) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Root Cause Analysis</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <CorrelationDeepDive
-                            initialData={correlationData}
-                            metricLabel="Benefits"
-                            questionKey={questionKey}
-                        />
-                    </CardContent>
-                </Card>
+                <div>
+                    <CorrelationDeepDive
+                        initialData={correlationData}
+                        metricLabel="Benefits"
+                        questionKey={questionKey}
+                    />
+                </div>
             </div>
         </div>
     )

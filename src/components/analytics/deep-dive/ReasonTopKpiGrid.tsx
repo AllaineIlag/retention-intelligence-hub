@@ -13,7 +13,7 @@ export async function ReasonTopKpiGrid() {
     ]);
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-2 duration-500 h-[140px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-2 duration-500">
 
             {/* 1. Top Reason */}
             <TopExitReasonCard

@@ -77,14 +77,13 @@ export function DepartmentClusterChart({ data }: DepartmentClusterChartProps) {
                 <BarChart
                     data={data}
                     layout="vertical"
-                    margin={{ top: 10, right: 30, left: 40, bottom: 0 }}
+                    margin={{ top: 10, right: 30, left: 10, bottom: 0 }}
                     stackOffset="expand" // This makes it a 100% stacked bar chart
                 >
                     <CartesianGrid
                         strokeDasharray="3 3"
                         horizontal={false}
-                        stroke="var(--border)"
-                        opacity={0.1}
+                        stroke="var(--chart-grid)"
                     />
                     <XAxis
                         type="number"
@@ -101,9 +100,10 @@ export function DepartmentClusterChart({ data }: DepartmentClusterChartProps) {
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
-                        width={100}
+                        width={130}
+                        interval={0}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.4 }} />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
 
                     {allKeys.map((key, index) => (

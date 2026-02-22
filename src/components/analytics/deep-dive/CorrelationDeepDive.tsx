@@ -7,6 +7,7 @@ import { startOfMonth, endOfMonth, subMonths, startOfYear, subDays } from 'date-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CorrelationCard } from './CorrelationCard';
 import { AnalyticsFilters } from '@/app/actions/analytics';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface CorrelationDeepDiveProps {
     initialData: CorrelationData;
@@ -21,7 +22,10 @@ export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: C
     const { pageFilter, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
-    // Sync local range with global page filter
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     useEffect(() => {
         if (version !== lastVersionRef.current) {
             lastVersionRef.current = version;
@@ -71,30 +75,35 @@ export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: C
     };
 
     return (
-        <div className="relative">
-            <div className="absolute top-[-3.5rem] right-0 z-10 flex gap-2">
-                <Select value={range} onValueChange={handleRangeChange}>
-                    <SelectTrigger className="h-8 w-[130px] bg-accent/50 border-border text-xs">
-                        <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent className="border-border bg-popover text-popover-foreground">
-                        <SelectItem value="7d">Last 7 Days</SelectItem>
-                        <SelectItem value="30d">Last 30 Days</SelectItem>
-                        <SelectItem value="3m">Last 3 Months</SelectItem>
-                        <SelectItem value="6m">Last 6 Months</SelectItem>
-                        <SelectItem value="12m">Last 12 Months</SelectItem>
-                        <SelectItem value="ytd">Year to Date</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            {isLoading && (
-                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Root Cause Analysis</CardTitle>
+                <div className="shrink-0">
+                    {isMounted && (
+                        <Select value={range} onValueChange={handleRangeChange}>
+                            <SelectTrigger className="h-8 w-[130px] bg-accent/50 border-border text-xs">
+                                <SelectValue placeholder="Select range" />
+                            </SelectTrigger>
+                            <SelectContent className="border-border bg-popover text-popover-foreground">
+                                <SelectItem value="7d">Last 7 Days</SelectItem>
+                                <SelectItem value="30d">Last 30 Days</SelectItem>
+                                <SelectItem value="3m">Last 3 Months</SelectItem>
+                                <SelectItem value="6m">Last 6 Months</SelectItem>
+                                <SelectItem value="12m">Last 12 Months</SelectItem>
+                                <SelectItem value="ytd">Year to Date</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
-            )}
-
-            <CorrelationCard data={data} metricLabel={metricLabel} />
-        </div>
+            </CardHeader>
+            <CardContent className="flex-1 relative pt-4">
+                {isLoading && (
+                    <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                )}
+                <CorrelationCard data={data} metricLabel={metricLabel} />
+            </CardContent>
+        </Card>
     );
 }

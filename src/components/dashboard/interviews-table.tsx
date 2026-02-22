@@ -666,27 +666,27 @@ function DataTable({
     return (
         <div className="space-y-4">
             {/* Table */}
-            <div className="rounded-xl border border-border bg-card/50 shadow-sm overflow-hidden line-clamp-none">
+            <div className="rounded-xl border border-border/50 bg-background/60 backdrop-blur-md shadow-2xl dark:shadow-black/50 overflow-hidden line-clamp-none">
                 <div className="h-[calc(100vh-320px)] w-full overflow-auto relative scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-                    <Table>
-                        <TableHeader className="bg-card/95 backdrop-blur-sm sticky top-0 z-10 shadow-[0_1px_0_0_var(--color-border)]">
+                    <Table className="min-w-[850px]">
+                        <TableHeader className="bg-card/40 backdrop-blur-xl sticky top-0 z-10 shadow-[0_1px_0_0_var(--color-border)]">
                             <TableRow className="hover:bg-transparent border-none">
-                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground pl-6">
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground pl-6 w-[280px]">
                                     <button onClick={() => handleSort('employee')} className="flex items-center gap-1 hover:text-foreground transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded-sm py-1 -ml-1 px-1">
                                         Employee <ArrowUpDown className="h-3 w-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground w-[180px]">
                                     <button onClick={() => handleSort('status')} className="flex items-center gap-1 hover:text-foreground transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded-sm py-1 -ml-1 px-1">
                                         Status <ArrowUpDown className="h-3 w-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground w-[160px]">
                                     <button onClick={() => handleSort('date')} className="flex items-center gap-1 hover:text-foreground transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-brand-primary rounded-sm py-1 -ml-1 px-1">
                                         Date <ArrowUpDown className="h-3 w-3" />
                                     </button>
                                 </TableHead>
-                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground text-right pr-6">Action</TableHead>
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground text-right pr-6 w-[230px]">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -736,10 +736,10 @@ function DataTable({
                                         </TableCell>
                                         <TableCell className="text-right pr-6">
                                             {tabType === 'pending_requests' ? (
-                                                <>
+                                                <div className="flex items-center justify-end gap-2">
                                                     <Button
                                                         size="sm"
-                                                        className="bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg shadow-brand-primary/20"
+                                                        className="bg-brand-primary hover:bg-brand-primary/90 text-white shadow-lg shadow-brand-primary/20 shrink-0"
                                                         onClick={() => onSchedule(interview)}
                                                     >
                                                         Accept & Schedule
@@ -747,26 +747,30 @@ function DataTable({
                                                     <Button
                                                         size="sm"
                                                         variant="destructive"
-                                                        className="ml-2"
+                                                        className="shrink-0"
                                                         onClick={() => onDecline(interview)}
                                                     >
                                                         Decline
                                                     </Button>
-                                                </>
+                                                </div>
                                             ) : tabType === 'pending_interview' ? (
-                                                <Button asChild size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20">
-                                                    <Link href={`/dashboard/interview/${interview.id}`}>
-                                                        Go to Interview
-                                                        <ArrowRight className="ml-2 h-3 w-3" />
-                                                    </Link>
-                                                </Button>
+                                                <div className="flex justify-end">
+                                                    <Button asChild size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20 shrink-0">
+                                                        <Link href={`/dashboard/interview/${interview.id}`}>
+                                                            Go to Interview
+                                                            <ArrowRight className="ml-2 h-3 w-3" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             ) : (
-                                                <Button asChild size="sm" variant="default" className="bg-muted/50 hover:bg-accent text-muted-foreground hover:text-accent-foreground shadow-none border border-border">
-                                                    <Link href={`/dashboard/interview/${interview.id}`}>
-                                                        {interview.status === 'completed' ? 'View Report' : 'View Case'}
-                                                        <ArrowRight className="ml-2 h-3 w-3" />
-                                                    </Link>
-                                                </Button>
+                                                <div className="flex justify-end">
+                                                    <Button asChild size="sm" variant="default" className="bg-muted/50 hover:bg-accent text-muted-foreground hover:text-accent-foreground shadow-none border border-border shrink-0">
+                                                        <Link href={`/dashboard/interview/${interview.id}`}>
+                                                            {interview.status === 'completed' ? 'View Report' : 'View Case'}
+                                                            <ArrowRight className="ml-2 h-3 w-3" />
+                                                        </Link>
+                                                    </Button>
+                                                </div>
                                             )}
                                         </TableCell>
                                     </TableRow>

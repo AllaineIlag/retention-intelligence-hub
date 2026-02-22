@@ -41,7 +41,7 @@ export function DepartmentScoreChart({ data }: DepartmentScoreChartProps) {
                     layout="vertical"
                     margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.1} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--chart-grid)" />
 
                     <XAxis
                         type="number"
@@ -64,7 +64,7 @@ export function DepartmentScoreChart({ data }: DepartmentScoreChartProps) {
                     />
 
                     <Tooltip
-                        cursor={{ fill: 'currentColor', opacity: 0.05 }}
+                        cursor={{ fill: 'var(--muted)', opacity: 0.4 }}
                         contentStyle={{
                             backgroundColor: 'var(--popover)',
                             borderColor: 'var(--border)',

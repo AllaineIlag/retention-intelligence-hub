@@ -29,7 +29,7 @@ export default async function ReasonForLeavingPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground mb-6">Reason for Leaving</h1>
+            {/* Header handled by root layout */}
 
             {/* SECTOR 1: Top KPIs */}
             <ReasonTopKpiGrid />
@@ -42,45 +42,21 @@ export default async function ReasonForLeavingPage() {
                 initialButterfly={butterflyData}
             />
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl col-span-2">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Trend (Frequency over Time)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="mt-4">
-                            <AttritionTrendDeepDive initialData={trendData} />
-                        </div>
-                    </CardContent>
-                </Card>
+                <div className="col-span-1 md:col-span-2">
+                    <AttritionTrendDeepDive initialData={trendData} />
+                </div>
 
                 {/* 2. The Cluster (Reason by Dept) */}
-                {/* 2. The Cluster (Reason by Dept) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Cluster Analysis (Reason by Dept)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="mt-4">
-                            <DepartmentClusterDeepDive initialData={clusterData} />
-                        </div>
-                    </CardContent>
-                </Card>
+                <div>
+                    <DepartmentClusterDeepDive initialData={clusterData} />
+                </div>
 
                 {/* 3. The Demographic (Risk Profile) */}
-                {/* 3. The Demographic (Risk Profile) */}
-                <Card className="bg-card/50 border-border backdrop-blur-xl">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Demographic Risk (Tenure)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="mt-4">
-                            <DemographicRiskDeepDive initialData={riskData} />
-                        </div>
-                    </CardContent>
-                </Card>
-
+                <div>
+                    <DemographicRiskDeepDive initialData={riskData} />
+                </div>
             </div>
         </div>
     );

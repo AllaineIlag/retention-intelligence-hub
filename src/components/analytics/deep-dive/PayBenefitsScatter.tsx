@@ -27,7 +27,7 @@ const mockData = [
 
 export function PayBenefitsScatter() {
     return (
-        <Card className="bg-[#1a1a1c]/50 border-white/5 backdrop-blur-xl">
+        <Card className="bg-card/50 border-border backdrop-blur-xl">
             <CardHeader>
                 <CardTitle className="text-sm font-medium text-gray-400">Total Rewards Analysis (Magic Quadrant)</CardTitle>
                 <CardDescription className="text-xs text-muted-foreground">
@@ -38,7 +38,7 @@ export function PayBenefitsScatter() {
                 <div className="h-[400px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
 
                             {/* X-Axis: Pay Satisfaction */}
                             <XAxis
@@ -47,12 +47,12 @@ export function PayBenefitsScatter() {
                                 name="Pay Satisfaction"
                                 unit=""
                                 domain={[0, 5]}
-                                stroke="#6b7280"
+                                stroke="var(--muted-foreground)"
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
                             >
-                                <Label value="Pay Satisfaction" offset={0} position="insideBottom" fill="#6b7280" style={{ fontSize: '11px' }} />
+                                <Label value="Pay Satisfaction" offset={0} position="insideBottom" fill="var(--muted-foreground)" style={{ fontSize: '11px' }} />
                             </XAxis>
 
                             {/* Y-Axis: Benefits Satisfaction */}
@@ -62,12 +62,12 @@ export function PayBenefitsScatter() {
                                 name="Benefits Satisfaction"
                                 unit=""
                                 domain={[0, 5]}
-                                stroke="#6b7280"
+                                stroke="var(--muted-foreground)"
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
                             >
-                                <Label value="Benefits Satisfaction" angle={-90} position="insideLeft" fill="#6b7280" style={{ fontSize: '11px' }} />
+                                <Label value="Benefits Satisfaction" angle={-90} position="insideLeft" fill="var(--muted-foreground)" style={{ fontSize: '11px' }} />
                             </YAxis>
 
                             <ZAxis type="number" dataKey="size" range={[50, 400]} name="Headcount" />
@@ -78,12 +78,12 @@ export function PayBenefitsScatter() {
                                     if (active && payload && payload.length) {
                                         const data = payload[0].payload;
                                         return (
-                                            <div className="bg-[#1f2937] border border-white/10 p-3 rounded-lg shadow-xl">
-                                                <p className="font-bold text-white mb-1">{data.department}</p>
-                                                <div className="text-xs text-gray-400 space-y-1">
-                                                    <div>Pay Score: <span className="text-white">{data.pay}</span></div>
-                                                    <div>Benefits Score: <span className="text-white">{data.benefits}</span></div>
-                                                    <div>Headcount: <span className="text-white">{data.size}</span></div>
+                                            <div className="bg-popover border border-border p-3 rounded-lg shadow-xl">
+                                                <p className="font-bold text-popover-foreground mb-1">{data.department}</p>
+                                                <div className="text-xs text-muted-foreground space-y-1">
+                                                    <div>Pay Score: <span className="text-foreground">{data.pay}</span></div>
+                                                    <div>Benefits Score: <span className="text-foreground">{data.benefits}</span></div>
+                                                    <div>Headcount: <span className="text-foreground">{data.size}</span></div>
                                                 </div>
                                             </div>
                                         );
@@ -93,8 +93,8 @@ export function PayBenefitsScatter() {
                             />
 
                             {/* Magic Quadrant Reference Lines */}
-                            <ReferenceLine x={2.5} stroke="#374151" strokeDasharray="3 3" />
-                            <ReferenceLine y={2.5} stroke="#374151" strokeDasharray="3 3" />
+                            <ReferenceLine x={2.5} stroke="var(--border)" strokeDasharray="3 3" />
+                            <ReferenceLine y={2.5} stroke="var(--border)" strokeDasharray="3 3" />
 
                             {/* Quadrant Labels */}
                             <ReferenceLine segment={[{ x: 0, y: 5 }, { x: 2.5, y: 5 }]} stroke="none" label={{ position: 'insideTopLeft', value: 'ANCHORED', fill: '#f59e0b', fontSize: 10, opacity: 0.5 }} />

@@ -69,7 +69,7 @@ export function PushPullChart({ title, subtitle, data, colors, className, action
                             />
                             <Tooltip
                                 content={<CustomTooltip color={colors[1]} />}
-                                cursor={{ fill: 'currentColor', opacity: 0.05, radius: 4 }}
+                                cursor={{ fill: 'var(--muted)', opacity: 0.4, radius: 4 }}
                             />
                             <Bar dataKey="value" radius={[0, 4, 4, 0]} animationDuration={1000}>
                                 {sortedData.map((entry, index) => (

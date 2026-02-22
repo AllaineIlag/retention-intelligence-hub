@@ -8,7 +8,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Ban } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,52 +29,49 @@ interface DeclinedTableProps {
 export default function DeclinedTable({ initialAccounts = [] }: DeclinedTableProps) {
     if (initialAccounts.length === 0) {
         return (
-            <Card className="border-white/5 bg-white/[0.02]">
-                <CardHeader>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                        <Ban className="h-5 w-5" />
-                        <CardTitle className="text-lg">Declined Accounts</CardTitle>
-                    </div>
-                    <CardDescription>No declined accounts. All requests were approved.</CardDescription>
-                </CardHeader>
-            </Card>
+            <div className="mb-8 rounded-xl border border-border bg-card/50 p-6 flex flex-col items-center justify-center text-center">
+                <Ban className="h-8 w-8 text-muted-foreground mb-2" />
+                <h3 className="text-lg font-medium text-foreground">No Declined Accounts</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">There are currently no declined access requests in the system.</p>
+            </div>
         );
     }
 
     return (
-        <Card className="border-red-500/10 bg-red-500/[0.02]">
-            <CardHeader className="pb-3">
-                <div className="flex items-center gap-2 text-red-400">
+        <div className="space-y-4 mb-8">
+            <div className="flex flex-col gap-1 px-1">
+                <h2 className="text-lg font-medium flex items-center gap-2 text-status-error">
                     <Ban className="h-5 w-5" />
-                    <CardTitle className="text-lg text-white">Declined Accounts</CardTitle>
-                </div>
-                <CardDescription>
+                    Declined Accounts
+                </h2>
+                <p className="text-sm text-muted-foreground">
                     {initialAccounts.length} account{initialAccounts.length !== 1 ? 's' : ''} denied access.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="rounded-md border border-red-500/10 bg-background/50">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent border-red-500/10">
-                                <TableHead className="h-9 text-xs">User</TableHead>
-                                <TableHead className="h-9 text-xs">Requested</TableHead>
-                                <TableHead className="h-9 text-xs text-right">Status</TableHead>
+                </p>
+            </div>
+
+            <div className="rounded-xl border border-border/50 bg-background/60 backdrop-blur-md shadow-2xl dark:shadow-black/50 overflow-hidden line-clamp-none">
+                <div className="w-full overflow-auto relative scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+                    <Table className="min-w-[600px]">
+                        <TableHeader className="bg-card/40 backdrop-blur-xl sticky top-0 z-10 shadow-[0_1px_0_0_var(--color-border)]">
+                            <TableRow className="hover:bg-transparent border-none">
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground pl-6 w-[280px]">User</TableHead>
+                                <TableHead className="text-xs uppercase tracking-wider font-semibold text-muted-foreground w-[200px]">Requested</TableHead>
+                                <TableHead className="text-right text-xs uppercase tracking-wider font-semibold text-muted-foreground pr-6 w-[120px]">Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {initialAccounts.map((account) => (
-                                <TableRow key={account.id} className="hover:bg-red-500/5 border-red-500/10">
-                                    <TableCell className="py-3">
+                                <TableRow key={account.id} className="hover:bg-muted/50 border-border group transition-colors">
+                                    <TableCell className="py-3 pl-6">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="h-8 w-8 border border-red-500/20">
+                                            <Avatar className="h-8 w-8 border-status-error/20">
                                                 <AvatarImage src={account.avatar_url || ''} />
-                                                <AvatarFallback className="bg-red-500/10 text-xs text-red-400">
+                                                <AvatarFallback className="bg-status-error/10 text-xs text-status-error">
                                                     {(account.full_name || account.email || '?').substring(0, 2).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-medium text-zinc-200">
+                                                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                                                     {account.full_name || 'Unknown User'}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
@@ -87,9 +83,9 @@ export default function DeclinedTable({ initialAccounts = [] }: DeclinedTablePro
                                     <TableCell className="text-xs text-muted-foreground">
                                         {formatDistanceToNow(new Date(account.created_at), { addSuffix: true })}
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-red-500/20 bg-red-500/10 text-[10px] font-medium text-red-400">
-                                            <span className="h-1.5 w-1.5 rounded-full bg-red-400" />
+                                    <TableCell className="text-right pr-6">
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border-status-error/20 bg-status-error/10 text-[10px] font-medium text-status-error">
+                                            <span className="h-1.5 w-1.5 rounded-full bg-status-error" />
                                             Declined
                                         </div>
                                     </TableCell>
@@ -98,7 +94,7 @@ export default function DeclinedTable({ initialAccounts = [] }: DeclinedTablePro
                         </TableBody>
                     </Table>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

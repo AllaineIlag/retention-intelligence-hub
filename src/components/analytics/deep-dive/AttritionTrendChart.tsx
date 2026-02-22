@@ -75,8 +75,7 @@ export function AttritionTrendChart({ data }: AttritionTrendChartProps) {
                     <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke="var(--border)"
-                        opacity={0.1}
+                        stroke="var(--chart-grid)"
                     />
                     <XAxis
                         dataKey="month"

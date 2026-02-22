@@ -31,7 +31,7 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
         <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.1} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
 
                     <XAxis
                         dataKey="month"
@@ -50,6 +50,7 @@ export function MultiSeriesTrendChart({ data, options }: MultiSeriesTrendChartPr
                     />
 
                     <Tooltip
+                        cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.2 }}
                         contentStyle={{
                             backgroundColor: 'var(--popover)',
                             borderColor: 'var(--border)',

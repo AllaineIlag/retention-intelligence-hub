@@ -65,13 +65,12 @@ export function DepartmentHeatmap({ data }: DepartmentHeatmapProps) {
                 <BarChart
                     data={data}
                     layout="vertical" // Horizontal Bar Chart
-                    margin={{ top: 10, right: 30, left: 40, bottom: 0 }} // Increased left margin for labels
+                    margin={{ top: 10, right: 30, left: 10, bottom: 0 }} // Increased left margin for labels
                 >
                     <CartesianGrid
                         strokeDasharray="3 3"
                         horizontal={false} // Vertical grid lines only for horizontal bars
-                        stroke="var(--border)"
-                        opacity={0.1}
+                        stroke="var(--chart-grid)"
                     />
                     <XAxis
                         type="number"
@@ -88,9 +87,10 @@ export function DepartmentHeatmap({ data }: DepartmentHeatmapProps) {
                         fontSize={11} // Slightly smaller for long names
                         tickLine={false}
                         axisLine={false}
-                        width={100} // Ensure space for labels
+                        width={130} // Ensure space for labels
+                        interval={0}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'currentColor', opacity: 0.05 }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.4 }} />
                     <Bar
                         dataKey="count"
                         radius={[0, 4, 4, 0]} // Round right corners

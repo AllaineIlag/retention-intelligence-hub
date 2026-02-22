@@ -38,7 +38,7 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
                         </linearGradient>
                     </defs>
 
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.1} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" />
 
                     <XAxis
                         dataKey="month"
@@ -59,6 +59,7 @@ export function ScoreTrendChart({ data, color = '#6366f1' }: ScoreTrendChartProp
                     />
 
                     <Tooltip
+                        cursor={{ stroke: 'var(--muted-foreground)', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.2 }}
                         contentStyle={{
                             backgroundColor: 'var(--popover)',
                             borderColor: 'var(--border)',

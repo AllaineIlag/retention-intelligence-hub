@@ -35,10 +35,6 @@ export default async function RecruitmentPage() {
 
         return (
             <div className="flex flex-col gap-6 p-8 max-w-7xl mx-auto">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent mb-1">Team</h1>
-                    <p className="text-muted-foreground text-sm">Your active team of interviewers.</p>
-                </div>
                 <TeamMembersTable initialMembers={initialMembers as any} />
             </div>
         );
@@ -57,27 +53,18 @@ export default async function RecruitmentPage() {
 
     return (
         <div className="flex flex-col gap-6 p-8 max-w-7xl mx-auto">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-zinc-500 bg-clip-text text-transparent mb-1">
-                    Recruitment
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                    Invite, review, and manage all interviewer accounts.
-                </p>
-            </div>
-
             <Tabs defaultValue="pending" className="w-full">
-                <TabsList className="bg-white/5 border border-white/10 mb-6">
+                <TabsList className="bg-muted/50 border border-border mb-6">
                     <TabsTrigger
                         value="invite"
-                        className="gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
                     >
                         <LinkIcon className="h-3.5 w-3.5" />
                         Invite
                     </TabsTrigger>
                     <TabsTrigger
                         value="pending"
-                        className="gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
                         Pending Requests
@@ -89,14 +76,14 @@ export default async function RecruitmentPage() {
                     </TabsTrigger>
                     <TabsTrigger
                         value="team"
-                        className="gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
                     >
                         <ShieldCheck className="h-3.5 w-3.5" />
                         Active Team
                     </TabsTrigger>
                     <TabsTrigger
                         value="declined"
-                        className="gap-2 data-[state=active]:bg-white/10 data-[state=active]:text-white text-zinc-400"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
                     >
                         <Ban className="h-3.5 w-3.5" />
                         Declined

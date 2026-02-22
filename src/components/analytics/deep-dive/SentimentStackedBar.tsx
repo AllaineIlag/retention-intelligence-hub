@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, CartesianGrid } from "recharts"
 import { cn } from "@/lib/utils"
 
 interface SentimentBucket {
@@ -47,6 +47,7 @@ export function SentimentStackedBar({ data, className }: SentimentStackedBarProp
                     <div className="h-[280px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData} layout="vertical" barCategoryGap="20%">
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--chart-grid)" />
                                 <XAxis type="number" domain={[0, 100]} tickFormatter={(v) => `${v}%`}
                                     tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
                                 <YAxis type="category" dataKey="category" width={70}
