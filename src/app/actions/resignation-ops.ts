@@ -190,7 +190,8 @@ export async function createResignation(data: {
     department: string,
     businessUnit: string,
     intermediateSupervisor: string,
-    lastWorkingDay: Date
+    lastWorkingDay: Date,
+    directoryId?: string
 }) {
     const supabaseAdmin = createAdminClient();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -264,7 +265,8 @@ export async function createResignation(data: {
         .insert({
             employee_id: userId,
             status: 'pending_exit_form', // Initial state
-            last_working_day: data.lastWorkingDay.toISOString()
+            last_working_day: data.lastWorkingDay.toISOString(),
+            directory_id: data.directoryId
         } as any)
         .select()
         .single();

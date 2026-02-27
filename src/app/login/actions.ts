@@ -9,37 +9,32 @@ import { redirect } from 'next/navigation';
 
 
 
-export async function loginWithGoogle() {
-    let result;
+export async function login(formData: FormData) {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) {
+        return { success: false, message: 'Email and password are required.' };
+    }
+
     try {
         const supabase = await createClient();
-        const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_SITE_URL;
-
-        console.log('[Auth] Initiating Google OAuth');
-
-        result = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: `${origin}/auth/callback`,
-                queryParams: {
-                    access_type: 'offline',
-                    prompt: 'consent',
-                },
-            },
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
         });
+
+        if (error) {
+            console.error('[Auth] Login Error:', error);
+            return { success: false, message: error.message };
+        }
+
+        redirect('/dashboard');
     } catch (error) {
-        console.error('[Auth] Google Login Exception:', error);
-        return { success: false, message: 'An unexpected error occurred during Google login.' };
+        if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+            throw error;
+        }
+        console.error('[Auth] Login Exception:', error);
+        return { success: false, message: 'An unexpected error occurred during login.' };
     }
-
-    if (result.error) {
-        console.error('[Auth] Google OAuth Error:', result.error);
-        return { success: false, message: result.error.message };
-    }
-
-    if (result.data.url) {
-        redirect(result.data.url);
-    }
-
-    return { success: false, message: 'No redirect URL returned from Supabase.' };
 }

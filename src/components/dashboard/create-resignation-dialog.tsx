@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Plus } from "lucide-react"
+import { Plus, Search, Loader2, UserCheck, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -23,88 +23,105 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { getDepartments } from "@/app/actions/dashboard"
+import { searchDirectory } from "@/app/actions/directory"
+import { createResignation } from "@/app/actions/resignation-ops"
+import { DEPARTMENTS, BUSINESS_UNITS, INTERMEDIATE_SUPERVISORS } from "@/constants/enums"
+import { useDebounce } from "@/hooks/use-debounce"
+import { Badge } from "@/components/ui/badge"
 
 export function CreateResignationDialog() {
     const [open, setOpen] = React.useState(false)
-    const [loading, setLoading] = React.useState(false)
-    const [departments, setDepartments] = React.useState<string[]>([])
     const [isMounted, setIsMounted] = React.useState(false)
-    const [lastWorkingDay, setLastWorkingDay] = React.useState<string>('') // Simple date string for now
 
     React.useEffect(() => {
         setIsMounted(true)
     }, [])
-
-    React.useEffect(() => {
-        if (open) {
-            getDepartments().then(res => {
-                if (res.success && res.data) {
-                    setDepartments(res.data)
-                }
-            })
-        }
-    }, [open])
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-
-        const formData = new FormData(e.target as HTMLFormElement)
-        const name = formData.get('name') as string
-        const email = formData.get('email') as string
-        const department = formData.get('department') as string // This might need extracting from Select state if not standard form behavior
-        // Actually Radix UI select doesn't always work with FormData natively without hidden input.
-        // But since we have state for departments, let's assume we can get it from form if name is set on hidden input, but Shadcn Select usually needs controlled state or hidden input manually.
-        // Let's rely on controlled state or simple `e.currentTarget` access if possible.
-        // To be safe, let's just grab the values.
-
-        // Wait, standard Shadcn Select doesn't inject hidden input unless we add it. 
-        // Let's use controlled state for select.
-    }
-
-    // Rewrite component structure to separate form logic or use refs/state.
-    // I'll implementing a robust form handling inside based on the previous code.
-    // Importing the action at the top.
-
-    // ... logic below in replacement content
 
     if (!isMounted) return null
 
     return <CreateResignationDialogContent open={open} setOpen={setOpen} />
 }
 
-import { createResignation } from "@/app/actions/resignation-ops"
-import { DEPARTMENTS, BUSINESS_UNITS, INTERMEDIATE_SUPERVISORS } from "@/constants/enums"
-
 function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setOpen: (o: boolean) => void }) {
     const [loading, setLoading] = React.useState(false)
+    const [searchQuery, setSearchQuery] = React.useState("")
+    const [searchResults, setSearchResults] = React.useState<any[]>([])
+    const [isSearching, setIsSearching] = React.useState(false)
+    const [selectedEmployee, setSelectedEmployee] = React.useState<any | null>(null)
+    const [lastWorkingDay, setLastWorkingDay] = React.useState("")
+
+    // Explicitly using the select states for the manual overrides/selections
     const [selectedDept, setSelectedDept] = React.useState<string>("")
     const [selectedBU, setSelectedBU] = React.useState<string>("")
     const [selectedSupervisor, setSelectedSupervisor] = React.useState<string>("")
 
+    const debouncedSearch = useDebounce(searchQuery, 300)
+
+    React.useEffect(() => {
+        if (debouncedSearch && debouncedSearch.length >= 2 && !selectedEmployee) {
+            setIsSearching(true)
+            searchDirectory(debouncedSearch).then(res => {
+                if (res.success) {
+                    setSearchResults(res.data || [])
+                }
+                setIsSearching(false)
+            })
+        } else {
+            setSearchResults([])
+        }
+    }, [debouncedSearch, selectedEmployee])
+
+    React.useEffect(() => {
+        if (!open) {
+            setSelectedEmployee(null)
+            setSearchQuery("")
+            setLastWorkingDay("")
+            setSelectedDept("")
+            setSelectedBU("")
+            setSelectedSupervisor("")
+        }
+    }, [open])
+
+    const handleSelect = (employee: any) => {
+        setSelectedEmployee(employee)
+        setSearchQuery(employee.full_name)
+        setSelectedDept(employee.department || "")
+        setSelectedBU(employee.business_unit || "")
+        setSelectedSupervisor(employee.intermediate_supervisor || "")
+        setSearchResults([])
+    }
+
+    const resetSelection = () => {
+        setSelectedEmployee(null)
+        setSearchQuery("")
+        setSelectedDept("")
+        setSelectedBU("")
+        setSelectedSupervisor("")
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setLoading(true)
 
-        const formData = new FormData(e.target as HTMLFormElement)
-        const name = formData.get('name') as string
-        const email = formData.get('email') as string
-        const lwd = formData.get('lastWorkingDay') as string
-
-        if (!selectedDept || !selectedBU || !selectedSupervisor) {
-            toast.error("Please fill in all required fields")
-            setLoading(false)
+        if (!selectedEmployee) {
+            toast.error("Please select an employee from the directory")
             return
         }
 
+        if (!selectedDept || !selectedBU || !selectedSupervisor || !lastWorkingDay) {
+            toast.error("Please fill in all required fields")
+            return
+        }
+
+        setLoading(true)
+
         const res = await createResignation({
-            name,
-            email,
+            name: selectedEmployee.full_name,
+            email: selectedEmployee.email,
             department: selectedDept,
             businessUnit: selectedBU,
             intermediateSupervisor: selectedSupervisor,
-            lastWorkingDay: new Date(lwd)
+            lastWorkingDay: new Date(lastWorkingDay),
+            directoryId: selectedEmployee.id
         })
 
         if (res.success) {
@@ -138,81 +155,152 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                     <span className="hidden md:inline">Log Resignation</span>
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] border-border bg-background text-foreground rounded-2xl">
-                <DialogHeader>
-                    <DialogTitle>Log New Resignation</DialogTitle>
+            <DialogContent className="sm:max-w-[500px] border-border bg-background text-foreground rounded-2xl p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2">
+                    <DialogTitle className="text-xl">Log New Resignation</DialogTitle>
                     <DialogDescription className="text-muted-foreground">
-                        Manually initiate the exit process. System will invite the employee via email.
+                        Search the Internal Master Directory to initiate a resignation workflow.
                     </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name" className="text-muted-foreground">Employee Name</Label>
-                            <Input id="name" name="name" placeholder="John Doe" className="border-border bg-muted/20 text-foreground" required />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="email" className="text-muted-foreground">Work Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="border-border bg-muted/20 text-foreground" required />
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="department" className="text-muted-foreground">Department</Label>
-                            <Select value={selectedDept} onValueChange={setSelectedDept} required>
-                                <SelectTrigger className="border-border bg-muted/20 text-foreground">
-                                    <SelectValue placeholder="Select Dept" />
-                                </SelectTrigger>
-                                <SelectContent className="border-border bg-popover text-popover-foreground">
-                                    {DEPARTMENTS.map((d) => (
-                                        <SelectItem key={d} value={d}>{d}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-6">
+                    {/* SEARCH INPUT */}
+                    <div className="space-y-2 relative">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Employee Search</Label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by name or corporate email..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                disabled={!!selectedEmployee}
+                                className="pl-10 h-11 border-border/50 bg-muted/20 focus:bg-background transition-all rounded-xl"
+                            />
+                            {selectedEmployee && (
+                                <button
+                                    type="button"
+                                    onClick={resetSelection}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-background rounded-full transition-colors"
+                                >
+                                    <X className="h-4 w-4 text-muted-foreground" />
+                                </button>
+                            )}
+                            {isSearching && (
+                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
+                            )}
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="businessUnit" className="text-muted-foreground">Business Unit</Label>
-                            <Select value={selectedBU} onValueChange={setSelectedBU} required>
-                                <SelectTrigger className="border-border bg-muted/20 text-foreground">
-                                    <SelectValue placeholder="Select BU" />
-                                </SelectTrigger>
-                                <SelectContent className="border-border bg-popover text-popover-foreground">
-                                    {BUSINESS_UNITS.map((bu) => (
-                                        <SelectItem key={bu} value={bu}>{bu}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="supervisor" className="text-muted-foreground">Intermediate Supervisor</Label>
-                        <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor} required>
-                            <SelectTrigger className="border-border bg-muted/20 text-foreground">
-                                <SelectValue placeholder="Select Supervisor" />
-                            </SelectTrigger>
-                            <SelectContent className="border-border bg-popover text-popover-foreground">
-                                {INTERMEDIATE_SUPERVISORS.map((s) => (
-                                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                        {/* SEARCH RESULTS DROPDOWN */}
+                        {searchResults.length > 0 && (
+                            <div className="absolute top-full left-0 w-full mt-2 bg-card border border-border rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                {searchResults.map((emp) => (
+                                    <button
+                                        key={emp.id}
+                                        type="button"
+                                        onClick={() => handleSelect(emp)}
+                                        className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors border-b border-border/50 last:border-0"
+                                    >
+                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs uppercase">
+                                            {emp.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold truncate">{emp.full_name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+                                        </div>
+                                        <Badge variant="outline" className="text-[10px] shrink-0 border-primary/20 bg-primary/5 text-primary">
+                                            {emp.department}
+                                        </Badge>
+                                    </button>
                                 ))}
-                            </SelectContent>
-                        </Select>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="lastWorkingDay" className="text-muted-foreground">Last Working Day</Label>
-                        <Input id="lastWorkingDay" name="lastWorkingDay" type="date" className="border-border bg-muted/20 text-foreground" required />
-                    </div>
-                    <DialogFooter className="mt-4">
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-brand-primary hover:bg-brand-primary/90 text-white w-full sm:w-auto"
-                        >
-                            {loading ? "Processing..." : "Start Process"}
-                        </Button>
-                    </DialogFooter>
+                    {selectedEmployee ? (
+                        <div className="space-y-5 animate-in fade-in zoom-in-95 duration-300">
+                            <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-4">
+                                <div className="p-2 rounded-lg bg-primary/20">
+                                    <UserCheck className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-wide">Identity Verified</p>
+                                    <p className="font-bold truncate text-foreground">{selectedEmployee.full_name}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Department</Label>
+                                    <Select value={selectedDept} onValueChange={setSelectedDept}>
+                                        <SelectTrigger className="border-border/50 bg-muted/20 h-10 rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {DEPARTMENTS.map((d) => (
+                                                <SelectItem key={d} value={d}>{d}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Business Unit</Label>
+                                    <Select value={selectedBU} onValueChange={setSelectedBU}>
+                                        <SelectTrigger className="border-border/50 bg-muted/20 h-10 rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {BUSINESS_UNITS.map((bu) => (
+                                                <SelectItem key={bu} value={bu}>{bu}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Intermediate Supervisor</Label>
+                                <Select value={selectedSupervisor} onValueChange={setSelectedSupervisor}>
+                                    <SelectTrigger className="border-border/50 bg-muted/20 h-11 rounded-xl">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {INTERMEDIATE_SUPERVISORS.map((s) => (
+                                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="lwd" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Last Working Day</Label>
+                                <Input
+                                    id="lwd"
+                                    type="date"
+                                    value={lastWorkingDay}
+                                    onChange={(e) => setLastWorkingDay(e.target.value)}
+                                    className="border-border/50 bg-muted/20 h-11 rounded-xl"
+                                    required
+                                />
+                            </div>
+
+                            <DialogFooter className="pt-2">
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground w-full h-11 rounded-xl font-bold shadow-lg shadow-primary/20"
+                                >
+                                    {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Initiate Exit Flow"}
+                                </Button>
+                            </DialogFooter>
+                        </div>
+                    ) : (
+                        <div className="py-12 flex flex-col items-center justify-center text-center space-y-3 opacity-50">
+                            <div className="p-4 rounded-full bg-muted">
+                                <Search className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm">Search the directory above to begin</p>
+                        </div>
+                    )}
                 </form>
             </DialogContent>
         </Dialog>

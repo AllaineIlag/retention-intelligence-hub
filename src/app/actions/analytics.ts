@@ -526,3 +526,170 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
         }
     };
 }
+
+export type RiskDataPoint = {
+    name: string;
+    riskScore: number;
+    velocity: number;
+    sentiment: number;
+    headcount: number;
+};
+
+export async function getRetentionRiskData(filters: AnalyticsFilters = {}) {
+    const supabase = await createClient();
+
+    // 1. Fetch total employees per department (The Base)
+    const { data: deptCounts } = await supabase
+        .from('employee_details')
+        .select('department');
+
+    const headcountMap: Record<string, number> = {};
+    deptCounts?.forEach(d => {
+        if (d.department) headcountMap[d.department] = (headcountMap[d.department] || 0) + 1;
+    });
+
+    // 2. Fetch completed resignations (The Baseline)
+    const { data: allExits } = await supabase
+        .from('resignations')
+        .select(`
+            last_working_day, 
+            created_at, 
+            employee_details!inner (department)
+        `)
+        .eq('status', 'completed');
+
+    // 3. Calculation logic
+    const today = new Date();
+    const thirtyDaysAgo = subDays(today, 30);
+    const ninetyDaysAgo = subDays(today, 90);
+
+    const riskStats: Record<string, { recent: number, ninety: number }> = {};
+
+    allExits?.forEach((r: any) => {
+        const dept = r.employee_details?.department;
+        if (!dept) return;
+
+        const date = parseISO(r.last_working_day || r.created_at);
+        if (!riskStats[dept]) riskStats[dept] = { recent: 0, ninety: 0 };
+
+        if (isWithinInterval(date, { start: thirtyDaysAgo, end: today })) {
+            riskStats[dept].recent++;
+        }
+        if (isWithinInterval(date, { start: ninetyDaysAgo, end: today })) {
+            riskStats[dept].ninety++;
+        }
+    });
+
+    // 4. Fetch Sentiments (The Multiplier)
+    const { data: sentiments } = await supabase
+        .from('exit_interview_results')
+        .select('response_value, resignation_id, question_key')
+        .in('question_key', ['career_growth', 'rate_of_pay']);
+
+    // Link sentiments to depts via resignation_id
+    const resToDept = new Map<string, string>();
+    allExits?.forEach((r: any) => resToDept.set(r.id, r.employee_details?.department || ''));
+
+    const deptSentiment: Record<string, { score: number, count: number }> = {};
+    sentiments?.forEach(s => {
+        const dept = resToDept.get(s.resignation_id);
+        if (!dept) return;
+
+        if (!deptSentiment[dept]) deptSentiment[dept] = { score: 0, count: 0 };
+
+        // Simple 1-5 scoring for descriptive analysis
+        const val = String(s.response_value).toLowerCase();
+        let value = 3; // Neutral
+        if (val.includes('perfect') || val.includes('strongly agree') || val === '5') value = 5;
+        else if (val.includes('good') || val.includes('agree') || val === '4') value = 4;
+        else if (val.includes('fair') || val.includes('moderate') || val === '3') value = 3;
+        else if (val.includes('poor') || val.includes('disagree') || val === '2') value = 2;
+        else if (val.includes('very poor') || val.includes('strongly disagree') || val === '1') value = 1;
+
+        deptSentiment[dept].score += value;
+        deptSentiment[dept].count++;
+    });
+
+    const finalRiskData: RiskDataPoint[] = Object.keys(headcountMap).map(dept => {
+        const stats = riskStats[dept] || { recent: 0, ninety: 0 };
+        const sentiment = deptSentiment[dept]
+            ? Math.round((deptSentiment[dept].score / deptSentiment[dept].count) * 10) / 10
+            : 3.5;
+
+        // ALGORITHM: [Recent Velocity (0-50)] + [Sentiment (0-50)]
+        const velocity = (stats.recent / (stats.ninety / 3 || 1));
+        const velocityScore = Math.min(50, Math.round(velocity * 20)); // Normalized
+
+        // Lower sentiment (1) = High risk, Higher sentiment (5) = Low risk
+        const sentimentScore = Math.round((5 - sentiment) * 12.5); // (5-1)*12.5 = 50
+
+        return {
+            name: dept,
+            headcount: headcountMap[dept],
+            riskScore: Math.min(100, velocityScore + sentimentScore),
+            velocity: Math.round(velocity * 10) / 10,
+            sentiment: sentiment
+        };
+    }).sort((a, b) => b.riskScore - a.riskScore);
+
+    return { success: true, data: finalRiskData };
+}
+
+export type StrategicInsight = {
+    id: string;
+    type: 'critical' | 'warning' | 'info';
+    title: string;
+    description: string;
+    metrics?: string;
+};
+
+export async function getStrategicInsights(filters: AnalyticsFilters = {}) {
+    const riskRes = await getRetentionRiskData(filters);
+    if (!riskRes.success || !riskRes.data) return { success: false, error: 'Failed to generate insights' };
+
+    const topRisk = riskRes.data[0];
+    const insights: StrategicInsight[] = [];
+
+    if (topRisk && topRisk.riskScore > 75) {
+        insights.push({
+            id: 'risk-high',
+            type: 'critical',
+            title: `Critical Attrition Spike: ${topRisk.name}`,
+            description: `Velocity is ${topRisk.velocity}x higher than the quarterly average. Sentiment is dipping.`,
+            metrics: `${topRisk.riskScore}% Risk Index`
+        });
+    }
+
+    // Career Growth Insight
+    const statsRes = await getExitQuestionStats(filters);
+    const careerStats = statsRes.success ? statsRes.data?.find(s => s.question_key === 'career_growth') : null;
+    if (careerStats) {
+        const negativeScores = careerStats.stats
+            .filter(s => ['Poor', 'Very Poor', '1', '2', 'Disagree'].includes(s.name))
+            .reduce((acc, curr) => acc + curr.value, 0);
+
+        const negRatio = negativeScores / (careerStats.totalResponses || 1);
+        if (negRatio > 0.3) {
+            insights.push({
+                id: 'career-growth-alert',
+                type: 'warning',
+                title: 'Stagnation Perception Trigger',
+                description: 'Over 30% of exiters cited "Poor" career growth prospects as a primary driver.',
+                metrics: `${Math.round(negRatio * 100)}% Negative Sentiment`
+            });
+        }
+    }
+
+    // General Stability Insight
+    if (insights.length === 0) {
+        insights.push({
+            id: 'stability-check',
+            type: 'info',
+            title: 'Steady State Detected',
+            description: 'Organizational health is within standard deviations. No critical departmental anomalies detected.',
+            metrics: 'Nominal Operations'
+        });
+    }
+
+    return { success: true, data: insights };
+}

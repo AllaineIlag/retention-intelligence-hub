@@ -16,43 +16,19 @@ if (!supabaseUrl || !serviceRoleKey) {
 
 const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-async function setPassword() {
-    const email = 'benjaminbrowning2001@gmail.com'; // Change this if needed
+async function setPasswords() {
+    const leads = [
+        { email: 'ilagallainebenedict01380@gmail.com', name: 'Allaine Benedict C. Ilag' },
+        { email: 'baritmarvin03224@gmail.com', name: 'Marvin B. Barit' },
+        { email: 'jonalyngandara@gmail.com', name: 'Jonalyn Quinto' }
+    ];
     const password = 'Password123!';
 
-    console.log(`Setting password for ${email}...`);
+    for (const lead of leads) {
+        console.log(`Setting password for ${lead.email}...`);
 
-    const { data: { user }, error: userError } = await supabase.auth.admin.createUser({
-        email: email,
-        password: password,
-        email_confirm: true
-    });
-
-    if (userError) {
-        // If user already exists, update password
-        console.log('User exists (or create failed), trying update...');
-
-        // Need to find user ID first if we want to be safe, but update user by email isn't direct in admin api without ID usually, 
-        // actually updateUserById requires ID. 
-        // Let's get the user ID first.
-
-        // Wait, listUsers might be slow.
-        // Actually, we can just try signIn to see if it exists? No, this is admin script.
-
-        // Let's try to get user by email directly if possible or just use listUsers filtering.
-        // There isn't a direct "getUserByEmail" in admin API publicly exposed in all versions, but `listUsers` works.
-
-        // SIMPLER WAY: Just use updateUser with the ID if we can find it.
-        // But let's try just overwriting via updateUserById if we can get the ID.
-
-        // Actually, let's just use the known ID if we have it, or fetch it.
-        // Admin API mostly needs ID.
-
-        // Alternative: Use the "MAGIC" trick of update user which requires ID.
-        // Let's fetch the user first.
-
-        const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
-        const targetUser = users.find(u => u.email === email);
+        const { data: { users } } = await supabase.auth.admin.listUsers();
+        const targetUser = users.find(u => u.email === lead.email);
 
         if (targetUser) {
             const { error: updateError } = await supabase.auth.admin.updateUserById(
@@ -61,17 +37,22 @@ async function setPassword() {
             );
 
             if (updateError) {
-                console.error('❌ Update failed:', updateError.message);
+                console.error(`❌ Update failed for ${lead.email}:`, updateError.message);
             } else {
-                console.log('✅ Password updated successfully!');
+                console.log(`✅ Password updated successfully for ${lead.name}!`);
             }
         } else {
-            console.error('❌ User not found and creation failed:', userError.message);
+            // Try create if not exists
+            const { error: createError } = await supabase.auth.admin.createUser({
+                email: lead.email,
+                password: password,
+                email_confirm: true,
+                user_metadata: { full_name: lead.name }
+            });
+            if (createError) console.error(`❌ Creation failed for ${lead.email}:`, createError.message);
+            else console.log(`✅ User ${lead.name} created successfully!`);
         }
-
-    } else {
-        console.log('✅ User created with password!');
     }
 }
 
-setPassword();
+setPasswords();

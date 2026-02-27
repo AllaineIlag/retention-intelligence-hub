@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import InviteUserCard from '@/components/dashboard/team/InviteUserCard';
+import ProvisionInterviewerCard from '@/components/dashboard/team/ProvisionInterviewerCard';
 import PendingUsersTable from '@/components/dashboard/team/PendingUsersTable';
 import TeamMembersTable from '@/components/dashboard/team/TeamMembersTable';
 import DeclinedTable from '@/components/dashboard/team/DeclinedTable';
@@ -40,7 +40,7 @@ export default async function RecruitmentPage() {
         );
     }
 
-    // Pre-fetch all 3 datasets in parallel — no client-side waterfall
+    // Pre-fetch all 3 datasets in parallel
     const [pendingResult, teamResult, declinedResult] = await Promise.all([
         getPendingUsers(),
         getTeamMembers(),
@@ -53,27 +53,8 @@ export default async function RecruitmentPage() {
 
     return (
         <div className="flex flex-col gap-6 p-8 max-w-7xl mx-auto">
-            <Tabs defaultValue="pending" className="w-full">
+            <Tabs defaultValue="team" className="w-full">
                 <TabsList className="bg-muted/50 border border-border mb-6">
-                    <TabsTrigger
-                        value="invite"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
-                    >
-                        <LinkIcon className="h-3.5 w-3.5" />
-                        Invite
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="pending"
-                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
-                    >
-                        <ClockIcon className="h-3.5 w-3.5" />
-                        Pending Requests
-                        {initialUsers.length > 0 && (
-                            <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black">
-                                {initialUsers.length}
-                            </span>
-                        )}
-                    </TabsTrigger>
                     <TabsTrigger
                         value="team"
                         className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
@@ -82,31 +63,45 @@ export default async function RecruitmentPage() {
                         Active Team
                     </TabsTrigger>
                     <TabsTrigger
+                        value="invite"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
+                    >
+                        <LinkIcon className="h-3.5 w-3.5" />
+                        Provision Access
+                    </TabsTrigger>
+                    <TabsTrigger
+                        value="pending"
+                        className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
+                    >
+                        <ClockIcon className="h-3.5 w-3.5" />
+                        Waitlist
+                        {initialUsers.length > 0 && (
+                            <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-black">
+                                {initialUsers.length}
+                            </span>
+                        )}
+                    </TabsTrigger>
+                    <TabsTrigger
                         value="declined"
                         className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground"
                     >
                         <Ban className="h-3.5 w-3.5" />
                         Declined
-                        {initialDeclined.length > 0 && (
-                            <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                                {initialDeclined.length}
-                            </span>
-                        )}
                     </TabsTrigger>
                 </TabsList>
 
+                <TabsContent value="team" className="mt-0">
+                    <TeamMembersTable initialMembers={initialMembers as any} />
+                </TabsContent>
+
                 <TabsContent value="invite" className="mt-0">
                     <div className="max-w-xl">
-                        <InviteUserCard />
+                        <ProvisionInterviewerCard />
                     </div>
                 </TabsContent>
 
                 <TabsContent value="pending" className="mt-0">
                     <PendingUsersTable initialUsers={initialUsers as any} />
-                </TabsContent>
-
-                <TabsContent value="team" className="mt-0">
-                    <TeamMembersTable initialMembers={initialMembers as any} />
                 </TabsContent>
 
                 <TabsContent value="declined" className="mt-0">

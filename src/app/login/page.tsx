@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useEffect, useState, useTransition } from 'react';
-import { loginWithGoogle } from './actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Loader2, ShieldX, Info } from 'lucide-react';
@@ -9,21 +8,35 @@ import Image from 'next/image';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useSearchParams } from 'next/navigation';
 import { ThemeToggle } from '@/components/dashboard/theme-toggle';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { login } from './actions';
 
 function LoginForm() {
-    const [isVerifyingGoogle, startVerifyGoogle] = useTransition();
+    const [isLoading, startLogin] = useTransition();
     const searchParams = useSearchParams();
     const [urlMessage, setUrlMessage] = useState('');
+    const [error, setError] = useState('');
     const [isForbidden, setIsForbidden] = useState(false);
 
     useEffect(() => {
-        const error = searchParams.get('error');
+        const errorParam = searchParams.get('error');
         const msg = searchParams.get('message');
-        if (error === 'forbidden') {
+        if (errorParam === 'forbidden') {
             setIsForbidden(true);
         }
         if (msg) setUrlMessage(msg);
     }, [searchParams]);
+
+    async function handleSubmit(formData: FormData) {
+        setError('');
+        startLogin(async () => {
+            const result = await login(formData);
+            if (result && !result.success) {
+                setError(result.message);
+            }
+        });
+    }
 
     return (
         <Card className="w-full max-w-md border-border bg-card/80 backdrop-blur-xl shadow-2xl relative z-10">
@@ -41,19 +54,18 @@ function LoginForm() {
                 </div>
                 <div className="space-y-1">
                     <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-                        {isForbidden ? 'Access Denied' : 'Welcome Back'}
+                        {isForbidden ? 'Access Denied' : 'Noxian Command'}
                     </CardTitle>
                     <CardDescription className="text-muted-foreground font-medium">
                         {isForbidden
                             ? 'Your account is not authorized to access this system.'
-                            : 'Sign in to access the Retention Intelligence Hub'
+                            : 'Enter credentials to access the Retention Intelligence Hub'
                         }
                     </CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="space-y-4">
-
+                <form action={handleSubmit} className="space-y-4">
                     {/* FORBIDDEN NOTICE */}
                     {isForbidden && (
                         <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-5 text-center space-y-3">
@@ -61,7 +73,7 @@ function LoginForm() {
                                 This system is private and restricted to authorized company personnel only.
                             </p>
                             <p className="text-xs text-muted-foreground leading-relaxed italic">
-                                If you are part of the company and believe this is an error, please contact your HR department for an authorized invitation link.
+                                If you are part of the company and believe this is an error, please contact your HR department for authorized credentials.
                             </p>
                             <Button
                                 type="button"
@@ -70,14 +82,13 @@ function LoginForm() {
                                 onClick={() => setIsForbidden(false)}
                                 className="mt-2 border-border/50 bg-accent/30 text-accent-foreground hover:bg-accent/50 text-xs"
                             >
-                                Try a different account
+                                Back to Login
                             </Button>
                         </div>
                     )}
 
-                    {/* GOOGLE LOGIN */}
                     {!isForbidden && (
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {urlMessage && (
                                 <Alert className="bg-sky-500/10 border-sky-500/20 text-sky-400 flex items-center p-3 rounded-lg shadow-sm">
                                     <Info className="w-4 h-4 shrink-0" />
@@ -89,37 +100,67 @@ function LoginForm() {
                                 </Alert>
                             )}
 
+                            {error && (
+                                <Alert variant="destructive" className="bg-destructive/10 border-destructive/20 text-destructive flex items-center p-3 rounded-lg shadow-sm">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <div className="ml-3">
+                                        <AlertDescription className="text-xs font-medium leading-relaxed">
+                                            {error}
+                                        </AlertDescription>
+                                    </div>
+                                </Alert>
+                            )}
+
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-semibold text-foreground/80">Corporate Email</Label>
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    placeholder="name@company.com"
+                                    required
+                                    autoComplete="email"
+                                    className="bg-background/50 border-border/50 focus:border-primary/50 transition-colors"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="password" className="text-sm font-semibold text-foreground/80">Password</Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    required
+                                    placeholder="••••••••"
+                                    autoComplete="current-password"
+                                    className="bg-background/50 border-border/50 focus:border-primary/50 transition-colors"
+                                />
+                            </div>
+
                             <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => startVerifyGoogle(async () => {
-                                    await loginWithGoogle();
-                                })}
-                                disabled={isVerifyingGoogle}
-                                className="w-full bg-primary text-primary-foreground border-transparent hover:bg-primary/90 h-11 relative text-[15px] font-medium transition-all shadow-md"
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full bg-primary text-primary-foreground border-transparent hover:bg-primary/90 h-11 relative text-[15px] font-medium transition-all shadow-md mt-2"
                             >
-                                {isVerifyingGoogle ? (
+                                {isLoading ? (
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 ) : (
-                                    <svg className="mr-3 h-5 w-5" aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
-                                        <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
-                                    </svg>
+                                    'Secure Login'
                                 )}
-                                Sign in with Google
                             </Button>
 
                             <div className="pt-2">
                                 <p className="text-[12px] text-muted-foreground text-center px-6 leading-tight">
-                                    Only authorized emails are permitted for system access.
+                                    Access is restricted to verified employees. Contact an Administrator for credentials.
                                 </p>
                             </div>
                         </div>
                     )}
-                </div>
+                </form>
             </CardContent>
             <CardFooter className="justify-center border-t border-border/10 py-4">
                 <p className="text-xs text-muted-foreground/60 transition-opacity hover:opacity-100 italic">
-                    Protected by Retention Intelligence System
+                    Protected by Noxian High Command Security
                 </p>
             </CardFooter>
         </Card>

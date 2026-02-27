@@ -20,13 +20,10 @@ import { PromoterScoreCard } from '@/components/dashboard/analytics/kpi/Promoter
 import { AvgTenureCard } from '@/components/dashboard/analytics/kpi/AvgTenureCard';
 import { SmartDonutCard } from '@/components/dashboard/analytics/charts/SmartDonutCard';
 import { DestinationExitsCard } from '@/components/dashboard/analytics/charts/DestinationExitsCard';
-
-
+import { StrategicInsights } from '@/components/dashboard/analytics/StrategicInsights';
+import { RiskHeatmap } from '@/components/dashboard/analytics/charts/RiskHeatmap';
 
 import { parseISO, startOfMonth, endOfMonth, subMonths } from 'date-fns';
-
-
-
 
 // Default Filters: Current Month
 // We no longer read from URL params as filtering is decentralized.
@@ -41,24 +38,26 @@ export default async function DashboardPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-700 p-2">
 
+            {/* STRATEGIC OVERLAY */}
+            <div className="grid gap-6 grid-cols-1 xl:grid-cols-12">
+                <div className="xl:col-span-4 h-full">
+                    <Suspense fallback={<WidgetSkeleton />}>
+                        <StrategicInsights />
+                    </Suspense>
+                </div>
+                <div className="xl:col-span-8 space-y-6">
+                    <Suspense fallback={<StatsSkeleton />}>
+                        <KPISection filters={filters} />
+                    </Suspense>
+                    <Suspense fallback={<ChartSkeleton />}>
+                        <HeroSection filters={filters} />
+                    </Suspense>
+                </div>
+            </div>
 
-            {/* MAIN GRID */}
+            {/* SECONDARY GRID */}
             <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
                 <div className="lg:col-span-3 space-y-6">
-
-
-                    <div className="w-full">
-                        <Suspense fallback={<StatsSkeleton />}>
-                            <KPISection filters={filters} />
-                        </Suspense>
-                    </div>
-
-                    <div className="w-full">
-                        <Suspense fallback={<ChartSkeleton />}>
-                            <HeroSection filters={filters} />
-                        </Suspense>
-                    </div>
-
                     <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
                         <div className="lg:col-span-7">
                             <Suspense fallback={<TableSkeleton />}>
@@ -158,9 +157,16 @@ async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
     const monthData = trendRes.success ? trendRes.data || [] : [];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <TurnoverTrendCard data={monthData as any} />
-            <DepartmentDistributionCard data={deptData as any} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+                <TurnoverTrendCard data={monthData as any} />
+            </div>
+            <div className="md:col-span-1">
+                <DepartmentDistributionCard data={deptData as any} />
+            </div>
+            <div className="md:col-span-3">
+                <RiskHeatmap />
+            </div>
         </div>
     );
 }

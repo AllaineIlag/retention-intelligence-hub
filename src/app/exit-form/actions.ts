@@ -70,7 +70,7 @@ export async function getResignation() {
     // Check for existing pending resignation (pick latest if multiple exist)
     const { data: existing, error: fetchError } = await supabase
         .from('resignations')
-        .select('*')
+        .select('*, company_directory(*)')
         .eq('employee_id', user.id)
         .in('status', ['pending_exit_form', 'pending_interview', 'scheduled', 'locked', 'completed']) // Check relevant statuses
         .order('created_at', { ascending: false })
@@ -95,7 +95,12 @@ export async function getExitResponse(resignationId: string): Promise<{ success:
     // 1. Fetch form_snapshot from resignation
     const { data, error } = await adminClient
         .from('resignations')
-        .select('form_snapshot, last_working_day')
+        .select(`
+            form_snapshot, 
+            last_working_day, 
+            directory_id,
+            company_directory (*)
+        `)
         .eq('id', resignationId)
         .single();
 
@@ -104,6 +109,22 @@ export async function getExitResponse(resignationId: string): Promise<{ success:
     }
 
     let snapshot = data?.form_snapshot as ExitFormData || {};
+
+    // 1.1 AUTO-FILL from Directory if snapshot is new
+    if ((!snapshot.employee_details || Object.keys(snapshot.employee_details).length === 0) && data.company_directory) {
+        const dir = data.company_directory as any;
+        snapshot.employee_details = {
+            employee_name: dir.full_name,
+            employee_number: dir.employee_number,
+            department: dir.department,
+            business_unit: dir.business_unit,
+            intermediate_supervisor: dir.intermediate_supervisor,
+            date_hired: dir.date_hired,
+            current_position: dir.current_position,
+            position_when_hired: dir.position_when_hired,
+            date_of_resignation: data.last_working_day || ''
+        };
+    }
 
     // 2. SELF-HEALING: If snapshot is empty or missing responses, reconstruct from granular results
     if (!snapshot.questionnaire_responses || Object.keys(snapshot.questionnaire_responses).length === 0) {
