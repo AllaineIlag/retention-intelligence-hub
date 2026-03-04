@@ -1,11 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AttritionTrendDeepDive } from '@/components/analytics/deep-dive/AttritionTrendDeepDive';
-import { DepartmentClusterDeepDive } from '@/components/analytics/deep-dive/DepartmentClusterDeepDive';
-import { DemographicRiskDeepDive } from '@/components/analytics/deep-dive/DemographicRiskDeepDive';
-import { QualitativeFeed } from '@/components/analytics/deep-dive/QualitativeFeed';
-import { ReasonTopKpiGrid } from '@/components/analytics/deep-dive/ReasonTopKpiGrid';
-import { ReasonAnalysisDeepDive } from '@/components/analytics/deep-dive/ReasonAnalysisDeepDive';
+import { AttritionTrendAnalytics } from '@/components/analytics/AttritionTrendAnalytics';
+import { DepartmentClusterAnalytics } from '@/components/analytics/DepartmentClusterAnalytics';
+import { DemographicRiskAnalytics } from '@/components/analytics/DemographicRiskAnalytics';
+import { QualitativeFeed } from '@/components/analytics/QualitativeFeed';
+import { ReasonTopKpiGrid } from '@/components/analytics/ReasonTopKpiGrid';
+import { ReasonAnalysisAnalytics } from '@/components/analytics/ReasonAnalysisAnalytics';
 
 
 import { getAttritionTrendData } from './actions-trend';
@@ -36,7 +36,7 @@ export default async function ReasonForLeavingPage() {
 
 
             {/* SECTOR 2: Analytics Analysis (Market + Drivers) */}
-            <ReasonAnalysisDeepDive
+            <ReasonAnalysisAnalytics
                 initialCompetitor={competitor}
                 initialMoneyVsCulture={moneyVsCulture}
                 initialButterfly={butterflyData}
@@ -45,17 +45,17 @@ export default async function ReasonForLeavingPage() {
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
                 <div className="col-span-1 md:col-span-2">
-                    <AttritionTrendDeepDive initialData={trendData} />
+                    <AttritionTrendAnalytics initialData={trendData} />
                 </div>
 
                 {/* 2. The Cluster (Reason by Dept) */}
                 <div>
-                    <DepartmentClusterDeepDive initialData={clusterData} />
+                    <DepartmentClusterAnalytics initialData={clusterData} />
                 </div>
 
                 {/* 3. The Demographic (Risk Profile) */}
                 <div>
-                    <DemographicRiskDeepDive initialData={riskData} />
+                    <DemographicRiskAnalytics initialData={riskData} />
                 </div>
             </div>
         </div>

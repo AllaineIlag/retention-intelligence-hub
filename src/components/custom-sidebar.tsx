@@ -79,9 +79,6 @@ const navItems: NavItem[] = [
         url: '/dashboard/team',
         icon: Users,
         roles: ['lead'],
-        subItems: [
-            { title: 'Recruitment', url: '/dashboard/team/recruitment' },
-        ],
     },
     {
         title: 'Analytics',
@@ -89,12 +86,12 @@ const navItems: NavItem[] = [
         icon: Activity,
         roles: ['lead'],
         subItems: [
-            { title: 'Reason for Leaving', url: '/dashboard/deep-dive/reason-for-leaving' },
-            { title: 'Career Growth', url: '/dashboard/deep-dive/career-growth' },
-            { title: 'Compensation', url: '/dashboard/deep-dive/compensation' },
-            { title: 'Benefits & Perks', url: '/dashboard/deep-dive/benefits-perks' },
-            { title: 'Workload Balance', url: '/dashboard/deep-dive/workload-balance' },
-            { title: 'Promoter Score', url: '/dashboard/deep-dive/promoter-score' },
+            { title: 'Reason for Leaving', url: '/dashboard/analytics/reason-for-leaving' },
+            { title: 'Career Growth', url: '/dashboard/analytics/career-growth' },
+            { title: 'Compensation', url: '/dashboard/analytics/compensation' },
+            { title: 'Benefits & Perks', url: '/dashboard/analytics/benefits-perks' },
+            { title: 'Workload Balance', url: '/dashboard/analytics/workload-balance' },
+            { title: 'Promoter Score', url: '/dashboard/analytics/promoter-score' },
         ],
     },
     // { title: 'Corrections', url: '/dashboard/corrections', icon: ClipboardCheck, roles: ['lead'] }, // Moved to sub-menu
@@ -171,46 +168,8 @@ function SidebarInner({ role, email, isCollapsed, onNavClick, pendingCount }: Si
 
     // Map over items to inject badge
     const itemsWithBadges = filteredItems.map(item => {
-        // If it's the Team dropdown, inject badge into sub-item
-        if (item.title === 'Team' && item.subItems) {
-            return {
-                ...item,
-                subItems: item.subItems.map(sub => {
-                    if (sub.title === 'Recruitment' && pendingCount > 0) {
-                        return { ...sub, badge: pendingCount };
-                    }
-                    return sub;
-                }),
-                // Optionally keep badge on parent if you want both, or remove from parent
-                // User: "Move badge to Access Requests" -> Now "Recruitment"
-                badge: pendingCount > 0 ? pendingCount : undefined, // Keep generic badge on parent for collapsed state visibility? Or specific?
-                // Step 842 said "misplaced" on parent. If I keep it on parent, they might still say it's misplaced.
-                // But step 813 said "inside a dropdown Team".
-                // Let's TRY putting it on user request specific item. But if parent is collapsed, we lose it.
-                // Compromise: Parent gets a simple dot or same count?
-                // The prompt says "I think it should be beside Access Requests?".
-                // I will add it to the subItem.
-                // I will ALSO keep it on the parent for now but maybe styled differently? 
-                // Wait, if I keep it on parent, I revert the "misplaced" fix potentially.
-                // Let's put it on subItem. 
-                // To solve collapsed visibility: The parent should probably have it too.
-                // Let's assume for now we just move it to subItem as requested.
-                // But wait, the `itemsWithBadges` logic below still had:
-                /*
-                 if (item.title === 'Team' && pendingCount > 0) {
-                    return { ...item, badge: pendingCount };
-                }
-                */
-                // I need to change that to NOT put it on parent if we only want it on child?
-                // Actually, user likely wants to see it on the child when expanded.
-                // If I remove from parent, they won't see it when collapsed.
-                // I will keep it on parent (for collapsed/summary view) AND put it on child?
-                // The user said "misplaced" previously. Maybe they meant "it shouldn't be on the parent label if the parent label is just a category".
-                // But Categories usually sum up notifications.
-                // Let's look at the request: "I think it should be beside Access Requests?"
-                // This implies they want it visibly *next to* that specific text.
-                // I will implement it on the child.
-            };
+        if (item.title === 'Team' && pendingCount > 0) {
+            return { ...item, badge: pendingCount };
         }
         return item;
     });

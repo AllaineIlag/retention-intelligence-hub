@@ -41,8 +41,8 @@ const navItems: NavItem[] = [
         roles: ['lead', 'interviewer'],
     },
     {
-        title: 'Recruitment',
-        url: '/dashboard/team/recruitment',
+        title: 'Team',
+        url: '/dashboard/team',
         icon: Users,
         roles: ['lead'],
     },

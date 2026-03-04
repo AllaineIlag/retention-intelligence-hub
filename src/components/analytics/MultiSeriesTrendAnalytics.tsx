@@ -2,23 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getDemographicRiskData, DemographicRiskData } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-demographic';
-import { startOfMonth, endOfMonth, subDays, subMonths, startOfYear } from 'date-fns';
-import { DemographicRiskChart } from './DemographicRiskChart';
+import { getMultiSeriesTrendData, MultiSeriesTrendData } from '@/app/dashboard/analytics/shared-actions';
+import { startOfMonth, endOfMonth, subMonths, startOfYear, subDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MultiSeriesTrendChart } from './MultiSeriesTrendChart';
+import { AnalyticsFilters } from '@/app/actions/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface DemographicRiskDeepDiveProps {
-    initialData: DemographicRiskData[];
+interface MultiSeriesTrendAnalyticsProps {
+    initialData: MultiSeriesTrendData[];
+    options: { label: string; color: string }[];
+    questionKey: string;
 }
 
-export function DemographicRiskDeepDive({ initialData }: DemographicRiskDeepDiveProps) {
-    const [data, setData] = useState<DemographicRiskData[]>(initialData);
+export function MultiSeriesTrendAnalytics({ initialData, options, questionKey }: MultiSeriesTrendAnalyticsProps) {
+    const [data, setData] = useState<MultiSeriesTrendData[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
-
-    // Simple Range Filter (Trend Style)
     const [range, setRange] = useState('30d');
-
     const { pageFilter, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
@@ -26,8 +26,6 @@ export function DemographicRiskDeepDive({ initialData }: DemographicRiskDeepDive
     useEffect(() => {
         setIsMounted(true);
     }, []);
-
-    // Sync with page-level filter
     useEffect(() => {
         if (version !== lastVersionRef.current) {
             lastVersionRef.current = version;
@@ -37,7 +35,7 @@ export function DemographicRiskDeepDive({ initialData }: DemographicRiskDeepDive
         }
     }, [pageFilter, version]);
 
-    // Fetch on filter change
+    // Fetch data when range changes
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -55,33 +53,31 @@ export function DemographicRiskDeepDive({ initialData }: DemographicRiskDeepDive
                     default: startDate = subDays(today, 30);
                 }
 
-                const apiFilters = {
+                const filters: AnalyticsFilters = {
                     startDate,
-                    endDate: endOfMonth(today),
-                    // Removed Department filter per user request (User asked for "Same filter like Trend (Frequency over Time)")
-                    department: undefined
+                    endDate: endOfMonth(today)
                 };
-                const result = await getDemographicRiskData(apiFilters);
+
+                const result = await getMultiSeriesTrendData(questionKey, options.map(o => o.label), filters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch demographic risk data:", error);
+                console.error("Failed to fetch multi-series trend data:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [range]);
+    }, [range, questionKey, options]);
 
     const handleRangeChange = (value: string) => {
         setRange(value);
     };
 
-    // Construct the filter UI
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Demographic Risk (Tenure)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Response Trend (Count over Time)</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -106,7 +102,7 @@ export function DemographicRiskDeepDive({ initialData }: DemographicRiskDeepDive
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <DemographicRiskChart data={data} />
+                <MultiSeriesTrendChart data={data} options={options} />
             </CardContent>
         </Card>
     );

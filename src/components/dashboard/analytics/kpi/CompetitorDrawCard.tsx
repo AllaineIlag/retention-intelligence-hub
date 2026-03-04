@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown, TrendingUp } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getCompetitorDraw } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-market"
+import { getCompetitorDraw } from "@/app/dashboard/analytics/reason-for-leaving/actions-market"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
 
 interface CompetitorDrawCardProps {

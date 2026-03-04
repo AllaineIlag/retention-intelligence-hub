@@ -23,10 +23,10 @@ export function MobileActionsMenu() {
         setIsMounted(true);
     }, []);
 
-    // Filter is only relevant on dashboard and deep-dive pages
+    // Filter is only relevant on dashboard and analytics pages
     const isDashboard = pathname === '/dashboard';
-    const isDeepDive = pathname.startsWith('/dashboard/deep-dive');
-    const showFilter = isDashboard || isDeepDive;
+    const isAnalytics = pathname.startsWith('/dashboard/analytics');
+    const showFilter = isDashboard || isAnalytics;
 
     if (!isMounted) {
         return (

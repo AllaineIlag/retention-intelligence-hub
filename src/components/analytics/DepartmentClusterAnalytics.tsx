@@ -2,20 +2,23 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getAttritionTrendData, AttritionTrendData } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-trend';
-import { startOfMonth, endOfMonth, subMonths, format, startOfYear, subDays } from 'date-fns';
+import { getDepartmentClusterData, DepartmentClusterData } from '@/app/dashboard/analytics/reason-for-leaving/actions-heatmap';
+import { startOfMonth, endOfMonth, subDays, subMonths, startOfYear } from 'date-fns';
+import { DepartmentClusterChart } from './DepartmentClusterChart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AttritionTrendChart } from './AttritionTrendChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface AttritionTrendDeepDiveProps {
-    initialData: AttritionTrendData[];
+interface DepartmentClusterAnalyticsProps {
+    initialData: DepartmentClusterData[];
 }
 
-export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDiveProps) {
-    const [data, setData] = useState<AttritionTrendData[]>(initialData);
+export function DepartmentClusterAnalytics({ initialData }: DepartmentClusterAnalyticsProps) {
+    const [data, setData] = useState<DepartmentClusterData[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Simple Range Filter (Trend Style)
     const [range, setRange] = useState('30d');
+
     const { pageFilter, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
@@ -24,7 +27,7 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
         setIsMounted(true);
     }, []);
 
-    // Sync local range with global page filter
+    // Sync with page-level filter
     useEffect(() => {
         if (version !== lastVersionRef.current) {
             lastVersionRef.current = version;
@@ -34,7 +37,7 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
         }
     }, [pageFilter, version]);
 
-    // Fetch data when range changes (triggered by user or global sync)
+    // Fetch on filter change
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -49,18 +52,19 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
                     case '6m': startDate = subMonths(today, 6); break;
                     case '12m': startDate = subMonths(today, 12); break;
                     case 'ytd': startDate = startOfYear(today); break;
-                    default: startDate = subDays(today, 30); // Fallback
+                    default: startDate = subDays(today, 30);
                 }
 
-                const filters = {
+                const apiFilters = {
                     startDate,
-                    endDate: endOfMonth(today)
+                    endDate: endOfMonth(today),
+                    // Removed Department filter per user request
+                    department: undefined
                 };
-
-                const result = await getAttritionTrendData(filters);
+                const result = await getDepartmentClusterData(apiFilters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch attrition trend data:", error);
+                console.error("Failed to fetch department cluster data:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -69,15 +73,15 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
         fetchData();
     }, [range]);
 
-
     const handleRangeChange = (value: string) => {
         setRange(value);
     };
 
+    // Construct the filter UI
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Trend (Frequency over Time)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Cluster Analysis (Reason by Dept)</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -102,7 +106,7 @@ export function AttritionTrendDeepDive({ initialData }: AttritionTrendDeepDivePr
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <AttritionTrendChart data={data} />
+                <DepartmentClusterChart data={data} />
             </CardContent>
         </Card>
     );

@@ -11,7 +11,7 @@ import {
     ReferenceArea
 } from 'recharts';
 
-import { ScoreTrendData } from '@/app/dashboard/deep-dive/shared-actions';
+import { ScoreTrendData } from '@/app/dashboard/analytics/shared-actions';
 
 interface ScoreTrendChartProps {
     data: ScoreTrendData[];

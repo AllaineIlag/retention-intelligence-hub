@@ -12,12 +12,12 @@ export function DashboardHeader() {
         if (path.startsWith('/dashboard/team')) return 'Team';
 
         // Analytics Routes
-        if (path.startsWith('/dashboard/deep-dive/reason-for-leaving')) return 'Reason for Leaving';
-        if (path.startsWith('/dashboard/deep-dive/workload-balance')) return 'Workload Balance';
-        if (path.startsWith('/dashboard/deep-dive/career-growth')) return 'Career Growth';
-        if (path.startsWith('/dashboard/deep-dive/compensation')) return 'Compensation';
-        if (path.startsWith('/dashboard/deep-dive/benefits-perks')) return 'Benefits & Perks';
-        if (path.startsWith('/dashboard/deep-dive/promoter-score')) return 'Promoter Score';
+        if (path.startsWith('/dashboard/analytics/reason-for-leaving')) return 'Reason for Leaving';
+        if (path.startsWith('/dashboard/analytics/workload-balance')) return 'Workload Balance';
+        if (path.startsWith('/dashboard/analytics/career-growth')) return 'Career Growth';
+        if (path.startsWith('/dashboard/analytics/compensation')) return 'Compensation';
+        if (path.startsWith('/dashboard/analytics/benefits-perks')) return 'Benefits & Perks';
+        if (path.startsWith('/dashboard/analytics/promoter-score')) return 'Promoter Score';
 
         // Main Analytics fallback
         if (path.startsWith('/dashboard/analytics')) return 'Analytics';

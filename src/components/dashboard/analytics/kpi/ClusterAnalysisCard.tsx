@@ -9,9 +9,9 @@ import { ChevronDown, BarChart2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 // Note: We need to import the type. Since it's not exported from the component file, we should move it or just redefine/import from actions.
 // Ideally, the type should be shared. We imported it from actions-heatmap in the action file. 
-import { getDepartmentClusterData, DepartmentClusterData } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-heatmap"
+import { getDepartmentClusterData, DepartmentClusterData } from "@/app/dashboard/analytics/reason-for-leaving/actions-heatmap"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
-import { DepartmentClusterChart } from '@/components/analytics/deep-dive/DepartmentClusterChart';
+import { DepartmentClusterChart } from '@/components/analytics/DepartmentClusterChart';
 
 interface ClusterAnalysisCardProps {
     initialData?: DepartmentClusterData[]

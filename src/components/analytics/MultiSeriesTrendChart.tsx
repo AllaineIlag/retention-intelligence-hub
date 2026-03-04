@@ -11,7 +11,7 @@ import {
     Legend
 } from 'recharts';
 
-import { MultiSeriesTrendData } from '@/app/dashboard/deep-dive/shared-actions';
+import { MultiSeriesTrendData } from '@/app/dashboard/analytics/shared-actions';
 
 interface MultiSeriesTrendChartProps {
     data: MultiSeriesTrendData[];

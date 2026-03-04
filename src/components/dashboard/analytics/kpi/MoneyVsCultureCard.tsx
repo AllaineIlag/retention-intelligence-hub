@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown, DollarSign } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getMoneyVsCulture } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-market"
+import { getMoneyVsCulture } from "@/app/dashboard/analytics/reason-for-leaving/actions-market"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
 
 interface MoneyVsCultureCardProps {

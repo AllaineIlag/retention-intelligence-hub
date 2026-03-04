@@ -2,21 +2,21 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getMultiSeriesTrendData, MultiSeriesTrendData } from '@/app/dashboard/deep-dive/shared-actions';
+import { getCorrelationData, CorrelationData } from '@/app/dashboard/analytics/shared-actions';
 import { startOfMonth, endOfMonth, subMonths, startOfYear, subDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MultiSeriesTrendChart } from './MultiSeriesTrendChart';
+import { CorrelationCard } from './CorrelationCard';
 import { AnalyticsFilters } from '@/app/actions/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface MultiSeriesTrendDeepDiveProps {
-    initialData: MultiSeriesTrendData[];
-    options: { label: string; color: string }[];
+interface CorrelationAnalyticsProps {
+    initialData: CorrelationData;
     questionKey: string;
+    metricLabel: string;
 }
 
-export function MultiSeriesTrendDeepDive({ initialData, options, questionKey }: MultiSeriesTrendDeepDiveProps) {
-    const [data, setData] = useState<MultiSeriesTrendData[]>(initialData);
+export function CorrelationAnalytics({ initialData, questionKey, metricLabel }: CorrelationAnalyticsProps) {
+    const [data, setData] = useState<CorrelationData>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [range, setRange] = useState('30d');
     const { pageFilter, version } = usePageFilter();
@@ -58,17 +58,17 @@ export function MultiSeriesTrendDeepDive({ initialData, options, questionKey }: 
                     endDate: endOfMonth(today)
                 };
 
-                const result = await getMultiSeriesTrendData(questionKey, options.map(o => o.label), filters);
+                const result = await getCorrelationData(questionKey, filters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch multi-series trend data:", error);
+                console.error("Failed to fetch correlation data:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [range, questionKey, options]);
+    }, [range, questionKey]);
 
     const handleRangeChange = (value: string) => {
         setRange(value);
@@ -77,7 +77,7 @@ export function MultiSeriesTrendDeepDive({ initialData, options, questionKey }: 
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Response Trend (Count over Time)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Root Cause Analysis</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -102,7 +102,7 @@ export function MultiSeriesTrendDeepDive({ initialData, options, questionKey }: 
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <MultiSeriesTrendChart data={data} options={options} />
+                <CorrelationCard data={data} metricLabel={metricLabel} />
             </CardContent>
         </Card>
     );

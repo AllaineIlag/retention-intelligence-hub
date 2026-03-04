@@ -4,22 +4,22 @@ import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { AnalyticsFilters } from '@/app/actions/analytics';
 import { ReasonAnalysisGrid } from './ReasonAnalysisGrid';
-import { getPushPullData, ButterflyData } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-retention';
-import { getCompetitorDraw, getMoneyVsCulture, MarketMetric } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-market';
+import { getPushPullData, ButterflyData } from '@/app/dashboard/analytics/reason-for-leaving/actions-retention';
+import { getCompetitorDraw, getMoneyVsCulture, MarketMetric } from '@/app/dashboard/analytics/reason-for-leaving/actions-market';
 import { startOfMonth, subMonths, endOfMonth, subDays, startOfYear } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface ReasonAnalysisDeepDiveProps {
+interface ReasonAnalysisAnalyticsProps {
     initialCompetitor: MarketMetric;
     initialMoneyVsCulture: MarketMetric;
     initialButterfly: ButterflyData;
 }
 
-export function ReasonAnalysisDeepDive({
+export function ReasonAnalysisAnalytics({
     initialCompetitor,
     initialMoneyVsCulture,
     initialButterfly
-}: ReasonAnalysisDeepDiveProps) {
+}: ReasonAnalysisAnalyticsProps) {
     const [competitor, setCompetitor] = useState<MarketMetric>(initialCompetitor);
     const [moneyVsCulture, setMoneyVsCulture] = useState<MarketMetric>(initialMoneyVsCulture);
     const [butterfly, setButterfly] = useState<ButterflyData>(initialButterfly);

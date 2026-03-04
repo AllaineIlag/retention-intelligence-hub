@@ -8,7 +8,7 @@ Navigate to **Team Management** to control your personnel:
 - **Permission Control**: Toggle `Can Export Data` for specific interviewers to restrict or permit data downloads.
 - **System Discipline**: You have the authority to suspend or reactivate accounts as needed.
 
-## 2. Intelligence Deep-Dive (Analytics)
+## 2. Intelligence analytics (Analytics)
 Your dashboard provides real-time situational awareness:
 - **Retention Rate**: The percentage of employees successfully retained.
 - **Turnover Trends**: Visual representation of exits over time.

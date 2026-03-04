@@ -2,20 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getDepartmentScoreData, DepartmentScoreData } from '@/app/dashboard/deep-dive/shared-actions';
-import { startOfMonth, endOfMonth, subMonths, startOfYear, subDays } from 'date-fns';
+import { getAttritionTrendData, AttritionTrendData } from '@/app/dashboard/analytics/reason-for-leaving/actions-trend';
+import { startOfMonth, endOfMonth, subMonths, format, startOfYear, subDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DepartmentScoreChart } from './DepartmentScoreChart';
-import { AnalyticsFilters } from '@/app/actions/analytics';
+import { AttritionTrendChart } from './AttritionTrendChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface DepartmentScoreDeepDiveProps {
-    initialData: DepartmentScoreData[];
-    questionKey: string;
+interface AttritionTrendAnalyticsProps {
+    initialData: AttritionTrendData[];
 }
 
-export function DepartmentScoreDeepDive({ initialData, questionKey }: DepartmentScoreDeepDiveProps) {
-    const [data, setData] = useState<DepartmentScoreData[]>(initialData);
+export function AttritionTrendAnalytics({ initialData }: AttritionTrendAnalyticsProps) {
+    const [data, setData] = useState<AttritionTrendData[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [range, setRange] = useState('30d');
     const { pageFilter, version } = usePageFilter();
@@ -25,6 +23,8 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Sync local range with global page filter
     useEffect(() => {
         if (version !== lastVersionRef.current) {
             lastVersionRef.current = version;
@@ -34,7 +34,7 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
         }
     }, [pageFilter, version]);
 
-    // Fetch data when range changes
+    // Fetch data when range changes (triggered by user or global sync)
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -49,26 +49,26 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
                     case '6m': startDate = subMonths(today, 6); break;
                     case '12m': startDate = subMonths(today, 12); break;
                     case 'ytd': startDate = startOfYear(today); break;
-                    default: startDate = subDays(today, 30);
+                    default: startDate = subDays(today, 30); // Fallback
                 }
 
-                const filters: AnalyticsFilters = {
+                const filters = {
                     startDate,
-                    endDate: endOfMonth(today),
-                    department: undefined
+                    endDate: endOfMonth(today)
                 };
 
-                const result = await getDepartmentScoreData(questionKey, filters);
+                const result = await getAttritionTrendData(filters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch department score data:", error);
+                console.error("Failed to fetch attrition trend data:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [range, questionKey]);
+    }, [range]);
+
 
     const handleRangeChange = (value: string) => {
         setRange(value);
@@ -77,7 +77,7 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Department (Average Score)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Trend (Frequency over Time)</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -102,7 +102,7 @@ export function DepartmentScoreDeepDive({ initialData, questionKey }: Department
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <DepartmentScoreChart data={data} />
+                <AttritionTrendChart data={data} />
             </CardContent>
         </Card>
     );

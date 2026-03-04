@@ -7,9 +7,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown, LineChart } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getAttritionTrendData, AttritionTrendData } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-trend"
+import { getAttritionTrendData, AttritionTrendData } from "@/app/dashboard/analytics/reason-for-leaving/actions-trend"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
-import { MultiSeriesTrendChart } from '@/components/analytics/deep-dive/MultiSeriesTrendChart';
+import { MultiSeriesTrendChart } from '@/components/analytics/MultiSeriesTrendChart';
 
 interface TrendCardProps {
     initialData?: AttritionTrendData[]

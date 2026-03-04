@@ -6,11 +6,11 @@ import { PageFilterBar } from './page-filter-bar';
 export function NavPageFilter() {
     const pathname = usePathname();
 
-    // Show on main dashboard and deep-dive pages
+    // Show on main dashboard and analytics pages
     const isDashboard = pathname === '/dashboard';
-    const isDeepDive = pathname.startsWith('/dashboard/deep-dive');
+    const isAnalytics = pathname.startsWith('/dashboard/analytics');
 
-    if (!isDashboard && !isDeepDive) {
+    if (!isDashboard && !isAnalytics) {
         return null;
     }
 

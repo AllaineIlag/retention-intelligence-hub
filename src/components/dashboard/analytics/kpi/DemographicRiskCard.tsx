@@ -7,9 +7,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown, PieChart } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { getDemographicRiskData, DemographicRiskData } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-demographic"
+import { getDemographicRiskData, DemographicRiskData } from "@/app/dashboard/analytics/reason-for-leaving/actions-demographic"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
-import { DemographicRiskChart } from '@/components/analytics/deep-dive/DemographicRiskChart';
+import { DemographicRiskChart } from '@/components/analytics/DemographicRiskChart';
 
 interface DemographicRiskCardProps {
     initialData?: DemographicRiskData[]

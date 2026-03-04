@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getDepartmentClusterData, DepartmentClusterData } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-heatmap';
+import { getDemographicRiskData, DemographicRiskData } from '@/app/dashboard/analytics/reason-for-leaving/actions-demographic';
 import { startOfMonth, endOfMonth, subDays, subMonths, startOfYear } from 'date-fns';
-import { DepartmentClusterChart } from './DepartmentClusterChart';
+import { DemographicRiskChart } from './DemographicRiskChart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface DepartmentClusterDeepDiveProps {
-    initialData: DepartmentClusterData[];
+interface DemographicRiskAnalyticsProps {
+    initialData: DemographicRiskData[];
 }
 
-export function DepartmentClusterDeepDive({ initialData }: DepartmentClusterDeepDiveProps) {
-    const [data, setData] = useState<DepartmentClusterData[]>(initialData);
+export function DemographicRiskAnalytics({ initialData }: DemographicRiskAnalyticsProps) {
+    const [data, setData] = useState<DemographicRiskData[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
 
     // Simple Range Filter (Trend Style)
@@ -58,13 +58,13 @@ export function DepartmentClusterDeepDive({ initialData }: DepartmentClusterDeep
                 const apiFilters = {
                     startDate,
                     endDate: endOfMonth(today),
-                    // Removed Department filter per user request
+                    // Removed Department filter per user request (User asked for "Same filter like Trend (Frequency over Time)")
                     department: undefined
                 };
-                const result = await getDepartmentClusterData(apiFilters);
+                const result = await getDemographicRiskData(apiFilters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch department cluster data:", error);
+                console.error("Failed to fetch demographic risk data:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -81,7 +81,7 @@ export function DepartmentClusterDeepDive({ initialData }: DepartmentClusterDeep
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Cluster Analysis (Reason by Dept)</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Demographic Risk (Tenure)</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -106,7 +106,7 @@ export function DepartmentClusterDeepDive({ initialData }: DepartmentClusterDeep
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <DepartmentClusterChart data={data} />
+                <DemographicRiskChart data={data} />
             </CardContent>
         </Card>
     );

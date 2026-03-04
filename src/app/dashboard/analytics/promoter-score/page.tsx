@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getMultiSeriesTrendData, getDepartmentScoreData, getCorrelationData } from '../shared-actions';
 
-import { MultiSeriesTrendDeepDive } from '@/components/analytics/deep-dive/MultiSeriesTrendDeepDive';
-import { DepartmentScoreDeepDive } from '@/components/analytics/deep-dive/DepartmentScoreDeepDive';
-import { CorrelationDeepDive } from '@/components/analytics/deep-dive/CorrelationDeepDive';
+import { MultiSeriesTrendAnalytics } from '@/components/analytics/MultiSeriesTrendAnalytics';
+import { DepartmentScoreAnalytics } from '@/components/analytics/DepartmentScoreAnalytics';
+import { CorrelationAnalytics } from '@/components/analytics/CorrelationAnalytics';
 
 
 export default async function RecommendPage() {
@@ -27,7 +27,7 @@ export default async function RecommendPage() {
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
                 <div className="col-span-1 md:col-span-2">
-                    <MultiSeriesTrendDeepDive
+                    <MultiSeriesTrendAnalytics
                         initialData={trendData}
                         options={options}
                         questionKey={questionKey}
@@ -36,7 +36,7 @@ export default async function RecommendPage() {
 
                 {/* 2. The Heatmap (Department) */}
                 <div>
-                    <DepartmentScoreDeepDive
+                    <DepartmentScoreAnalytics
                         initialData={deptData}
                         questionKey={questionKey}
                     />
@@ -44,7 +44,7 @@ export default async function RecommendPage() {
 
                 {/* 3. The Correlation (Root Cause) */}
                 <div>
-                    <CorrelationDeepDive
+                    <CorrelationAnalytics
                         initialData={correlationData}
                         metricLabel="Promoter Score"
                         questionKey={questionKey}

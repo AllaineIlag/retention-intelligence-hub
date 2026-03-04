@@ -8,7 +8,7 @@ import { usePageFilter } from '@/components/dashboard/page-filter-context';
 import { ChevronDown, Plane } from "lucide-react"
 import { cn } from "@/lib/utils"
 // Note: You must update actions-market.ts export to include 'getBrainDrain' directly if not default
-import { getBrainDrain } from "@/app/dashboard/deep-dive/reason-for-leaving/actions-market"
+import { getBrainDrain } from "@/app/dashboard/analytics/reason-for-leaving/actions-market"
 import { endOfMonth, startOfYear, subDays, subMonths } from "date-fns"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 

@@ -1,5 +1,5 @@
-import { getReasonKPIs } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-kpi';
-import { getBrainDrain } from '@/app/dashboard/deep-dive/reason-for-leaving/actions-market';
+import { getReasonKPIs } from '@/app/dashboard/analytics/reason-for-leaving/actions-kpi';
+import { getBrainDrain } from '@/app/dashboard/analytics/reason-for-leaving/actions-market';
 import { TopExitReasonCard } from '@/components/dashboard/analytics/kpi/TopExitReasonCard';
 import { LowestExitReasonCard } from '@/components/dashboard/analytics/kpi/LowestExitReasonCard';
 import { AvgTenureCard } from '@/components/dashboard/analytics/kpi/AvgTenureCard';

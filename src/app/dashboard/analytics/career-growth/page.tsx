@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getMultiSeriesTrendData, getDepartmentScoreData, getCorrelationData } from '../shared-actions';
-import { MultiSeriesTrendDeepDive } from '@/components/analytics/deep-dive/MultiSeriesTrendDeepDive';
-import { DepartmentScoreDeepDive } from '@/components/analytics/deep-dive/DepartmentScoreDeepDive';
-import { CorrelationDeepDive } from '@/components/analytics/deep-dive/CorrelationDeepDive';
+import { MultiSeriesTrendAnalytics } from '@/components/analytics/MultiSeriesTrendAnalytics';
+import { DepartmentScoreAnalytics } from '@/components/analytics/DepartmentScoreAnalytics';
+import { CorrelationAnalytics } from '@/components/analytics/CorrelationAnalytics';
 
 export default async function CareerGrowthPage() {
     const questionKey = 'career_growth'; // DB Key
@@ -28,17 +28,17 @@ export default async function CareerGrowthPage() {
             <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
                 {/* 1. The Timeline (Trend) */}
                 <div className="col-span-1 md:col-span-2">
-                    <MultiSeriesTrendDeepDive initialData={trendData} options={options} questionKey={questionKey} />
+                    <MultiSeriesTrendAnalytics initialData={trendData} options={options} questionKey={questionKey} />
                 </div>
 
                 {/* 2. The Heatmap (Department) */}
                 <div>
-                    <DepartmentScoreDeepDive initialData={deptData} questionKey={questionKey} />
+                    <DepartmentScoreAnalytics initialData={deptData} questionKey={questionKey} />
                 </div>
 
                 {/* 3. The Correlation (Root Cause) */}
                 <div>
-                    <CorrelationDeepDive initialData={correlationData} questionKey={questionKey} metricLabel="Career Growth" />
+                    <CorrelationAnalytics initialData={correlationData} questionKey={questionKey} metricLabel="Career Growth" />
                 </div>
             </div>
         </div>

@@ -2,21 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePageFilter } from '@/components/dashboard/page-filter-context';
-import { getCorrelationData, CorrelationData } from '@/app/dashboard/deep-dive/shared-actions';
+import { getDepartmentScoreData, DepartmentScoreData } from '@/app/dashboard/analytics/shared-actions';
 import { startOfMonth, endOfMonth, subMonths, startOfYear, subDays } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CorrelationCard } from './CorrelationCard';
+import { DepartmentScoreChart } from './DepartmentScoreChart';
 import { AnalyticsFilters } from '@/app/actions/analytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface CorrelationDeepDiveProps {
-    initialData: CorrelationData;
+interface DepartmentScoreAnalyticsProps {
+    initialData: DepartmentScoreData[];
     questionKey: string;
-    metricLabel: string;
 }
 
-export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: CorrelationDeepDiveProps) {
-    const [data, setData] = useState<CorrelationData>(initialData);
+export function DepartmentScoreAnalytics({ initialData, questionKey }: DepartmentScoreAnalyticsProps) {
+    const [data, setData] = useState<DepartmentScoreData[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [range, setRange] = useState('30d');
     const { pageFilter, version } = usePageFilter();
@@ -55,13 +54,14 @@ export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: C
 
                 const filters: AnalyticsFilters = {
                     startDate,
-                    endDate: endOfMonth(today)
+                    endDate: endOfMonth(today),
+                    department: undefined
                 };
 
-                const result = await getCorrelationData(questionKey, filters);
+                const result = await getDepartmentScoreData(questionKey, filters);
                 setData(result);
             } catch (error) {
-                console.error("Failed to fetch correlation data:", error);
+                console.error("Failed to fetch department score data:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -77,7 +77,7 @@ export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: C
     return (
         <Card className="bg-card/50 border-border backdrop-blur-xl h-full flex flex-col">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 space-y-2 sm:space-y-0 gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Root Cause Analysis</CardTitle>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Department (Average Score)</CardTitle>
                 <div className="shrink-0">
                     {isMounted && (
                         <Select value={range} onValueChange={handleRangeChange}>
@@ -102,7 +102,7 @@ export function CorrelationDeepDive({ initialData, questionKey, metricLabel }: C
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                 )}
-                <CorrelationCard data={data} metricLabel={metricLabel} />
+                <DepartmentScoreChart data={data} />
             </CardContent>
         </Card>
     );

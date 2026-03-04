@@ -11,7 +11,7 @@ import {
     Cell
 } from 'recharts';
 
-import { DepartmentScoreData } from '@/app/dashboard/deep-dive/shared-actions';
+import { DepartmentScoreData } from '@/app/dashboard/analytics/shared-actions';
 
 interface DepartmentScoreChartProps {
     data: DepartmentScoreData[];

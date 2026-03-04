@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { CorrelationData } from "@/app/dashboard/deep-dive/shared-actions";
+import { CorrelationData } from "@/app/dashboard/analytics/shared-actions";
 
 interface CorrelationCardProps {
     data: CorrelationData;
