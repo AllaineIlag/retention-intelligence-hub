@@ -399,15 +399,15 @@ export async function exportResignations() {
         .from('resignations')
         .select(`
             *,
-            employee_details:employee_id (
+            company_directory (
                 full_name, 
                 department,
-                employee_number,
-                current_position,
+                position,
                 date_hired,
-                immediate_superior,
-                resignation_date
-            )
+                intermediate_supervisor,
+                business_unit
+            ),
+            profiles ( email )
         `)
         .order('created_at', { ascending: false });
 

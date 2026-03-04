@@ -3,7 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getDepartments, getPositions, addDepartment, toggleDepartmentStatus, addPosition, togglePositionStatus, getProfile } from '@/app/actions/settings-actions';
+import {
+    getDepartments, getPositions, addDepartment, toggleDepartmentStatus, addPosition, togglePositionStatus, getProfile,
+    getBusinessUnits, addBusinessUnit, toggleBusinessUnitStatus,
+    getSupervisors, addSupervisor, toggleSupervisorStatus
+} from '@/app/actions/settings-actions';
 import { ReferenceTableEditor } from '@/components/dashboard/settings/ReferenceTableEditor';
 
 export default async function SettingsPage() {
@@ -16,13 +20,17 @@ export default async function SettingsPage() {
     const profile = profileRes.data;
 
     // Fetch system data (parallel)
-    const [deptRes, posRes] = await Promise.all([
+    const [deptRes, posRes, buRes, supRes] = await Promise.all([
         getDepartments(),
-        getPositions()
+        getPositions(),
+        getBusinessUnits(),
+        getSupervisors()
     ]);
 
     const departments = deptRes.success && deptRes.data ? deptRes.data : [];
     const positions = posRes.success && posRes.data ? posRes.data : [];
+    const businessUnits = buRes.success && buRes.data ? buRes.data : [];
+    const supervisors = supRes.success && supRes.data ? supRes.data : [];
 
     return (
         <div className="space-y-6">
@@ -79,6 +87,20 @@ export default async function SettingsPage() {
                                 items={positions}
                                 onAdd={addPosition}
                                 onToggle={togglePositionStatus}
+                            />
+                            <ReferenceTableEditor
+                                title="Business Units"
+                                description="Manage active business units for dropdowns."
+                                items={businessUnits}
+                                onAdd={addBusinessUnit}
+                                onToggle={toggleBusinessUnitStatus}
+                            />
+                            <ReferenceTableEditor
+                                title="Supervisors"
+                                description="Manage intermediate supervisors and managers in the system."
+                                items={supervisors}
+                                onAdd={addSupervisor}
+                                onToggle={toggleSupervisorStatus}
                             />
                         </div>
                     </TabsContent>

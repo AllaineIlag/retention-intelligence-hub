@@ -13,9 +13,19 @@ export default async function InterviewPage({ params }: { params: { id: string }
     const { resignation, responses, verifiedResults, error } = await getInterviewDetails(id);
 
     // Map details for UI consistency
+    const dir = resignation
+        ? (Array.isArray((resignation as any).company_directory)
+            ? (resignation as any).company_directory[0]
+            : (resignation as any).company_directory)
+        : null;
+
     const details = resignation ? {
-        ...(resignation as any).employee_details,
-        ...(resignation as any).profiles
+        full_name: dir?.full_name,
+        position: dir?.position,
+        department: dir?.department,
+        date_hired: dir?.date_hired,
+        email: resignation.personal_email || dir?.email,
+        role: 'employee', // Mock default since role is no longer strictly tied for anonymization in the same way without profiles
     } : null;
 
 

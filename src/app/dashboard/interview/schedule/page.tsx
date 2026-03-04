@@ -76,7 +76,8 @@ async function TodaysBanner() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {todayCases.map((c: any) => {
-                            const employee = c.employee_details || {};
+                            const rawDir = c.company_directory;
+                            const employee = (Array.isArray(rawDir) ? rawDir[0] : rawDir) || {};
                             return (
                                 <Card
                                     key={c.id}
@@ -93,7 +94,7 @@ async function TodaysBanner() {
                                                 {employee.full_name || 'Employee'}
                                             </CardTitle>
                                             <CardDescription className="text-xs truncate">
-                                                {employee.current_position} • {employee.department}
+                                                {employee.position} • {employee.department}
                                             </CardDescription>
                                         </div>
                                     </CardHeader>

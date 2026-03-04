@@ -23,16 +23,12 @@ export default async function ResignationPage({ params }: PageProps) {
         .from('resignations')
         .select(`
             *,
-            employee_details (
+            company_directory (
                 full_name,
-                current_position,
+                position,
                 department,
-                employee_number,
                 date_hired,
-                immediate_superior,
-                resignation_date
-            ),
-            profiles (
+                intermediate_supervisor,
                 email
             )
         `)
@@ -46,9 +42,17 @@ export default async function ResignationPage({ params }: PageProps) {
     }
 
     // Map details for UI
+    const dir = Array.isArray((resignation as any).company_directory)
+        ? (resignation as any).company_directory[0]
+        : (resignation as any).company_directory;
+
     const details = {
-        ...(resignation as any).employee_details,
-        ...(resignation as any).profiles,
+        full_name: dir?.full_name,
+        current_position: dir?.position,  // map to the old key for UI compat
+        department: dir?.department,
+        date_hired: dir?.date_hired,
+        immediate_superior: dir?.intermediate_supervisor,
+        email: resignation.personal_email || dir?.email,
     };
 
 
@@ -71,7 +75,7 @@ export default async function ResignationPage({ params }: PageProps) {
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                             <Avatar className="h-16 w-16 border-2 border-primary/10">
-                                <AvatarImage src={details?.avatar_url} />
+                                <AvatarImage src={undefined} />
                                 <AvatarFallback className="text-lg bg-primary/5">{details?.full_name?.charAt(0) || 'E'}</AvatarFallback>
                             </Avatar>
                             <div>

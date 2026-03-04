@@ -34,7 +34,7 @@ type ResignationWithDetails = {
     last_working_day: string | null;
     created_at: string;
     status: string;
-    employee_details: {
+    company_directory: {
         date_hired: string | null;
         department: string | null;
     } | null;
@@ -48,7 +48,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
         .from('resignations')
         .select(`
             *,
-            employee_details!inner (
+            company_directory!inner (
                 date_hired,
                 department
             )
@@ -71,7 +71,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
 
         // Dept Filter
         if (filters.department && filters.department.length > 0) {
-            const dept = r.employee_details?.department;
+            const dept = r.company_directory?.department;
             if (!dept || !filters.department.includes(dept)) return false;
         }
 
@@ -86,7 +86,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     let headCount = 5000;
     if (filters.department && filters.department.length > 0) {
         const { count } = await supabase
-            .from('employee_details')
+            .from('company_directory')
             .select('*', { count: 'exact', head: true })
             .in('department', filters.department);
         headCount = count || 1;
@@ -98,7 +98,7 @@ export async function getAnalyticsSummary(filters: AnalyticsFilters = {}) {
     let totalTenureDays = 0;
     let tenureCount = 0;
     filtered.forEach(r => {
-        const hired = r.employee_details?.date_hired;
+        const hired = r.company_directory?.date_hired;
 
         const left = r.last_working_day || r.created_at;
         if (hired && left) {
@@ -195,11 +195,10 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            employee_details!inner (
+            company_directory!inner (
                 department
             )
         `)
-
         .eq('status', 'completed');
 
     if (resError) return { success: false, error: resError.message };
@@ -211,7 +210,7 @@ export async function getCountryStats(filters: AnalyticsFilters = {}) {
             if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
         if (filters.department && filters.department.length > 0) {
-            const dept = r.employee_details?.department;
+            const dept = r.company_directory?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
         relevantIds.add(r.id);
@@ -255,7 +254,7 @@ export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
             last_working_day, 
             created_at, 
             status,
-            employee_details!inner (
+            company_directory!inner (
                 department
             )
         `)
@@ -282,7 +281,7 @@ export async function getTurnoverTrends(filters: AnalyticsFilters = {}) {
     resignations?.forEach((r: any) => {
         // Department Filter
         if (filters.department && filters.department.length > 0) {
-            const dept = r.employee_details?.department;
+            const dept = r.company_directory?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
 
@@ -314,7 +313,7 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            employee_details!inner (
+            company_directory!inner (
                 department
             )
         `)
@@ -334,7 +333,7 @@ export async function getDepartmentBreakdown(filters: AnalyticsFilters = {}) {
             }
         }
 
-        const dept = r.employee_details?.department || 'Unknown';
+        const dept = r.company_directory?.department || 'Unknown';
         // If we are filtering by specific depts, only count those
         if (filters.department && filters.department.length > 0) {
             if (filters.department.includes(dept)) {
@@ -369,11 +368,10 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
             status,
             last_working_day,
             created_at,
-            employee_details!inner (
+            company_directory!inner (
                 department
             )
         `)
-
         .eq('status', 'completed');
 
     if (resError) return { success: false, error: resError.message };
@@ -386,7 +384,7 @@ export async function getExitQuestionStats(filters: AnalyticsFilters = {}) {
             if (!isWithinInterval(date, { start: filters.startDate, end: filters.endDate })) return;
         }
         if (filters.department && filters.department.length > 0) {
-            const dept = r.employee_details?.department;
+            const dept = r.company_directory?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
 
@@ -458,11 +456,10 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
             last_working_day, 
             created_at, 
             status,
-            employee_details!inner (
+            company_directory!inner (
                 department
             )
         `)
-
         .eq('status', 'completed');
 
     if (error) return { success: false, error: error.message };
@@ -480,7 +477,7 @@ export async function getTurnoverComparison(filters: AnalyticsFilters = {}) {
 
     resignations.forEach(r => {
         if (filters.department && filters.department.length > 0) {
-            const dept = (r as any).employee_details?.department;
+            const dept = (r as any).company_directory?.department;
             if (!dept || !filters.department.includes(dept)) return;
         }
 
@@ -538,9 +535,9 @@ export type RiskDataPoint = {
 export async function getRetentionRiskData(filters: AnalyticsFilters = {}) {
     const supabase = await createClient();
 
-    // 1. Fetch total employees per department (The Base)
+    // 1. Fetch total employees per department from company_directory
     const { data: deptCounts } = await supabase
-        .from('employee_details')
+        .from('company_directory')
         .select('department');
 
     const headcountMap: Record<string, number> = {};
@@ -552,9 +549,10 @@ export async function getRetentionRiskData(filters: AnalyticsFilters = {}) {
     const { data: allExits } = await supabase
         .from('resignations')
         .select(`
+            id,
             last_working_day, 
             created_at, 
-            employee_details!inner (department)
+            company_directory!inner (department)
         `)
         .eq('status', 'completed');
 
@@ -566,7 +564,7 @@ export async function getRetentionRiskData(filters: AnalyticsFilters = {}) {
     const riskStats: Record<string, { recent: number, ninety: number }> = {};
 
     allExits?.forEach((r: any) => {
-        const dept = r.employee_details?.department;
+        const dept = r.company_directory?.department;
         if (!dept) return;
 
         const date = parseISO(r.last_working_day || r.created_at);
@@ -588,7 +586,7 @@ export async function getRetentionRiskData(filters: AnalyticsFilters = {}) {
 
     // Link sentiments to depts via resignation_id
     const resToDept = new Map<string, string>();
-    allExits?.forEach((r: any) => resToDept.set(r.id, r.employee_details?.department || ''));
+    allExits?.forEach((r: any) => resToDept.set(r.id, r.company_directory?.department || ''));
 
     const deptSentiment: Record<string, { score: number, count: number }> = {};
     sentiments?.forEach(s => {
@@ -643,7 +641,19 @@ export type StrategicInsight = {
     metrics?: string;
 };
 
+export type DiagnosticCheck = {
+    label: string;
+    status: string;
+    isHealthy: boolean;
+};
+
+export type StrategicInsightsPayload = {
+    insights: StrategicInsight[];
+    diagnostics: DiagnosticCheck[];
+};
+
 export async function getStrategicInsights(filters: AnalyticsFilters = {}) {
+
     const riskRes = await getRetentionRiskData(filters);
     if (!riskRes.success || !riskRes.data) return { success: false, error: 'Failed to generate insights' };
 
@@ -660,24 +670,86 @@ export async function getStrategicInsights(filters: AnalyticsFilters = {}) {
         });
     }
 
-    // Career Growth Insight
+    // Career Growth Insight & Diagnostics Base
     const statsRes = await getExitQuestionStats(filters);
-    const careerStats = statsRes.success ? statsRes.data?.find(s => s.question_key === 'career_growth') : null;
-    if (careerStats) {
-        const negativeScores = careerStats.stats
-            .filter(s => ['Poor', 'Very Poor', '1', '2', 'Disagree'].includes(s.name))
-            .reduce((acc, curr) => acc + curr.value, 0);
+    const diagnostics: DiagnosticCheck[] = [];
 
-        const negRatio = negativeScores / (careerStats.totalResponses || 1);
-        if (negRatio > 0.3) {
-            insights.push({
-                id: 'career-growth-alert',
-                type: 'warning',
-                title: 'Stagnation Perception Trigger',
-                description: 'Over 30% of exiters cited "Poor" career growth prospects as a primary driver.',
-                metrics: `${Math.round(negRatio * 100)}% Negative Sentiment`
+    if (statsRes.success && statsRes.data) {
+        const stats = statsRes.data;
+
+        // 1. Career Growth
+        const careerStats = stats.find(s => s.question_key === 'career_growth');
+        if (careerStats) {
+            const negativeScores = careerStats.stats
+                .filter(s => ['Poor', 'Very Poor', '1', '2', 'Disagree'].includes(s.name))
+                .reduce((acc, curr) => acc + curr.value, 0);
+
+            const negRatio = negativeScores / (careerStats.totalResponses || 1);
+            const isHealthy = negRatio < 0.3;
+
+            diagnostics.push({
+                label: "Career Growth Sentiment",
+                status: isHealthy ? "Stable" : `${Math.round(negRatio * 100)}% report stagnation`,
+                isHealthy
             });
+
+            if (!isHealthy) {
+                insights.push({
+                    id: 'career-growth-alert',
+                    type: 'warning',
+                    title: 'Stagnation Perception Trigger',
+                    description: 'Over 30% of exiters cited poor career growth prospects as a primary driver.',
+                    metrics: `${Math.round(negRatio * 100)}% Negative Sentiment`
+                });
+            }
+        } else {
+            diagnostics.push({ label: "Career Growth Sentiment", status: "Insufficient Data", isHealthy: true });
         }
+
+        // 2. Compensation
+        const compStats = stats.find(s => s.question_key === 'rate_of_pay');
+        if (compStats) {
+            const negativeScores = compStats.stats
+                .filter(s => ['Poor', 'Very Poor', '1', '2', 'Disagree'].includes(s.name))
+                .reduce((acc, curr) => acc + curr.value, 0);
+
+            const negRatio = negativeScores / (compStats.totalResponses || 1);
+            const isHealthy = negRatio < 0.3;
+
+            diagnostics.push({
+                label: "Compensation Discrepancies",
+                status: isHealthy ? "None detected" : `${Math.round(negRatio * 100)}% report gap`,
+                isHealthy
+            });
+        } else {
+            diagnostics.push({ label: "Compensation Discrepancies", status: "Insufficient Data", isHealthy: true });
+        }
+
+        // 3. Workload
+        const workStats = stats.find(s => s.question_key === 'workload');
+        if (workStats) {
+            const negativeScores = workStats.stats
+                .filter(s => ['Poor', 'Very Poor', '1', '2', 'Disagree'].includes(s.name))
+                .reduce((acc, curr) => acc + curr.value, 0);
+
+            const negRatio = negativeScores / (workStats.totalResponses || 1);
+            const isHealthy = negRatio < 0.3;
+
+            diagnostics.push({
+                label: "Workload & Capacity",
+                status: isHealthy ? "Sustainable" : `${Math.round(negRatio * 100)}% report burnout`,
+                isHealthy
+            });
+        } else {
+            diagnostics.push({ label: "Workload & Capacity", status: "Insufficient Data", isHealthy: true });
+        }
+
+    } else {
+        diagnostics.push(
+            { label: "Career Growth Sentiment", status: "Offline", isHealthy: true },
+            { label: "Compensation Discrepancies", status: "Offline", isHealthy: true },
+            { label: "Workload & Capacity", status: "Offline", isHealthy: true }
+        );
     }
 
     // General Stability Insight
@@ -685,11 +757,11 @@ export async function getStrategicInsights(filters: AnalyticsFilters = {}) {
         insights.push({
             id: 'stability-check',
             type: 'info',
-            title: 'Steady State Detected',
+            title: 'System Stability Confirmed',
             description: 'Organizational health is within standard deviations. No critical departmental anomalies detected.',
             metrics: 'Nominal Operations'
         });
     }
 
-    return { success: true, data: insights };
+    return { success: true, data: { insights, diagnostics } as StrategicInsightsPayload };
 }

@@ -11,7 +11,7 @@ export function DashboardHeader() {
         if (path.startsWith('/dashboard/interview')) return 'Interviews';
         if (path.startsWith('/dashboard/team')) return 'Team';
 
-        // Deep Dive Routes
+        // Analytics Routes
         if (path.startsWith('/dashboard/deep-dive/reason-for-leaving')) return 'Reason for Leaving';
         if (path.startsWith('/dashboard/deep-dive/workload-balance')) return 'Workload Balance';
         if (path.startsWith('/dashboard/deep-dive/career-growth')) return 'Career Growth';

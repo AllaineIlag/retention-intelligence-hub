@@ -20,7 +20,6 @@ import {
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { BUSINESS_UNITS } from '@/constants/enums';
 
 // Reusing the config from InterviewSession for consistency
 // Ideally this should be shared, but for now we duplicate the strict config to ensure stability
@@ -43,7 +42,8 @@ interface InterviewReportDossierProps {
 }
 
 export function InterviewReportDossier({ resignation, verifiedResults, responses }: InterviewReportDossierProps) {
-    const employee = resignation.employee_details || {};
+    const rawDir = (resignation as any).company_directory;
+    const employee = (Array.isArray(rawDir) ? rawDir[0] : rawDir) || {};
 
     // Helper to get verified personal info
     const getVerifiedPersonalInfo = (field: any) => {

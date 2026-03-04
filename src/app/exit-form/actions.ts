@@ -115,7 +115,7 @@ export async function getExitResponse(resignationId: string): Promise<{ success:
         const dir = data.company_directory as any;
         snapshot.employee_details = {
             employee_name: dir.full_name,
-            employee_number: dir.employee_number,
+            employee_number: dir.control_number,
             department: dir.department,
             business_unit: dir.business_unit,
             intermediate_supervisor: dir.intermediate_supervisor,
@@ -209,34 +209,6 @@ export async function saveExitForm(formData: ExitFormData) {
     if (snapshotError) {
         console.error('Snapshot Save Error:', snapshotError);
         return { success: false, error: snapshotError.message };
-    }
-
-    // 1.5 Sync Employee Details to `employee_details` table
-    // This ensures real users have their Personal Info populated (not just in form_snapshot)
-    if (formData.employee_details) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            const adminClient = createAdminClient();
-            const ed = formData.employee_details;
-            const { error: edError } = await adminClient
-                .from('employee_details')
-                .upsert({
-                    id: user.id,
-                    full_name: ed.employee_name || null,
-                    employee_number: ed.employee_number || null,
-                    department: ed.department || null,
-                    current_position: ed.current_position || null,
-                    position_when_hired: ed.position_when_hired || null,
-                    date_hired: ed.date_hired || null,
-                    immediate_superior: ed.intermediate_supervisor || null,
-                    resignation_date: ed.date_of_resignation || null,
-                }, { onConflict: 'id' });
-
-            if (edError) {
-                console.error('Employee Details Sync Error:', edError);
-                // Non-blocking — snapshot is already saved
-            }
-        }
     }
 
     // 2. Sync Granular Answers to `exit_questionnaires_result` for Interviewer View (Phase 4)
@@ -375,18 +347,10 @@ export async function getUserProfile() {
         return { success: false, error: profileError.message };
     }
 
-    // Fetch Employee Details
-    const { data: details, error: detailsError } = await supabase
-        .from('employee_details')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
     return {
         success: true,
         data: {
-            ...profile,
-            ...details
+            ...profile
         }
     };
 }

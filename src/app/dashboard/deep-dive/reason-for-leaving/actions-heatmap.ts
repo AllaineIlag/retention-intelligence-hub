@@ -17,13 +17,12 @@ export async function getDepartmentClusterData(filters: AnalyticsFilters = {}): 
     const endDate = filters.endDate ? filters.endDate.toISOString() : new Date().toISOString();
     const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
 
-    // We utilize the direct relationship between resignations and employee_details
-    // AND fetch the 'reason_for_leaving' from exit_interview_results
+    // Join via directory_id → company_directory for department
     const { data: resignations, error } = await supabase
         .from('resignations')
         .select(`
             id,
-            employee_details!fk_resignations_employee_details (
+            company_directory (
                 department
             ),
             exit_interview_results (
@@ -51,7 +50,7 @@ export async function getDepartmentClusterData(filters: AnalyticsFilters = {}): 
 
     resignations.forEach((row: any) => {
         // 1. Get Department
-        const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
+        const details = Array.isArray(row.company_directory) ? row.company_directory[0] : row.company_directory;
         const dept = details?.department || 'Unknown';
 
         // Apply Department Filter

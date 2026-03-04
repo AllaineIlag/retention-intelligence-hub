@@ -43,11 +43,11 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import {
-    DEPARTMENTS,
-    POSITIONS,
-    INTERMEDIATE_SUPERVISORS,
-    BUSINESS_UNITS
-} from '@/constants/enums';
+    getDepartments,
+    getPositions,
+    getSupervisors,
+    getBusinessUnits
+} from '@/app/actions/settings-actions';
 
 interface InterviewSessionProps {
     resignation: any;
@@ -96,8 +96,9 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
     const selectedIndex = responses.findIndex(r => r.id === selectedResponseId);
     const isLastQuestion = selectedIndex === responses.length - 1;
 
-    // Employee details from the resignation join
-    const employee = (resignation as any).employee_details || {};
+    // Employee details from the company_directory join
+    const rawDir = (resignation as any).company_directory;
+    const employee = (Array.isArray(rawDir) ? rawDir[0] : rawDir) || {};
 
     // Auto-advance if the currently selected question becomes skipped due to a verification change
     useEffect(() => {
@@ -507,10 +508,31 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
     const [value, setValue] = useState(verifiedValue ?? rawOriginal);
     const [saving, setSaving] = useState(false);
 
+    const [positions, setPositions] = useState<string[]>([]);
+    const [departments, setDepartments] = useState<string[]>([]);
+    const [businessUnits, setBusinessUnits] = useState<string[]>([]);
+    const [supervisors, setSupervisors] = useState<string[]>([]);
+
     // Update local state when selection changes
     useEffect(() => {
         setValue(verifiedValue ?? rawOriginal);
     }, [fieldKey, verifiedValue, rawOriginal]);
+
+    useEffect(() => {
+        async function fetchSettings() {
+            const [dRes, bRes, sRes, pRes] = await Promise.all([
+                getDepartments(),
+                getBusinessUnits(),
+                getSupervisors(),
+                getPositions()
+            ]);
+            if (dRes.success) setDepartments(dRes.data?.filter((d: any) => d.is_active).map((d: any) => d.name) || []);
+            if (bRes.success) setBusinessUnits(bRes.data?.filter((b: any) => b.is_active).map((b: any) => b.name) || []);
+            if (sRes.success) setSupervisors(sRes.data?.filter((s: any) => s.is_active).map((s: any) => s.name) || []);
+            if (pRes.success) setPositions(pRes.data?.filter((p: any) => p.is_active).map((p: any) => p.name) || []);
+        }
+        fetchSettings();
+    }, []);
 
     const handleSave = async () => {
         const trimmed = typeof value === 'string' ? value.trim() : value;
@@ -537,7 +559,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                         <SelectValue placeholder="Select position" />
                     </SelectTrigger>
                     <SelectContent>
-                        {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        {positions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                     </SelectContent>
                 </Select>
             );
@@ -549,7 +571,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                         <SelectValue placeholder="Select business unit" />
                     </SelectTrigger>
                     <SelectContent>
-                        {BUSINESS_UNITS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                        {businessUnits.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                     </SelectContent>
                 </Select>
             );
@@ -561,7 +583,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                         <SelectValue placeholder="Select department" />
                     </SelectTrigger>
                     <SelectContent>
-                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                     </SelectContent>
                 </Select>
             );
@@ -573,7 +595,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                         <SelectValue placeholder="Select supervisor" />
                     </SelectTrigger>
                     <SelectContent>
-                        {INTERMEDIATE_SUPERVISORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {supervisors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                 </Select>
             );

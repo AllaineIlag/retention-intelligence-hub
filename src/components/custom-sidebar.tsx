@@ -84,7 +84,7 @@ const navItems: NavItem[] = [
         ],
     },
     {
-        title: 'Deep Dive',
+        title: 'Analytics',
         url: '/dashboard/analytics',
         icon: Activity,
         roles: ['lead'],

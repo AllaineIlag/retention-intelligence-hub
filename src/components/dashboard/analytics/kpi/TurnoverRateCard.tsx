@@ -95,7 +95,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
     }
 
     return (
-        <Card className={cn("border border-border bg-card/50 shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("border border-border bg-card/50 shadow-sm flex flex-col justify-between h-full rounded-3xl relative overflow-hidden transition-all hover:shadow-md", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>

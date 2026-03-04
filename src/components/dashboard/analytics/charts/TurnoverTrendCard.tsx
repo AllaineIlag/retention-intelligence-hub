@@ -90,7 +90,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
     const TARGET_THRESHOLD = 100;
 
     return (
-        <Card className={cn("col-span-1 border-border bg-card/50 rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border-border bg-card/50 rounded-3xl relative overflow-hidden transition-all hover:shadow-md", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -98,9 +98,9 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
             )}
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                    <CardTitle className="text-base font-medium tracking-tight">Turnover Trend</CardTitle>
-                    <CardDescription>
-                        Monthly resignations vs Target
+                    <CardTitle className="text-base font-bold tracking-tight uppercase">Turnover Trend: Resignations vs Target</CardTitle>
+                    <CardDescription className="text-[10px] uppercase tracking-widest font-bold opacity-50">
+                        Monthly attrition tracking against 2% baseline
                     </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">

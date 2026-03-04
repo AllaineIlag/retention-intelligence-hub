@@ -17,7 +17,7 @@ interface RecentResignationsTableProps {
 export function RecentResignationsTable({ resignations }: RecentResignationsTableProps) {
     if (!resignations || resignations.length === 0) {
         return (
-            <Card className="col-span-full border-border bg-card/50 h-full flex flex-col">
+            <Card className="col-span-full border-border bg-card/50 h-full flex flex-col transition-all hover:shadow-md">
                 <CardHeader>
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
                 </CardHeader>
@@ -29,7 +29,7 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
     }
 
     return (
-        <Card className="col-span-full border-border bg-card/50 h-full">
+        <Card className="col-span-full border-border bg-card/50 h-full transition-all hover:shadow-md">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base font-medium tracking-tight">Recent Resignations</CardTitle>
@@ -52,15 +52,15 @@ export function RecentResignationsTable({ resignations }: RecentResignationsTabl
                                     <TableCell className="flex items-center gap-3 pl-6">
                                         <div className="flex flex-col">
                                             <span className="font-medium text-sm text-foreground">
-                                                {item.employee_details?.full_name || 'Unknown'}
+                                                {item.company_directory?.full_name || 'Unknown'}
                                             </span>
                                             <span className="text-[10px] text-muted-foreground">
-                                                {item.employee_details?.profiles?.role || 'N/A'}
+                                                {item.company_directory?.position || 'Employee'}
                                             </span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-muted-foreground text-sm">
-                                        {item.employee_details?.department || 'Unassigned'}
+                                        {item.company_directory?.department || 'Unassigned'}
                                     </TableCell>
                                     <TableCell>
                                         <StatusBadge status={item.status} />

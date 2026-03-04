@@ -24,11 +24,8 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
         .eq('id', resignationId)
         .select(`
             *,
-             employee_details (
+            company_directory (
                 full_name
-            ),
-            profiles (
-                email
             )
         `)
         .single();
@@ -43,21 +40,22 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
         .from('resignations')
         .select(`
             id,
-            employee_details ( full_name ),
-            profiles ( email )
+            company_directory ( full_name, email )
         `)
         .eq('id', resignationId)
         .single();
 
     // 2. Send Invitation Email (Email 2)
-    const profile = Array.isArray(resignationDetail?.profiles) ? resignationDetail?.profiles[0] : resignationDetail?.profiles;
-    const employeeDetails = Array.isArray(resignationDetail?.employee_details) ? resignationDetail?.employee_details[0] : resignationDetail?.employee_details;
+    const employeeDetails = Array.isArray(resignationDetail?.company_directory) ? resignationDetail?.company_directory[0] : resignationDetail?.company_directory;
 
-    if (profile?.email) {
+    // We get the email from the company directory since the profile link is gone
+    const emailToUse = employeeDetails?.email;
+
+    if (emailToUse) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [profile.email],
+                to: [emailToUse],
                 subject: 'Exit Interview Scheduled & Action Required',
                 react: ResignationScheduledEmail({
                     employeeName: employeeDetails?.full_name || 'Employee',
@@ -84,20 +82,14 @@ export async function getInterviewDetails(resignationId: string) {
         .from('resignations')
         .select(`
             *,
-            employee_details (
+            company_directory (
                 full_name,
                 department,
-                employee_number,
-                current_position,
                 date_hired,
-                immediate_superior,
-                resignation_date,
+                position,
+                intermediate_supervisor,
                 business_unit,
-                position_when_hired
-            ),
-            profiles (
-                email,
-                role
+                email
             )
         `)
         .eq('id', resignationId)
@@ -329,14 +321,10 @@ export async function getAllInterviews() {
             created_at,
             scheduled_interview_date,
             last_working_day,
-            employee_details (
+            company_directory (
                 full_name,
-                department
-            ),
-            profiles (
-                id,
-                email,
-                role
+                department,
+                email
             )
         `)
         // Fetch ALL statuses so we can segment them on the client (Active vs History)
@@ -352,14 +340,12 @@ export async function getAllInterviews() {
 
     // Transform data to handle array mapping from Supabase JOINs
     const formattedInterviews = interviews?.map(interview => {
-        const profile = Array.isArray(interview.profiles) ? interview.profiles[0] : interview.profiles;
-        const details = Array.isArray(interview.employee_details) ? interview.employee_details[0] : interview.employee_details;
+        const details = Array.isArray(interview.company_directory) ? interview.company_directory[0] : interview.company_directory;
 
         return {
             ...interview,
             employee: {
-                ...details,
-                ...profile
+                ...details
             }
         };
     });
@@ -381,8 +367,7 @@ export async function getInterviewerDashboard() {
         .from('resignations')
         .select(`
             *,
-            employee_details ( full_name, current_position, department, employee_number ),
-            profiles ( email )
+            company_directory ( full_name, position, department, email )
         `)
         .in('status', ['pending_interview'])
         .order('scheduled_interview_date', { ascending: true, nullsFirst: false }); // Put scheduled ones first-ish? No, sort by date for scheduled.

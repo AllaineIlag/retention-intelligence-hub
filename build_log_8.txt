@@ -1,0 +1,51 @@
+﻿
+> retention-intelligence-hub@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.2 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The "middleware" file convention 
+is deprecated. Please use "proxy" instead. 
+Learn more: https://nextjs.org/docs/messages/mid
+dleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\sungj\AppData\Roaming\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜ 
+   á The "middle...leware-to-proxy:String) [],  
+   RemoteException
+    + FullyQualifiedErrorId : NativeCommandErro 
+   r
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 25.4s
+  Running TypeScript ...
+Failed to compile.
+
+./src/components/interview/InterviewReportDossie
+r.tsx:23:10
+Type error: '"@/constants/enums"' has no 
+exported member named 'BUSINESS_UNITS'. Did you 
+mean 'BusinessUnit'?
+
+[0m [90m 21 |[39m [36mimport[39m { format 
+} [36mfrom[39m [32m'date-fns'[39m[33m;[39m
+ [90m 22 |[39m [36mimport[39m { cn } 
+[36mfrom[39m 
+[32m'@/lib/utils'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 23 |[39m 
+[36mimport[39m { [33mBUSINESS_UNITS[39m } 
+[36mfrom[39m 
+[32m'@/constants/enums'[39m[33m;[39m
+ [90m    |[39m          [31m[1m^[22m[39m
+ [90m 24 |[39m
+ [90m 25 |[39m [90m// Reusing the config 
+from InterviewSession for consistency[39m
+ [90m 26 |[39m [90m// Ideally this should be 
+shared, but for now we duplicate the strict 
+config to ensure stability[39m[0m
+Next.js build worker exited with code: 1 and 
+signal: null

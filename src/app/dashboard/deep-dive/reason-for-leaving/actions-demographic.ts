@@ -16,12 +16,12 @@ export async function getDemographicRiskData(filters: AnalyticsFilters = {}): Pr
     const endDate = filters.endDate ? filters.endDate.toISOString() : new Date().toISOString();
     const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
 
-    // Fetch hire_date and resignation_date via resignations -> employee_details
+    // Fetch hire_date and department via directory_id → company_directory
     const { data: resignations, error } = await supabase
         .from('resignations')
         .select(`
             created_at,
-            employee_details!fk_resignations_employee_details (
+            company_directory (
                 date_hired,
                 department
             )
@@ -43,7 +43,7 @@ export async function getDemographicRiskData(filters: AnalyticsFilters = {}): Pr
     let veterans = 0;  // > 3 Years
 
     resignations.forEach((row: any) => {
-        const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
+        const details = Array.isArray(row.company_directory) ? row.company_directory[0] : row.company_directory;
         const dept = details?.department || 'Unknown';
 
         // Apply Department Filter

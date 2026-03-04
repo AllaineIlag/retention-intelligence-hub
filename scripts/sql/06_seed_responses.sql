@@ -45,13 +45,11 @@ DECLARE
     total_responses INT := 0;
     total_results INT := 0;
 BEGIN
-    -- Loop through eligible mock resignations
     FOR rec IN 
-        SELECT r.id AS resignation_id, r.created_at, ed.department
+        SELECT r.id AS resignation_id, r.created_at, cd.department
         FROM resignations r
-        JOIN profiles p ON r.employee_id = p.id
-        JOIN employee_details ed ON p.id = ed.id
-        WHERE (p.email ILIKE '%@sim.retention.com' OR p.email ILIKE '%@mock.co')
+        JOIN company_directory cd ON r.directory_id = cd.id
+        WHERE (cd.email ILIKE '%@tdk.sim.com' OR cd.email LIKE 'michaeljohnsford2001+mock%@gmail.com')
           AND r.status IN ('completed', 'scheduled')
     LOOP
         is_positive := random() < sentiment_bias;

@@ -63,14 +63,14 @@ export async function getPushPullData(filters: AnalyticsFilters = {}): Promise<B
     const startDate = filters.startDate ? filters.startDate.toISOString() : subMonths(new Date(), 12).toISOString();
     const filterDepts = filters.department && filters.department.length > 0 ? new Set(filters.department) : null;
 
-    // Fetch results with joins to get department
+    // Fetch results with joins to get department via company_directory
     const { data: results, error } = await supabase
         .from('exit_interview_results')
         .select(`
             response_value,
             created_at,
             resignation:resignations (
-                employee_details (
+                company_directory (
                     department
                 )
             )
@@ -90,16 +90,15 @@ export async function getPushPullData(filters: AnalyticsFilters = {}): Promise<B
     results.forEach((r: any) => {
         // 1. Filter by Department
         if (filterDepts) {
-            // Traverse the join: resignation -> employee_details -> department
-            // Note: Supabase response structure might be array or object depending on relationship (one-to-one/many)
-            const empDetails = Array.isArray(r.resignation?.employee_details)
-                ? r.resignation.employee_details[0]
-                : r.resignation?.employee_details;
+            // Traverse the join: resignation -> company_directory -> department
+            const dir = Array.isArray(r.resignation?.company_directory)
+                ? r.resignation.company_directory[0]
+                : r.resignation?.company_directory;
 
-            const dept = empDetails?.department;
+            const dept = dir?.department;
 
             if (!dept || !filterDepts.has(dept)) {
-                return; // Skip this record
+                return;
             }
         }
 

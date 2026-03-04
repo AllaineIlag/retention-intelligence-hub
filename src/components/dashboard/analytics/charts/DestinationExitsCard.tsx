@@ -78,7 +78,7 @@ export function DestinationExitsCard({ initialData = [], className }: Destinatio
     }
 
     return (
-        <Card className={cn("col-span-1 border-border bg-card/50 h-full flex flex-col rounded-3xl relative overflow-hidden", className)}>
+        <Card className={cn("col-span-1 border-border bg-card/50 h-full flex flex-col rounded-3xl relative overflow-hidden transition-all hover:shadow-md", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>

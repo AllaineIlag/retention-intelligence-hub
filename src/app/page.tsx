@@ -179,7 +179,7 @@ export default function LandingPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-primary mt-1" />
-                    <span>Deep Dive analytics group sentiment by department and tenure.</span>
+                    <span>Analytics analytics group sentiment by department and tenure.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-primary mt-1" />

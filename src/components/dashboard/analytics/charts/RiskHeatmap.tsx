@@ -1,71 +1,96 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getRetentionRiskData, RiskDataPoint } from "@/app/actions/analytics"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
-import { TrendingUp, ShieldAlert } from "lucide-react"
+import { TrendingUp, ShieldAlert, ExternalLink } from "lucide-react"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 
-const RiskTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-        const data = payload[0].payload as RiskDataPoint;
-        return (
-            <div className="bg-popover/90 backdrop-blur-md border border-border p-4 rounded-2xl shadow-xl ring-1 ring-black/5 min-w-[200px]">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-[12px] font-bold text-foreground">{data.name}</span>
-                    <span className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase",
-                        data.riskScore > 70 ? "bg-destructive/20 text-destructive border border-destructive/30" :
-                            data.riskScore > 40 ? "bg-amber-500/20 text-amber-500 border border-amber-500/30" :
-                                "bg-primary/20 text-primary border border-primary/30"
-                    )}>
-                        {data.riskScore > 70 ? 'Critical' : data.riskScore > 40 ? 'Warning' : 'Stable'}
-                    </span>
-                </div>
-                <div className="space-y-1.5">
-                    <div className="flex justify-between text-[11px]">
-                        <span className="text-muted-foreground">Risk Index</span>
-                        <span className="font-bold text-foreground">{data.riskScore}%</span>
-                    </div>
-                    <div className="flex justify-between text-[11px]">
-                        <span className="text-muted-foreground">Attrition Velocity</span>
-                        <span className="font-bold text-foreground">{data.velocity}x</span>
-                    </div>
-                    <div className="flex justify-between text-[11px]">
-                        <span className="text-muted-foreground">Sentiment Score</span>
-                        <span className="font-bold text-foreground">{data.sentiment}/5</span>
-                    </div>
-                    <div className="w-full h-1 bg-muted rounded-full overflow-hidden mt-1">
-                        <div
-                            className={cn(
-                                "h-full transition-all duration-500",
-                                data.riskScore > 70 ? "bg-destructive" :
-                                    data.riskScore > 40 ? "bg-amber-500" : "bg-primary"
-                            )}
-                            style={{ width: `${data.riskScore}%` }}
-                        />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-    return null;
-};
+// ─── Risk Color Helpers (Semantic Tokens — no hardcoded values) ──────────────
+const getRiskColor = (score: number) =>
+    score > 70 ? 'var(--status-error)' :
+        score > 40 ? 'var(--status-warning)' :
+            'var(--status-info)'
 
+const getRiskBadgeClass = (score: number) =>
+    score > 70
+        ? "bg-status-error/15 text-status-error border border-status-error/30"
+        : score > 40
+            ? "bg-status-warning/15 text-status-warning border border-status-warning/30"
+            : "bg-status-info/15 text-status-info border border-status-info/30"
+
+// ─── Data Rows (High-Density Diagnostic View) ────────────────────────────────
+function RiskDataList({ data }: { data: RiskDataPoint[] }) {
+    return (
+        <div className="space-y-4">
+            {data.map((dept, i) => (
+                <div key={i} className="flex items-center gap-4">
+                    {/* Department Name */}
+                    <div className="w-28 shrink-0">
+                        <span className="text-sm font-semibold text-foreground block truncate">
+                            {dept.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                            Department
+                        </span>
+                    </div>
+
+                    {/* Risk Bar */}
+                    <div className="flex-1 px-2">
+                        <div className="h-2 w-full bg-accent rounded-full overflow-hidden border border-border">
+                            <div
+                                className="h-full transition-all duration-700 ease-out rounded-full"
+                                style={{
+                                    width: `${dept.riskScore}%`,
+                                    backgroundColor: getRiskColor(dept.riskScore),
+                                    opacity: 0.85
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-6 w-52 shrink-0 justify-end">
+                        <div className="flex flex-col items-end w-16">
+                            <span className="text-sm font-bold text-foreground">{dept.headcount}</span>
+                            <span className="text-xs text-muted-foreground">Headcount</span>
+                        </div>
+                        <div className="flex flex-col items-end w-16">
+                            <div className="flex items-center gap-0.5 text-status-error">
+                                <TrendingUp className="w-3 h-3" />
+                                <span className="text-sm font-bold text-foreground">{dept.velocity}x</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">Velocity</span>
+                        </div>
+                        <div className="flex flex-col items-end w-12">
+                            <span className="text-sm font-bold text-foreground">{dept.riskScore}%</span>
+                            <span className="text-xs text-muted-foreground">Risk</span>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+// ─── Main Export ──────────────────────────────────────────────────────────────
 export function RiskHeatmap() {
     const [data, setData] = useState<RiskDataPoint[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [open, setOpen] = useState(false)
 
     useEffect(() => {
         async function load() {
             try {
                 const res = await getRetentionRiskData()
-                if (res.success && res.data) {
-                    // Show top 8 at-risk departments
-                    setData(res.data.slice(0, 8))
-                }
+                if (res.success && res.data) setData(res.data.slice(0, 6))
             } catch (e) {
                 console.error("Failed to load risk data", e)
             } finally {
@@ -75,76 +100,107 @@ export function RiskHeatmap() {
         load()
     }, [])
 
+    const topRisk = [...data].sort((a, b) => b.riskScore - a.riskScore).slice(0, 2)
+    const criticalDept = data[0] || null
+
     if (isLoading) {
         return (
-            <Card className="border-border bg-card/50 rounded-3xl h-full min-h-[400px]">
-                <CardHeader>
-                    <Skeleton className="h-6 w-48" />
+            <Card className="border-border bg-card rounded-3xl h-36">
+                <CardHeader className="p-5">
+                    <Skeleton className="h-4 w-40 rounded-md" />
+                    <Skeleton className="h-3 w-28 mt-2 rounded-md opacity-50" />
                 </CardHeader>
-                <CardContent className="h-[300px]">
-                    <Skeleton className="h-full w-full opacity-20" />
-                </CardContent>
             </Card>
         )
     }
 
     return (
-        <Card className="border-border bg-card/50 rounded-3xl shadow-sm h-full flex flex-col overflow-hidden group">
-            <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
+        <>
+            {/* ── COMPACT BANNER ─────────────────────────────────────────────── */}
+            <Card
+                onClick={() => setOpen(true)}
+                className="border-border bg-card rounded-3xl relative overflow-hidden group cursor-pointer transition-all hover:shadow-md h-36"
+            >
+                <CardHeader className="flex flex-row items-center justify-between pb-2 p-5">
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
-                            <ShieldAlert className="w-4 h-4" />
+                        <ShieldAlert className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-status-error" />
+                        <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                            Risk Index
+                        </CardTitle>
+                    </div>
+                    <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-status-error/60 transition-colors" />
+                </CardHeader>
+
+                <CardContent className="px-5 pb-5 pt-0">
+                    <div className="flex gap-2">
+                        {topRisk.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No risk data available.</p>
+                        ) : (
+                            topRisk.map((dept) => (
+                                <div
+                                    key={dept.name}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-accent flex-1 min-w-0"
+                                >
+                                    <div
+                                        className="w-2 h-2 rounded-full shrink-0"
+                                        style={{ backgroundColor: getRiskColor(dept.riskScore) }}
+                                    />
+                                    <span className="text-sm font-medium text-foreground truncate flex-1">{dept.name}</span>
+                                    <span className={cn("text-xs font-bold px-1.5 py-0.5 rounded shrink-0", getRiskBadgeClass(dept.riskScore))}>
+                                        {dept.riskScore}%
+                                    </span>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* ── FULL HEATMAP DIALOG ────────────────────────────────────────── */}
+            <Dialog open={open} onOpenChange={setOpen}>
+                <DialogContent className="max-w-2xl rounded-3xl border border-border bg-popover shadow-2xl p-0 overflow-hidden">
+                    <DialogHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+                        <div className="flex items-center gap-2">
+                            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                                <DialogTitle className="text-xs font-bold uppercase tracking-wider text-foreground">
+                                    Risk Index
+                                </DialogTitle>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Departmental attrition heatmap
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <CardTitle className="text-sm font-bold">Retention Risk Index</CardTitle>
-                            <CardDescription className="text-[10px]">Departmental Attrition Heatmap (Weighted Score)</CardDescription>
+                    </DialogHeader>
+
+                    <div className="px-6 pb-6 pt-4">
+                        <RiskDataList data={data} />
+
+                        {criticalDept && (
+                            <div className="mt-6 p-4 rounded-2xl bg-status-error/5 border border-status-error/20 flex items-start gap-3">
+                                <div className="p-2 rounded-full bg-status-error/20 text-status-error shrink-0 mt-0.5">
+                                    <ShieldAlert className="w-4 h-4" />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-status-error">Primary risk driver</span>
+                                    <p className="text-sm text-foreground font-medium leading-relaxed">
+                                        {criticalDept.riskScore > 75
+                                            ? `Critical attrition spike detected in ${criticalDept.name}. Exit velocity is ${criticalDept.velocity}x higher than quarterly mean.`
+                                            : `High correlation detected between ${criticalDept.name} attrition risk and Career Growth sentiment scores.`}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="px-6 pb-5 border-t border-border pt-4">
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground">Descriptive analytics — based on historical exit data</p>
+                            <span className="text-xs text-muted-foreground">v6.0.4</span>
                         </div>
                     </div>
-                    <TrendingUp className="w-4 h-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
-                </div>
-            </CardHeader>
-            <CardContent className="flex-1 min-h-[300px] pt-4 pr-4">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                        data={data}
-                        layout="vertical"
-                        margin={{ left: 20, right: 20, top: 0, bottom: 0 }}
-                        barSize={20}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.4} />
-                        <XAxis type="number" hide domain={[0, 100]} />
-                        <YAxis
-                            dataKey="name"
-                            type="category"
-                            axisLine={false}
-                            tickLine={false}
-                            width={100}
-                            tick={{ fontSize: 10, fontWeight: 600, fill: 'var(--muted-foreground)' }}
-                        />
-                        <Tooltip content={<RiskTooltip />} cursor={{ fill: 'var(--accent)', opacity: 0.1 }} />
-                        <Bar
-                            dataKey="riskScore"
-                            radius={[0, 4, 4, 0]}
-                            animationDuration={1500}
-                            animationEasing="ease-out"
-                        >
-                            {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={
-                                        entry.riskScore > 70 ? 'var(--destructive)' :
-                                            entry.riskScore > 40 ? '#f59e0b' : // Amber
-                                                'var(--primary)'
-                                    }
-                                    fillOpacity={0.8}
-                                    className="hover:fill-opacity-100 transition-all duration-300"
-                                />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

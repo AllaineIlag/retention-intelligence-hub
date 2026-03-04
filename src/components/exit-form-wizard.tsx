@@ -49,11 +49,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { type CheckedState } from "@radix-ui/react-checkbox";
 import { COUNTRIES } from "@/lib/countries";
 import {
-  DEPARTMENTS,
-  BUSINESS_UNITS,
-  INTERMEDIATE_SUPERVISORS,
-  POSITIONS
-} from '@/constants/enums';
+  getDepartments,
+  getBusinessUnits,
+  getSupervisors,
+  getPositions
+} from '@/app/actions/settings-actions';
 
 interface ExitFormWizardProps {
   user: { id: string; email?: string } | null;
@@ -120,6 +120,27 @@ export function ExitFormWizard({
     recommendation: initialResponse?.questionnaire_responses?.recommendation || '',
     recommendation_reason: initialResponse?.questionnaire_responses?.recommendation_reason || '',
   });
+
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [businessUnits, setBusinessUnits] = useState<string[]>([]);
+  const [supervisors, setSupervisors] = useState<string[]>([]);
+  const [positions, setPositions] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      const [dRes, bRes, sRes, pRes] = await Promise.all([
+        getDepartments(),
+        getBusinessUnits(),
+        getSupervisors(),
+        getPositions()
+      ]);
+      if (dRes.success) setDepartments(dRes.data?.filter(d => d.is_active).map(d => d.name) || []);
+      if (bRes.success) setBusinessUnits(bRes.data?.filter(b => b.is_active).map(b => b.name) || []);
+      if (sRes.success) setSupervisors(sRes.data?.filter(s => s.is_active).map(s => s.name) || []);
+      if (pRes.success) setPositions(pRes.data?.filter(p => p.is_active).map(p => p.name) || []);
+    }
+    fetchSettings();
+  }, []);
 
   // Dynamic progress calculation
   const progress = React.useMemo(() => {
@@ -517,7 +538,7 @@ export function ExitFormWizard({
                         <SelectValue placeholder="Select position" />
                       </SelectTrigger>
                       <SelectContent>
-                        {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        {positions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -532,7 +553,7 @@ export function ExitFormWizard({
                         <SelectValue placeholder="Select position" />
                       </SelectTrigger>
                       <SelectContent>
-                        {POSITIONS.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        {positions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -547,7 +568,7 @@ export function ExitFormWizard({
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
                       <SelectContent>
-                        {DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -562,7 +583,7 @@ export function ExitFormWizard({
                         <SelectValue placeholder="Select business unit" />
                       </SelectTrigger>
                       <SelectContent>
-                        {BUSINESS_UNITS.map(bu => <SelectItem key={bu} value={bu}>{bu}</SelectItem>)}
+                        {businessUnits.map(bu => <SelectItem key={bu} value={bu}>{bu}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -577,7 +598,7 @@ export function ExitFormWizard({
                         <SelectValue placeholder="Select supervisor" />
                       </SelectTrigger>
                       <SelectContent>
-                        {INTERMEDIATE_SUPERVISORS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {supervisors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </Field>

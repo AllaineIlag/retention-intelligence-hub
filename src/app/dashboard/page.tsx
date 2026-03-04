@@ -36,29 +36,33 @@ export default async function DashboardPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-700 p-2">
+        <div className="space-y-6 animate-in fade-in duration-1000 p-4">
 
-            {/* STRATEGIC OVERLAY */}
-            <div className="grid gap-6 grid-cols-1 xl:grid-cols-12">
-                <div className="xl:col-span-4 h-full">
-                    <Suspense fallback={<WidgetSkeleton />}>
-                        <StrategicInsights />
-                    </Suspense>
-                </div>
-                <div className="xl:col-span-8 space-y-6">
+            {/* TOP ROW: THE INTELLIGENCE ENGINE (Full Width) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <Suspense fallback={<ChartSkeleton />}>
+                    <StrategicInsights />
+                </Suspense>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <RiskHeatmap />
+                </Suspense>
+            </div>
+
+            {/* MAIN DASHBOARD GRID (9/3 SPLIT) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+                {/* PRIMARY DATA PANEL (LEFT 75%) */}
+                <div className="lg:col-span-9 space-y-8">
                     <Suspense fallback={<StatsSkeleton />}>
                         <KPISection filters={filters} />
                     </Suspense>
+
                     <Suspense fallback={<ChartSkeleton />}>
                         <HeroSection filters={filters} />
                     </Suspense>
-                </div>
-            </div>
 
-            {/* SECONDARY GRID */}
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-4">
-                <div className="lg:col-span-3 space-y-6">
-                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-10">
+                    {/* RECENT ACTIVITY & GLOBAL REACH */}
+                    <div className="grid grid-cols-1 lg:grid-cols-10 gap-8">
                         <div className="lg:col-span-7">
                             <Suspense fallback={<TableSkeleton />}>
                                 <RecentResignationsSection filters={filters} />
@@ -72,7 +76,8 @@ export default async function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 h-full">
+                {/* CURATED SIDEBAR (RIGHT 25%) */}
+                <div className="lg:col-span-3 h-full">
                     <Suspense fallback={<WidgetSkeleton />}>
                         <QuickWinsSection filters={filters} />
                     </Suspense>
@@ -157,16 +162,9 @@ async function HeroSection({ filters }: { filters: AnalyticsFilters }) {
     const monthData = trendRes.success ? trendRes.data || [] : [];
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-                <TurnoverTrendCard data={monthData as any} />
-            </div>
-            <div className="md:col-span-1">
-                <DepartmentDistributionCard data={deptData as any} />
-            </div>
-            <div className="md:col-span-3">
-                <RiskHeatmap />
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TurnoverTrendCard data={monthData as any} />
+            <DepartmentDistributionCard data={deptData as any} />
         </div>
     );
 }
@@ -178,9 +176,9 @@ async function QuickWinsSection({ filters }: { filters: AnalyticsFilters }) {
     const getChartData = (key: string) => stats.find(s => s.question_key === key)?.stats || [];
 
     return (
-        <div className="flex flex-col gap-4 h-full min-h-0">
+        <div className="flex flex-col gap-8 h-full">
             <SmartDonutCard
-                title="Key Pull Factors"
+                title="Why Another Job"
                 questionKey="reason_for_leaving"
                 initialData={getChartData('reason_for_leaving')}
                 className="flex-1"
@@ -192,7 +190,7 @@ async function QuickWinsSection({ filters }: { filters: AnalyticsFilters }) {
                 className="flex-1"
             />
             <SmartDonutCard
-                title="Pay Perception"
+                title="Pay Rate"
                 questionKey="rate_of_pay"
                 initialData={getChartData('rate_of_pay')}
                 className="flex-1"

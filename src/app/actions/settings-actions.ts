@@ -146,3 +146,109 @@ export async function togglePositionStatus(id: string, isActive: boolean) {
     revalidatePath('/dashboard/settings');
     return { success: true };
 }
+
+// --- Business Units ---
+
+export async function getBusinessUnits() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('ref_business_unit')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching business units:', error);
+        return { error: error.message };
+    }
+
+    return { success: true, data: data as ReferenceItem[] };
+}
+
+export async function addBusinessUnit(name: string) {
+    try {
+        const { data, error } = await adminSupabase
+            .from('ref_business_unit')
+            .insert({ name })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                return { error: 'Business unit already exists' };
+            }
+            console.error('Error adding business unit:', error);
+            return { error: error.message };
+        }
+
+        revalidatePath('/dashboard/settings');
+        return { success: true, data };
+    } catch (err) {
+        return { error: 'Internal Server Error' };
+    }
+}
+
+export async function toggleBusinessUnitStatus(id: string, isActive: boolean) {
+    const { error } = await adminSupabase
+        .from('ref_business_unit')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+}
+
+// --- Supervisors ---
+
+export async function getSupervisors() {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('ref_superior')
+        .select('*')
+        .order('name', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching supervisors:', error);
+        return { error: error.message };
+    }
+
+    return { success: true, data: data as ReferenceItem[] };
+}
+
+export async function addSupervisor(name: string) {
+    try {
+        const { data, error } = await adminSupabase
+            .from('ref_superior')
+            .insert({ name })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '23505') {
+                return { error: 'Supervisor already exists' };
+            }
+            console.error('Error adding supervisor:', error);
+            return { error: error.message };
+        }
+
+        revalidatePath('/dashboard/settings');
+        return { success: true, data };
+    } catch (err) {
+        return { error: 'Internal Server Error' };
+    }
+}
+
+export async function toggleSupervisorStatus(id: string, isActive: boolean) {
+    const { error } = await adminSupabase
+        .from('ref_superior')
+        .update({ is_active: isActive })
+        .eq('id', id);
+
+    if (error) return { error: error.message };
+
+    revalidatePath('/dashboard/settings');
+    return { success: true };
+}

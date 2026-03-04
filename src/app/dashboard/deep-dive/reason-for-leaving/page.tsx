@@ -35,7 +35,7 @@ export default async function ReasonForLeavingPage() {
             <ReasonTopKpiGrid />
 
 
-            {/* SECTOR 2: Deep Dive Analysis (Market + Drivers) */}
+            {/* SECTOR 2: Analytics Analysis (Market + Drivers) */}
             <ReasonAnalysisDeepDive
                 initialCompetitor={competitor}
                 initialMoneyVsCulture={moneyVsCulture}

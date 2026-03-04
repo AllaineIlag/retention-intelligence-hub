@@ -25,7 +25,7 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
         .eq('id', resignationId)
         .select(`
             *,
-            employee_details (
+            company_directory (
                 full_name
             ),
             profiles (
@@ -44,18 +44,20 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
     const admin = createAdminClient();
     const { data: detail } = await admin
         .from('resignations')
-        .select(`id, employee_details(full_name), profiles(email)`)
+        .select(`id, personal_email, company_directory(full_name), profiles(email)`)
         .eq('id', resignationId)
         .single();
 
     const profile = Array.isArray(detail?.profiles) ? detail?.profiles[0] : detail?.profiles;
-    const employeeDetails = Array.isArray(detail?.employee_details) ? detail?.employee_details[0] : detail?.employee_details;
+    const employeeDetails = Array.isArray(detail?.company_directory) ? detail?.company_directory[0] : detail?.company_directory;
 
-    if (profile?.email) {
+    const targetEmail = detail?.personal_email || profile?.email;
+
+    if (targetEmail) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [profile.email],
+                to: [targetEmail],
                 subject: 'Resignation Notice Received',
                 react: ResignationAckEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });
@@ -84,7 +86,7 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
         .eq('id', resignationId)
         .select(`
             *,
-            employee_details (
+            company_directory (
                 full_name
             ),
             profiles (
@@ -102,18 +104,20 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
     const admin = createAdminClient();
     const { data: detail } = await admin
         .from('resignations')
-        .select(`id, employee_details(full_name), profiles(email)`)
+        .select(`id, personal_email, company_directory(full_name), profiles(email)`)
         .eq('id', resignationId)
         .single();
 
     const profile = Array.isArray(detail?.profiles) ? detail?.profiles[0] : detail?.profiles;
-    const employeeDetails = Array.isArray(detail?.employee_details) ? detail?.employee_details[0] : detail?.employee_details;
+    const employeeDetails = Array.isArray(detail?.company_directory) ? detail?.company_directory[0] : detail?.company_directory;
 
-    if (profile?.email) {
+    const targetEmail = detail?.personal_email || profile?.email;
+
+    if (targetEmail) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [profile.email],
+                to: [targetEmail],
                 subject: 'Exit Interview Scheduled',
                 react: ResignationApprovalEmail({
                     employeeName: employeeDetails?.full_name || 'Employee',
@@ -145,7 +149,8 @@ export async function declineResignation(resignationId: string) {
         .eq('id', resignationId)
         .select(`
             *,
-            employee_details (
+            personal_email,
+            company_directory (
                 full_name
             ),
             profiles (
@@ -160,13 +165,15 @@ export async function declineResignation(resignationId: string) {
     }
 
     const profile = Array.isArray(resignation?.profiles) ? resignation?.profiles[0] : resignation?.profiles;
-    const employeeDetails = Array.isArray(resignation?.employee_details) ? resignation?.employee_details[0] : resignation?.employee_details;
+    const employeeDetails = Array.isArray(resignation?.company_directory) ? resignation?.company_directory[0] : resignation?.company_directory;
 
-    if (profile?.email) {
+    const targetEmail = resignation?.personal_email || profile?.email;
+
+    if (targetEmail) {
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [profile.email],
+                to: [targetEmail],
                 subject: 'Update Regarding Your Resignation',
                 react: ResignationDeclineEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });
@@ -239,34 +246,17 @@ export async function createResignation(data: {
         });
     }
 
-    // 2. Create Employee Details
-    const { error: detailsError } = await supabaseAdmin
-        .from('employee_details')
-        .upsert({
-            id: userId, // Assuming 1:1 relation on ID
-            department: data.department,
-            business_unit: data.businessUnit,
-            intermediate_supervisor: data.intermediateSupervisor,
-            full_name: data.name,
-            // email: data.email // If column exists? database.types did not show this table. We'll assume typical structure or rely on profile.
-        });
-
-    // Check if error is due to missing column. Safe to assume standard table structure from implicit knowledge or suppress?
-    // I'll proceed.
-
-    if (detailsError) {
-        console.error('Details Error:', detailsError);
-        return { success: false, error: 'Failed to create employee details: ' + detailsError.message };
-    }
+    // NOTE: Employee details now live in company_directory (via directory_id on resignations).
+    // No separate employee_details upsert needed.
 
     // 3. Create Resignation Case
     const { data: resignation, error: resError } = await supabaseAdmin
         .from('resignations')
         .insert({
-            employee_id: userId,
             status: 'pending_exit_form', // Initial state
             last_working_day: data.lastWorkingDay.toISOString(),
-            directory_id: data.directoryId
+            directory_id: data.directoryId,
+            personal_email: data.email // Store the original email as the routing target
         } as any)
         .select()
         .single();
@@ -286,6 +276,8 @@ export async function createResignation(data: {
     });
 
     // 4. Send Acknowledgement Email
+    // The create action still sends to data.email directly, which is correct because
+    // it was just submitted in the form.
     try {
         await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,

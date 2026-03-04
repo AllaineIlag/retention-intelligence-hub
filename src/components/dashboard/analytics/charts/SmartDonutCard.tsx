@@ -107,7 +107,7 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
     const total = data.reduce((acc, curr) => acc + curr.value, 0)
 
     return (
-        <Card className={cn("flex flex-col border-border bg-card/50 min-h-0 rounded-3xl shadow-sm hover:bg-accent/5 transition-colors duration-300 overflow-hidden relative", className)}>
+        <Card className={cn("flex flex-col border-border bg-card/50 min-h-0 rounded-3xl shadow-sm hover:bg-accent/5 hover:shadow-md transition-all duration-300 overflow-hidden relative", className)}>
             {isLoading && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
@@ -140,7 +140,7 @@ export function SmartDonutCard({ title, questionKey, unit = "Resp", initialData 
             <CardContent className="flex flex-1 items-center pb-4 px-2 min-h-0 mt-4">
                 {/* Donut Chart (Left) */}
                 <div className="relative w-1/2 h-full min-h-[100px] flex items-center justify-center">
-                    
+
                     {/* Center Text - Pushed to back with z-0 and placed before the chart */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
                         <span className="text-xl font-bold text-foreground tracking-tight leading-none uppercase">

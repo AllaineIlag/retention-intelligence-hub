@@ -20,12 +20,12 @@ export async function getReasonKPIs(): Promise<ReasonKPIs> {
         .eq('question_key', 'reason_for_leaving')
         .gte('created_at', startDate);
 
-    // 2. Fetch Tenure Data (Resignations -> Details)
+    // 2. Fetch Tenure Data (Resignations -> company_directory via directory_id)
     const { data: tenureData, error: tenureError } = await supabase
         .from('resignations')
         .select(`
             created_at,
-            employee_details!fk_resignations_employee_details (
+            company_directory (
                 date_hired
             )
         `)
@@ -99,7 +99,7 @@ export async function getReasonKPIs(): Promise<ReasonKPIs> {
     let countTenure = 0;
 
     tenureData.forEach((row: any) => {
-        const details = Array.isArray(row.employee_details) ? row.employee_details[0] : row.employee_details;
+        const details = Array.isArray(row.company_directory) ? row.company_directory[0] : row.company_directory;
         if (!details?.date_hired || !row.created_at) return;
 
         const months = differenceInMonths(parseISO(row.created_at), parseISO(details.date_hired));

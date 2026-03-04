@@ -131,7 +131,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { createResignation } from '@/app/actions/resignation-ops';
-import { DEPARTMENTS, BUSINESS_UNITS, INTERMEDIATE_SUPERVISORS } from '@/constants/enums';
+import { getDepartments, getBusinessUnits, getSupervisors } from '@/app/actions/settings-actions';
 
 function MobileResignationTrigger({
     open,
@@ -144,6 +144,23 @@ function MobileResignationTrigger({
     const [selectedDept, setSelectedDept] = React.useState<string>('');
     const [selectedBU, setSelectedBU] = React.useState<string>('');
     const [selectedSupervisor, setSelectedSupervisor] = React.useState<string>('');
+    const [departments, setDepartments] = React.useState<string[]>([]);
+    const [businessUnits, setBusinessUnits] = React.useState<string[]>([]);
+    const [supervisors, setSupervisors] = React.useState<string[]>([]);
+
+    React.useEffect(() => {
+        async function fetchSettings() {
+            const [dRes, bRes, sRes] = await Promise.all([
+                getDepartments(),
+                getBusinessUnits(),
+                getSupervisors()
+            ]);
+            if (dRes.success) setDepartments(dRes.data?.filter(d => d.is_active).map(d => d.name) || []);
+            if (bRes.success) setBusinessUnits(bRes.data?.filter(b => b.is_active).map(b => b.name) || []);
+            if (sRes.success) setSupervisors(sRes.data?.filter(s => s.is_active).map(s => s.name) || []);
+        }
+        if (open) fetchSettings();
+    }, [open]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -218,7 +235,7 @@ function MobileResignationTrigger({
                                     <SelectValue placeholder="Select Dept" />
                                 </SelectTrigger>
                                 <SelectContent className="border-border bg-popover text-popover-foreground">
-                                    {DEPARTMENTS.map((d) => (
+                                    {departments.map((d) => (
                                         <SelectItem key={d} value={d}>{d}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -231,7 +248,7 @@ function MobileResignationTrigger({
                                     <SelectValue placeholder="Select BU" />
                                 </SelectTrigger>
                                 <SelectContent className="border-border bg-popover text-popover-foreground">
-                                    {BUSINESS_UNITS.map((bu) => (
+                                    {businessUnits.map((bu) => (
                                         <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -246,7 +263,7 @@ function MobileResignationTrigger({
                                 <SelectValue placeholder="Select Supervisor" />
                             </SelectTrigger>
                             <SelectContent className="border-border bg-popover text-popover-foreground">
-                                {INTERMEDIATE_SUPERVISORS.map((s) => (
+                                {supervisors.map((s) => (
                                     <SelectItem key={s} value={s}>{s}</SelectItem>
                                 ))}
                             </SelectContent>

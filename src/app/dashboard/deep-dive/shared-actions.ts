@@ -158,19 +158,16 @@ export async function getDepartmentScoreData(questionKey: string, filters: Analy
     const startDateStr = startDate.toISOString();
     const endDateStr = endDate.toISOString();
 
-    // Join with resignations -> profiles -> employee_details
-    // Using created_at from exit_interview_results as the filter
+    // Join with resignations -> company_directory for department
     const { data, error } = await supabase
         .from('exit_interview_results')
         .select(`
             response_value,
             created_at,
             resignation:resignation_id (
-                employee_id,
-                profiles:profiles!resignations_employee_id_fkey (
-                    employee_details (
-                        department
-                    )
+                directory_id,
+                company_directory (
+                    department
                 )
             )
         `)
@@ -191,12 +188,11 @@ export async function getDepartmentScoreData(questionKey: string, filters: Analy
 
         // Navigate nested join
         const resignation = Array.isArray(row.resignation) ? row.resignation[0] : row.resignation;
-        const profile = resignation?.profiles;
-        const pObj = Array.isArray(profile) ? profile[0] : profile;
-        const details = pObj?.employee_details;
-        const dObj = Array.isArray(details) ? details[0] : details;
+        const dir = Array.isArray(resignation?.company_directory)
+            ? resignation.company_directory[0]
+            : resignation?.company_directory;
 
-        const dept = dObj?.department || 'Unknown';
+        const dept = dir?.department || 'Unknown';
 
         // Apply Dept Filter if present
         if (filters.department && filters.department.length > 0) {

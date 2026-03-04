@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select"
 import { searchDirectory } from "@/app/actions/directory"
 import { createResignation } from "@/app/actions/resignation-ops"
-import { DEPARTMENTS, BUSINESS_UNITS, INTERMEDIATE_SUPERVISORS } from "@/constants/enums"
+import { getDepartments, getBusinessUnits, getSupervisors } from "@/app/actions/settings-actions"
 import { useDebounce } from "@/hooks/use-debounce"
 import { Badge } from "@/components/ui/badge"
 
@@ -55,7 +55,25 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
     const [selectedBU, setSelectedBU] = React.useState<string>("")
     const [selectedSupervisor, setSelectedSupervisor] = React.useState<string>("")
 
+    const [departments, setDepartments] = React.useState<string[]>([])
+    const [businessUnits, setBusinessUnits] = React.useState<string[]>([])
+    const [supervisors, setSupervisors] = React.useState<string[]>([])
+
     const debouncedSearch = useDebounce(searchQuery, 300)
+
+    React.useEffect(() => {
+        async function fetchSettings() {
+            const [dRes, bRes, sRes] = await Promise.all([
+                getDepartments(),
+                getBusinessUnits(),
+                getSupervisors()
+            ]);
+            if (dRes.success) setDepartments(dRes.data?.filter(d => d.is_active).map(d => d.name) || []);
+            if (bRes.success) setBusinessUnits(bRes.data?.filter(b => b.is_active).map(b => b.name) || []);
+            if (sRes.success) setSupervisors(sRes.data?.filter(s => s.is_active).map(s => s.name) || []);
+        }
+        if (open) fetchSettings();
+    }, [open])
 
     React.useEffect(() => {
         if (debouncedSearch && debouncedSearch.length >= 2 && !selectedEmployee) {
@@ -236,7 +254,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {DEPARTMENTS.map((d) => (
+                                            {departments.map((d) => (
                                                 <SelectItem key={d} value={d}>{d}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -249,7 +267,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {BUSINESS_UNITS.map((bu) => (
+                                            {businessUnits.map((bu) => (
                                                 <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -264,7 +282,7 @@ function CreateResignationDialogContent({ open, setOpen }: { open: boolean, setO
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {INTERMEDIATE_SUPERVISORS.map((s) => (
+                                        {supervisors.map((s) => (
                                             <SelectItem key={s} value={s}>{s}</SelectItem>
                                         ))}
                                     </SelectContent>
