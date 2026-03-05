@@ -136,33 +136,6 @@ export async function getRecentInvites() {
     return { success: true, data: profiles }; // Changed from `return profiles` to `return { success: true, data: profiles }` for consistency
 }
 
-export async function getRecentAccounts() {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) return { error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    if (profile?.role !== 'lead') return { error: 'Unauthorized' };
-
-    const { data: accounts, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, role, status, avatar_url, created_at')
-        .neq('status', 'pending')
-        .eq('role', 'interviewer')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-    if (error) return { error: error.message };
-
-    return { success: true, data: accounts };
-}
-
 export async function getAllAccounts() {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();

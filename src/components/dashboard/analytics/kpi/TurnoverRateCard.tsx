@@ -25,7 +25,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
     const [rate, setRate] = useState(initialRate);
     const [mode, setMode] = useState<'7d' | '30d' | '3m' | '6m' | '12m' | 'ytd'>('30d');
     const [isLoading, setIsLoading] = useState(false);
-    const { pageFilter, version } = usePageFilter();
+    const { pageFilter, department, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
     // Sync with page-level filter
@@ -61,6 +61,7 @@ export function TurnoverRateCard({ initialRate, className }: TurnoverRateCardPro
         const filters = {
             startDate,
             endDate: endOfMonth(today),
+            department: department ? [department] : undefined
         };
 
         try {

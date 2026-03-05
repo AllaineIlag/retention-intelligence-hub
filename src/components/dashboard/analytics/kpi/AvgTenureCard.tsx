@@ -20,7 +20,7 @@ export function AvgTenureCard({ initialValue = 0, className }: AvgTenureCardProp
     const [value, setValue] = useState(initialValue)
     const [mode, setMode] = useState<'7d' | '30d' | '3m' | '6m' | '12m' | 'ytd'>('30d')
     const [isLoading, setIsLoading] = useState(false)
-    const { pageFilter, version } = usePageFilter()
+    const { pageFilter, department, version } = usePageFilter()
     const lastVersionRef = useRef(version)
 
     // Sync with page-level filter
@@ -54,7 +54,8 @@ export function AvgTenureCard({ initialValue = 0, className }: AvgTenureCardProp
 
         const filters = {
             startDate,
-            endDate: endOfMonth(today)
+            endDate: endOfMonth(today),
+            department: department ? [department] : undefined
         }
 
         try {

@@ -26,7 +26,7 @@ export default function ProvisionInterviewerCard() {
     useEffect(() => {
         if (debouncedSearch && debouncedSearch.length >= 2 && !selectedEmployee) {
             setIsSearching(true);
-            searchDirectory(debouncedSearch).then(res => {
+            searchDirectory(debouncedSearch, 'Human Resources').then(res => {
                 if (res.success) {
                     setSearchResults(res.data || []);
                 }
@@ -44,10 +44,10 @@ export default function ProvisionInterviewerCard() {
         const res = await provisionInterviewer(selectedEmployee.id);
 
         if (res.success) {
-            toast.success('Interviewer provisioned successfully');
+            toast.success('Access granted successfully');
             setCredentials(res.credentials || null);
         } else {
-            toast.error('Provisioning failed', { description: res.error });
+            toast.error('Failed to grant access', { description: res.error });
         }
         setIsProvisioning(false);
     };
@@ -68,9 +68,9 @@ export default function ProvisionInterviewerCard() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 mb-2">
                         <Key className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle>Provisioning Complete</CardTitle>
+                    <CardTitle>Access Granted</CardTitle>
                     <CardDescription>
-                        Give these temporary credentials to the employee. They will be asked to change their password on first login.
+                        Share these temporary credentials with the employee. They will be asked to set a new password on first login.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -87,7 +87,7 @@ export default function ProvisionInterviewerCard() {
                                 {credentials.tempPassword}
                             </div>
                             <Button onClick={copyPassword} variant="outline" className="rounded-xl">
-                                {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                                {copied ? <Check className="h-4 w-4 text-status-success" /> : <Copy className="h-4 w-4" />}
                             </Button>
                         </div>
                     </div>
@@ -100,7 +100,7 @@ export default function ProvisionInterviewerCard() {
                             setSearchQuery('');
                         }}
                     >
-                        Provision Another
+                        Grant Another
                     </Button>
                 </CardContent>
             </Card>
@@ -112,19 +112,19 @@ export default function ProvisionInterviewerCard() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <UserPlus className="h-5 w-5 text-primary" />
-                    Provision Interviewer
+                    Interviewer Access
                 </CardTitle>
                 <CardDescription>
-                    Grant direct system access to verified company employees.
+                    Grant system access to a verified company employee.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2 relative">
-                    <Label className="text-xs text-muted-foreground uppercase font-semibold">Search Master Directory</Label>
+                    <Label className="text-xs text-muted-foreground uppercase font-semibold">Search Employee Directory</Label>
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Type employee name or email..."
+                            placeholder="Search by name, email, or control number..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             disabled={!!selectedEmployee}
@@ -153,7 +153,7 @@ export default function ProvisionInterviewerCard() {
                                 >
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold truncate">{emp.full_name}</p>
-                                        <p className="text-xs text-muted-foreground truncate">{emp.email}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{emp.control_number} · {emp.email}</p>
                                     </div>
                                     <Badge variant="outline" className="text-[10px]">{emp.department}</Badge>
                                 </button>
@@ -185,9 +185,6 @@ export default function ProvisionInterviewerCard() {
                     </div>
                 )}
 
-                <p className="text-xs text-muted-foreground italic bg-muted/30 p-3 rounded-lg border-l-2 border-primary/50">
-                    Noxian Protocol: Provisioning creates a verified "interviewer" account linked to the corporate ID. No public sign-ups are permitted.
-                </p>
             </CardContent>
         </Card>
     );

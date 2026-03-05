@@ -276,12 +276,13 @@ export async function createResignation(data: {
     });
 
     // 4. Send Acknowledgement Email
-    // The create action still sends to data.email directly, which is correct because
-    // it was just submitted in the form.
+    // In dev/test mode, redirect all emails to RESEND_TEST_EMAIL if set.
+    // This prevents delivery failures to mock @tdk.sim.com addresses.
+    const deliveryEmail = process.env.RESEND_TEST_EMAIL || data.email;
     try {
         await resend.emails.send({
             from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-            to: [data.email],
+            to: [deliveryEmail],
             subject: 'Resignation Notice Received - Pending Review',
             react: ResignationAckEmail({
                 employeeName: data.name,

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 
+
 import { getDashboardStats, getRecentResignations } from '@/app/actions/dashboard';
 import {
     getAnalyticsSummary,
@@ -37,6 +38,10 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-1000 p-4">
+            {/* PAGE HEADER */}
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
+            </div>
 
             {/* TOP ROW: THE INTELLIGENCE ENGINE (Full Width) */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

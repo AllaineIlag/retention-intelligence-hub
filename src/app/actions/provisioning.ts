@@ -12,17 +12,17 @@ export async function provisionInterviewer(directoryId: string) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
-    const { data: profile } = await supabase
+    const { data: callerProfile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-    if (profile?.role !== 'lead') {
+    if (callerProfile?.role !== 'lead') {
         return { success: false, error: 'Only Leads can provision users' };
     }
 
-    // 2. Get details from directory
+    // 2. Get employee details from directory
     const { data: employee, error: dirError } = await supabase
         .from('company_directory')
         .select('*')
@@ -33,7 +33,21 @@ export async function provisionInterviewer(directoryId: string) {
         return { success: false, error: 'Employee not found in directory' };
     }
 
-    // 3. Provision User via Admin API
+    // 3. Pre-flight: check if this employee is already provisioned (bypasses RLS)
+    const { data: existingProfile } = await adminSupabase
+        .from('profiles')
+        .select('id, status')
+        .eq('email', employee.email)
+        .single();
+
+    if (existingProfile) {
+        return {
+            success: false,
+            error: `This employee already has an account (status: ${existingProfile.status}). Use the Active Team tab to manage their access.`
+        };
+    }
+
+    // 4. Generate temp password and create auth user
     const tempPassword = `TDK-${Math.random().toString(36).slice(-8).toUpperCase()}!`;
 
     const { data: newUser, error: authError } = await adminSupabase.auth.admin.createUser({
@@ -47,12 +61,11 @@ export async function provisionInterviewer(directoryId: string) {
     });
 
     if (authError) {
-        // If user already exists, just upgrade their role (if needed) or return error
-        return { success: false, error: authError.message };
+        return { success: false, error: `Auth error: ${authError.message}` };
     }
 
-    // 4. Create/Update Profile
-    const { error: profileError } = await supabase
+    // 5. Create profile via admin client (bypasses RLS)
+    const { error: profileError } = await adminSupabase
         .from('profiles')
         .upsert({
             id: newUser.user.id,
@@ -63,14 +76,16 @@ export async function provisionInterviewer(directoryId: string) {
         });
 
     if (profileError) {
-        return { success: false, error: 'Failed to create system profile' };
+        // Auth user was created but profile failed — roll back so Lead can retry cleanly
+        await adminSupabase.auth.admin.deleteUser(newUser.user.id);
+        return { success: false, error: `Profile error: ${profileError.message}` };
     }
 
-    revalidatePath('/dashboard/team/manage');
+    revalidatePath('/dashboard/team');
 
     return {
         success: true,
-        message: `Interviewer provisioned successfully.`,
+        message: 'Interviewer provisioned successfully.',
         credentials: {
             email: employee.email,
             tempPassword

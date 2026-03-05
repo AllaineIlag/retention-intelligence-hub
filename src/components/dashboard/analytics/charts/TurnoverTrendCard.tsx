@@ -35,7 +35,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
     const [data, setData] = useState<{ name: string; resignations: number; retention: number }[]>(initialData);
     const [isLoading, setIsLoading] = useState(false);
     const [range, setRange] = useState("30d");
-    const { pageFilter, version } = usePageFilter();
+    const { pageFilter, department, version } = usePageFilter();
     const lastVersionRef = useRef(version);
 
     // Sync with page-level filter
@@ -71,7 +71,7 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
             const apiFilters = {
                 startDate: startOfMonth(startDate),
                 endDate: endOfMonth(today),
-                department: undefined // Trend is usually global, but could add dept filter back if needed
+                department: department ? [department] : undefined
             };
 
             const response = await getTurnoverTrends(apiFilters);

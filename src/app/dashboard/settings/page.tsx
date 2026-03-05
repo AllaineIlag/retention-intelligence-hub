@@ -9,6 +9,8 @@ import {
     getSupervisors, addSupervisor, toggleSupervisorStatus
 } from '@/app/actions/settings-actions';
 import { ReferenceTableEditor } from '@/components/dashboard/settings/ReferenceTableEditor';
+import { ResetPasswordCard } from '@/components/dashboard/settings/ResetPasswordCard';
+
 
 export default async function SettingsPage() {
     const supabase = await createClient();
@@ -33,16 +35,14 @@ export default async function SettingsPage() {
     const supervisors = supRes.success && supRes.data ? supRes.data : [];
 
     return (
-        <div className="space-y-6">
-
-
+        <div className="max-w-2xl mx-auto space-y-6">
             <Tabs defaultValue="profile" className="space-y-6">
-                <TabsList className="bg-muted border border-border">
-                    <TabsTrigger value="profile">Profile</TabsTrigger>
-                    {profile?.role === 'lead' && (
+                {profile?.role === 'lead' && (
+                    <TabsList className="bg-muted border border-border">
+                        <TabsTrigger value="profile">Profile</TabsTrigger>
                         <TabsTrigger value="system">System Configuration</TabsTrigger>
-                    )}
-                </TabsList>
+                    </TabsList>
+                )}
 
                 <TabsContent value="profile" className="space-y-4">
                     <Card className="border-border bg-card">
@@ -69,6 +69,7 @@ export default async function SettingsPage() {
                             </div>
                         </CardContent>
                     </Card>
+                    <ResetPasswordCard />
                 </TabsContent>
 
                 {profile?.role === 'lead' && (

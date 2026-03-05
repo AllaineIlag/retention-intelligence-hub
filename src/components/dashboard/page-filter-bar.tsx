@@ -1,10 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePageFilter, FilterMode } from './page-filter-context';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { X } from 'lucide-react';
+import { X, Building2 } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { getDepartments } from "@/app/actions/dashboard";
 
 const FILTER_OPTIONS: { label: string; mode: FilterMode }[] = [
     { label: '7d', mode: '7d' },
@@ -16,7 +24,16 @@ const FILTER_OPTIONS: { label: string; mode: FilterMode }[] = [
 ];
 
 export function PageFilterBar() {
-    const { pageFilter, setPageFilter, resetPageFilter } = usePageFilter();
+    const { pageFilter, department, setPageFilter, setDepartmentFilter, resetPageFilter } = usePageFilter();
+    const [departments, setDepartments] = useState<string[]>([]);
+
+    useEffect(() => {
+        getDepartments().then(res => {
+            if (res.success && res.data) {
+                setDepartments(res.data);
+            }
+        });
+    }, []);
 
     return (
         <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300">
@@ -39,15 +56,33 @@ export function PageFilterBar() {
                 ))}
             </div>
 
-            {pageFilter && (
+            <Select
+                value={department || "all"}
+                onValueChange={(v) => setDepartmentFilter(v === "all" ? null : v)}
+            >
+                <SelectTrigger className="w-[180px] border-border/50 bg-muted/30 hover:bg-muted/50 rounded-lg px-3 h-9 text-xs transition-colors">
+                    <Building2 className="mr-2 h-3.5 w-3.5 text-brand-primary" />
+                    <SelectValue placeholder="All Departments" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border rounded-xl">
+                    <SelectItem value="all" className="text-xs">All Departments</SelectItem>
+                    {departments.map((d) => (
+                        <SelectItem key={d} value={d} className="text-xs">
+                            {d}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+
+            {(pageFilter || department) && (
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={resetPageFilter}
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500 hover:bg-muted/50 rounded-md transition-all duration-200"
-                    title="Reset Filter"
+                    className="h-9 w-9 p-0 text-muted-foreground hover:text-red-500 hover:bg-muted/50 rounded-lg transition-all duration-200"
+                    title="Reset Filters"
                 >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                     <span className="sr-only">Reset</span>
                 </Button>
             )}
