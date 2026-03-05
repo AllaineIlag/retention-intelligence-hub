@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 
-
 import { getDashboardStats, getRecentResignations } from '@/app/actions/dashboard';
 import {
     getAnalyticsSummary,
@@ -8,7 +7,7 @@ import {
     getDepartmentBreakdown,
     getCountryStats,
     getExitQuestionStats,
-    AnalyticsFilters // Ensure this is imported
+    AnalyticsFilters
 } from '@/app/actions/analytics';
 import { StatCards } from '@/components/dashboard/stat-cards';
 import { RecentResignationsTable } from '@/components/dashboard/recent-resignations-table';
