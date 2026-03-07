@@ -9,8 +9,7 @@ export interface EmployeeDetails {
     employee_number: string;
     employee_name: string;
     date_hired: string;
-    position_when_hired: string;
-    current_position: string;
+    position: string;
 
     intermediate_supervisor: string; // New
     business_unit: string; // New
@@ -70,8 +69,8 @@ export async function getResignation() {
     // Check for existing pending resignation (pick latest if multiple exist)
     const { data: existing, error: fetchError } = await supabase
         .from('resignations')
-        .select('*, company_directory(*)')
-        .eq('employee_id', user.id)
+        .select('*, company_directory!inner(*)')
+        .eq('company_directory.email', user.email)
         .in('status', ['pending_exit_form', 'pending_interview', 'scheduled', 'locked', 'completed']) // Check relevant statuses
         .order('created_at', { ascending: false })
         .limit(1)
@@ -120,8 +119,7 @@ export async function getExitResponse(resignationId: string): Promise<{ success:
             business_unit: dir.business_unit,
             intermediate_supervisor: dir.intermediate_supervisor,
             date_hired: dir.date_hired,
-            current_position: dir.current_position,
-            position_when_hired: dir.position_when_hired,
+            position: dir.current_position || dir.position,
             date_of_resignation: data.last_working_day || ''
         };
     }

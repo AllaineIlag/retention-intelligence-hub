@@ -1,0 +1,35 @@
+[dotenv@17.2.3] injecting env (9) from .env.local -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+--- DEBUGGING FOR: justin.jackson.4910@tdk.sim.com ---
+Auth Error: AuthApiError: Database error finding users
+    at handleError (C:\Users\sungj\Documents\Agents\League of Developer v3\retention-intelligence-hub\node_modules\@supabase\auth-js\src\lib\fetch.ts:102:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _handleRequest (C:\Users\sungj\Documents\Agents\League of Developer v3\retention-intelligence-hub\node_modules\@supabase\auth-js\src\lib\fetch.ts:195:5)
+    at async _request (C:\Users\sungj\Documents\Agents\League of Developer v3\retention-intelligence-hub\node_modules\@supabase\auth-js\src\lib\fetch.ts:157:16)
+    at async GoTrueAdminApi.listUsers (C:\Users\sungj\Documents\Agents\League of Developer v3\retention-intelligence-hub\node_modules\@supabase\auth-js\src\GoTrueAdminApi.ts:222:24)
+    at async main (C:\Users\sungj\Documents\Agents\League of Developer v3\retention-intelligence-hub\debug_user.ts:15:47) {
+  __isAuthError: true,
+  status: 500,
+  code: 'unexpected_failure'
+}
+1. Auth User: Not Found
+2. Profile: Found (ID: fe23c329-b690-4737-9572-5c6c70c0f436, Role: employee)
+3. Company Directory: Found (ID: 00402121-4e02-4d92-9f3b-556c5dcb9848, control_number: EMP-04910)
+4. Resignations (by personal_email): 1 found
+   Resignation details: [
+  {
+    "id": "0044eca1-6141-4114-9bc2-7e941e7b1600",
+    "status": "scheduled",
+    "created_at": "2026-03-06T19:02:14.085303+00:00",
+    "last_working_day": "2026-02-07T00:00:00+00:00",
+    "scheduled_interview_date": "2026-03-13T19:02:00+00:00",
+    "reminder_email_sent": false,
+    "updated_at": "2026-03-06T19:02:56.399256+00:00",
+    "form_snapshot": {},
+    "personal_email": "justin.jackson.4910@tdk.sim.com",
+    "directory_id": "00402121-4e02-4d92-9f3b-556c5dcb9848"
+  }
+]
+   Resignations (by directory_id): 1 found
+
+--- 5. ACTUAL QUERY RESULT ---
+Result: Found Resignation 0044eca1-6141-4114-9bc2-7e941e7b1600

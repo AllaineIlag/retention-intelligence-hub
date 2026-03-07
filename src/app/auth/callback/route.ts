@@ -103,14 +103,9 @@ export async function GET(request: Request) {
                                 .single();
 
                             if (resignation) {
-                                console.log('[Gatekeeper] Exit Case Found. Linking User:', user.id, 'to Resignation:', resignation.id);
-                                // Link User to Resignation
-                                await supabase
-                                    .from('resignations')
-                                    .update({ employee_id: user.id })
-                                    .eq('id', resignation.id);
+                                console.log('[Gatekeeper] Exit Case Found. User verified:', user.email, 'Resignation:', resignation.id);
 
-                                // Create Active Employee Profile
+                                // Create or Update Active Employee Profile
                                 await supabase.from('profiles').upsert({
                                     id: user.id,
                                     email: user.email,

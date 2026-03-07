@@ -134,8 +134,8 @@ export function DepartmentDistributionCard({ data: initialData, className }: Dep
             )}
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                    <CardTitle className="text-base font-bold tracking-tight uppercase">Turnover Trend per Department</CardTitle>
-                    <CardDescription className="text-[10px] uppercase tracking-widest font-bold opacity-50">
+                    <CardTitle className="text-sm font-medium tracking-tight">Turnover Trend per Department</CardTitle>
+                    <CardDescription className="text-xs">
                         Attrition velocity by business unit
                     </CardDescription>
                 </div>

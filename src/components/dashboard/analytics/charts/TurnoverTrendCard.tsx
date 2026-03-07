@@ -98,8 +98,8 @@ export function TurnoverTrendCard({ data: initialData, className }: TurnoverTren
             )}
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                    <CardTitle className="text-base font-bold tracking-tight uppercase">Turnover Trend: Resignations vs Target</CardTitle>
-                    <CardDescription className="text-[10px] uppercase tracking-widest font-bold opacity-50">
+                    <CardTitle className="text-sm font-medium tracking-tight">Turnover Trend: Resignations vs Target</CardTitle>
+                    <CardDescription className="text-xs">
                         Monthly attrition tracking against 2% baseline
                     </CardDescription>
                 </div>

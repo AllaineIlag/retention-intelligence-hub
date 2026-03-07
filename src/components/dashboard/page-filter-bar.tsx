@@ -26,14 +26,20 @@ const FILTER_OPTIONS: { label: string; mode: FilterMode }[] = [
 export function PageFilterBar() {
     const { pageFilter, department, setPageFilter, setDepartmentFilter, resetPageFilter } = usePageFilter();
     const [departments, setDepartments] = useState<string[]>([]);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         getDepartments().then(res => {
             if (res.success && res.data) {
                 setDepartments(res.data);
             }
         });
     }, []);
+
+    if (!mounted) {
+        return <div className="h-9 w-[300px]" />; // Placeholder to avoid layout shift
+    }
 
     return (
         <div className="flex items-center gap-2 animate-in fade-in slide-in-from-top-1 duration-300">

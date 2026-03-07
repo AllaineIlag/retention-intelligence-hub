@@ -17,12 +17,16 @@ interface ResignationScheduledEmailProps {
     employeeName: string;
     interviewDate: string; // ISO String
     actionUrl: string;
+    tempPassword?: string;
+    employeeEmail?: string;
 }
 
 export const ResignationScheduledEmail = ({
     employeeName,
     interviewDate,
     actionUrl,
+    tempPassword,
+    employeeEmail
 }: ResignationScheduledEmailProps) => {
     const formattedDate = interviewDate
         ? format(new Date(interviewDate), 'MMMM d, yyyy @ h:mm a')
@@ -43,6 +47,7 @@ export const ResignationScheduledEmail = ({
                         <Text style={infoLabel}>Scheduled Date & Time:</Text>
                         <Text style={infoValue}>{formattedDate}</Text>
                     </Section>
+
                     <Text style={text}>
                         Please complete the Exit Form prior to your interview. You can access it using the secure link below.
                     </Text>
@@ -51,6 +56,17 @@ export const ResignationScheduledEmail = ({
                             Access Exit Form
                         </Button>
                     </Section>
+
+                    {tempPassword && employeeEmail && (
+                        <Section style={credentialsBox}>
+                            <Text style={infoLabel}>Temporary Login Credentials:</Text>
+                            <Text style={{ ...text, marginBottom: '4px' }}><strong>Email:</strong> {employeeEmail}</Text>
+                            <Text style={{ ...text, marginBottom: '0' }}><strong>Password:</strong> {tempPassword}</Text>
+                            <Text style={{ ...text, fontSize: '12px', marginTop: '12px', color: '#6b7280' }}>
+                                Please use these credentials to access the Retention Intelligence Hub portal.
+                            </Text>
+                        </Section>
+                    )}
                     <Text style={text}>
                         If you need to reschedule, please contact HR immediately.
                     </Text>
@@ -94,6 +110,14 @@ const text = {
 
 const infoBox = {
     backgroundColor: "#f9fafb",
+    borderRadius: "8px",
+    padding: "24px",
+    marginBottom: "24px",
+};
+
+const credentialsBox = {
+    backgroundColor: "#fffbeb",
+    border: "1px solid #fef3c7",
     borderRadius: "8px",
     padding: "24px",
     marginBottom: "24px",

@@ -40,7 +40,7 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
         .from('resignations')
         .select(`
             id,
-            company_directory ( full_name, email )
+            company_directory ( full_name, email, control_number )
         `)
         .eq('id', resignationId)
         .single();
@@ -50,17 +50,36 @@ export async function scheduleInterview(resignationId: string, scheduleDate: Dat
 
     // We get the email from the company directory since the profile link is gone
     const emailToUse = employeeDetails?.email;
+    let tempPassword = undefined;
 
     if (emailToUse) {
+        // [JIT Password Generation] Find profile to get auth.users UUID for password update
+        const { data: profile } = await admin
+            .from('profiles')
+            .select('id')
+            .eq('email', emailToUse)
+            .single();
+
+        if (profile && employeeDetails?.control_number) {
+            tempPassword = `TDK@${employeeDetails.control_number}`;
+            // Force update user password in Supabase Auth
+            await admin.auth.admin.updateUserById(profile.id, {
+                password: tempPassword,
+            });
+        }
+
+        const deliveryEmail = process.env.RESEND_TEST_EMAIL || emailToUse;
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [emailToUse],
+                to: [deliveryEmail],
                 subject: 'Exit Interview Scheduled & Action Required',
                 react: ResignationScheduledEmail({
                     employeeName: employeeDetails?.full_name || 'Employee',
                     interviewDate: scheduleDate.toISOString(),
-                    actionUrl: `${siteUrl}/login`
+                    actionUrl: `${siteUrl}/login`,
+                    tempPassword: tempPassword,
+                    employeeEmail: emailToUse
                 }),
             });
         } catch (emailError) {

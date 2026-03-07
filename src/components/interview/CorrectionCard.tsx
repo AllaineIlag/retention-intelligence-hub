@@ -131,20 +131,20 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
     };
 
     return (
-        <Card className="w-full h-full border-none bg-black/20 backdrop-blur-md shadow-2xl ring-1 ring-white/5 overflow-hidden flex flex-col">
-            <CardHeader className="pb-4 bg-white/[0.02] border-b border-white/5">
+        <Card className="w-full h-full border-border bg-card/60 backdrop-blur-md shadow-xl overflow-hidden flex flex-col">
+            <CardHeader className="pb-4 bg-muted/30 border-b border-border">
                 <div className="flex justify-between items-start gap-3">
-                    <CardTitle className="text-lg font-bold text-white tracking-tight leading-snug">
+                    <CardTitle className="text-lg font-bold text-foreground tracking-tight leading-snug">
                         {question?.question_text || 'Question'}
                     </CardTitle>
                     <div className="shrink-0 flex items-center gap-2">
                         {saving && (
-                            <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 px-2 py-0.5 text-[10px]">
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20 px-2 py-0.5 text-[10px]">
                                 <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Saving
                             </Badge>
                         )}
                         {saved && !saving && (
-                            <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 px-2 py-0.5 text-[10px]">
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 px-2 py-0.5 text-[10px]">
                                 <CheckCircle2 className="w-3 h-3 mr-1" /> Saved
                             </Badge>
                         )}
@@ -154,18 +154,18 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
 
             <CardContent className="space-y-6 pt-6 flex-1 flex flex-col">
                 {/* Original Answer (Read Only) */}
-                <div className="bg-white/[0.02] p-4 rounded-xl border border-white/5">
-                    <Label className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-60">
+                <div className="bg-muted/30 p-4 rounded-xl border border-border">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-70">
                         Employee's Original Answer
                     </Label>
-                    <p className="mt-2 text-blue-100 font-medium leading-relaxed text-sm">
+                    <p className="mt-2 text-foreground/90 font-medium leading-relaxed text-sm">
                         {getOriginalDisplay()}
                     </p>
                 </div>
 
                 {/* Interviewer's Correction — Dynamic by question_type */}
                 <div className="space-y-3 flex-1">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-blue-400">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-primary">
                         Verified Answer
                     </Label>
 
@@ -181,8 +181,8 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                         className={cn(
                                             "flex items-center justify-between p-4 rounded-xl border transition-all text-left group",
                                             isSelected
-                                                ? "bg-primary border-blue-500 shadow-lg shadow-blue-500/20 text-white"
-                                                : "bg-white/5 border-white/10 hover:bg-white/10 text-white/70 hover:text-white"
+                                                ? "bg-primary border-primary shadow-lg shadow-primary/20 text-primary-foreground"
+                                                : "bg-muted/50 border-border hover:bg-accent hover:border-accent text-foreground/70 hover:text-foreground"
                                         )}
                                     >
                                         <span className="text-sm font-medium">{opt.label}</span>
@@ -200,7 +200,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                         const hasAnotherJob = currentValues.some(v => v.startsWith('Another Job'));
 
                         return (
-                            <div className="space-y-2 bg-black/20 rounded-xl p-4 border border-white/5">
+                            <div className="space-y-2 bg-muted/20 rounded-xl p-4 border border-border">
                                 {options.map((opt) => {
                                     // For "Another Job", check if any variant is selected
                                     const isAnotherJobOption = isReasonQuestion && opt.value === 'Another Job';
@@ -230,13 +230,13 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
 
                                     return (
                                         <div key={opt.value}>
-                                            <label className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors cursor-pointer group">
+                                            <label className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
                                                 <Checkbox
                                                     checked={checked}
                                                     onCheckedChange={(c) => handleToggle(!!c)}
-                                                    className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-blue-600"
+                                                    className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                                                 />
-                                                <span className="text-sm text-white/80 group-hover:text-white transition-colors">{opt.label}</span>
+                                                <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors">{opt.label}</span>
                                             </label>
 
                                             {/* Sub-options: Local / Abroad */}
@@ -248,8 +248,8 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         className={cn(
                                                             'text-xs rounded-lg',
                                                             currentValues.includes('Another Job (Local)')
-                                                                ? 'bg-primary hover:bg-blue-600 text-white'
-                                                                : 'border-white/10 hover:bg-white/5 text-white/70'
+                                                                ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                                                : 'bg-muted/50 border-border hover:bg-accent text-foreground/70'
                                                         )}
                                                         onClick={() => {
                                                             const without = currentValues.filter(v => !v.startsWith('Another Job'));
@@ -266,8 +266,8 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         className={cn(
                                                             'text-xs rounded-lg',
                                                             currentValues.includes('Another Job (Abroad)')
-                                                                ? 'bg-primary hover:bg-blue-600 text-white'
-                                                                : 'border-white/10 hover:bg-white/5 text-white/70'
+                                                                ? 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                                                : 'bg-muted/50 border-border hover:bg-accent text-foreground/70'
                                                         )}
                                                         onClick={() => {
                                                             const without = currentValues.filter(v => !v.startsWith('Another Job'));
@@ -295,7 +295,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={countryOpen}
-                                    className="w-full justify-between bg-black/40 border-white/10 hover:bg-white/5 text-white rounded-xl h-12"
+                                    className="w-full justify-between bg-muted/40 border-border hover:bg-accent text-foreground rounded-xl h-12"
                                 >
                                     {typeof value === 'string' && value
                                         ? value
@@ -303,7 +303,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 h-[300px] bg-zinc-900 border-white/10">
+                            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 h-[300px] bg-popover border-border">
                                 <Command>
                                     <CommandInput placeholder="Search country..." />
                                     <CommandList>
@@ -317,7 +317,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                                         handleSelectChange(country);
                                                         setCountryOpen(false);
                                                     }}
-                                                    className="text-white focus:bg-primary focus:text-white"
+                                                    className="text-foreground focus:bg-primary focus:text-primary-foreground"
                                                 >
                                                     <Check
                                                         className={cn(
@@ -342,7 +342,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                 placeholder="Enter the verified answer..."
                                 value={typeof value === 'string' ? value : ''}
                                 onChange={(e) => handleTextChange(e.target.value)}
-                                className="bg-black/40 border-white/10 focus:border-primary/50 focus:ring-primary/20 min-h-[120px] text-white rounded-xl transition-all"
+                                className="bg-muted/40 border-border focus:border-primary/50 focus:ring-primary/20 min-h-[120px] text-foreground rounded-xl transition-all"
                             />
                             <div className="flex justify-end">
                                 <Button
@@ -350,7 +350,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                                     size="sm"
                                     onClick={handleManualSave}
                                     disabled={saving || saved}
-                                    className="text-xs text-muted-foreground hover:text-blue-400"
+                                    className="text-xs text-muted-foreground hover:text-primary"
                                 >
                                     <Save className="w-3 h-3 mr-1" />
                                     {saving ? 'Saving...' : saved ? 'Saved' : 'Save Now'}
@@ -361,11 +361,11 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                 </div>
 
                 {/* Next button / Verification Footer */}
-                <div className="pt-4 mt-auto border-t border-white/5 flex flex-col gap-3">
+                <div className="pt-4 mt-auto border-t border-border flex flex-col gap-3">
                     {!verifiedResult && !saving && (
                         <Button
                             onClick={() => doSave(value)}
-                            className="w-full bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/20 py-6 font-bold"
+                            className="w-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 py-6 font-bold"
                         >
                             <CheckCircle2 className="w-5 h-5 mr-2" /> Confirm & Mark as Correct
                         </Button>
@@ -375,7 +375,7 @@ export function CorrectionCard({ response, verifiedResult, resignationId, onSave
                         <Button
                             variant="outline"
                             onClick={onNext}
-                            className="w-full border-white/10 hover:bg-white/5 text-white/80 hover:text-white py-5"
+                            className="w-full border-border hover:bg-muted text-foreground/80 hover:text-foreground py-5"
                         >
                             Next Question <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>

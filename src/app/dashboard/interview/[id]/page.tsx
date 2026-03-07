@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { UserCircle, Lock } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default async function InterviewPage({ params }: { params: { id: string } }) {
     const { id } = await params;
@@ -59,9 +60,9 @@ export default async function InterviewPage({ params }: { params: { id: string }
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
 
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                        <UserCircle className="w-8 h-8 text-blue-600" />
-                        Interview: {
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight flex items-center gap-3">
+                        <UserCircle className="w-8 h-8 text-primary" />
+                        Interviewee: {
                             role === 'lead'
                                 ? (details?.full_name || details?.email)
                                 : (details?.role ? `${details.role} #${(resignation as any).employee_id?.slice(0, 8)}` : 'Employee')
@@ -77,17 +78,18 @@ export default async function InterviewPage({ params }: { params: { id: string }
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="text-slate-600 border-slate-300">
+                    <Badge variant="outline" className="text-muted-foreground border-border">
                         {details?.role || 'Employee'}
                     </Badge>
 
-                    <Badge className={`
-            ${resignation.status === 'completed' ? 'bg-green-100 text-green-700 hover:bg-green-200' : ''}
-            ${resignation.status === 'scheduled' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : ''}
-            ${resignation.status === 'pending_interview' ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : ''}
-            ${resignation.status === 'pending_exit_form' || resignation.status === 'pending_interview' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : ''}
-            ${resignation.status === 'cancelled' ? 'bg-red-100 text-red-700 hover:bg-red-200' : ''}
-          `}>
+                    <Badge variant="outline" className={cn(
+                        "font-semibold",
+                        resignation.status === 'completed' && "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+                        resignation.status === 'scheduled' && "bg-primary/10 text-primary border-primary/20",
+                        resignation.status === 'pending_interview' && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+                        resignation.status === 'pending_exit_form' && "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+                        resignation.status === 'cancelled' && "bg-destructive/10 text-destructive border-destructive/20"
+                    )}>
                         Status: {resignation.status?.replace(/_/g, ' ').toUpperCase()}
                     </Badge>
                 </div>

@@ -65,15 +65,14 @@ export function StepSummary({
                 {/* Section 1: Employee Information */}
                 <Card>
                     <CardHeader className="bg-muted/30 pb-4">
-                        <SectionHeader title="Employee Information" onEdit={() => onEdit('info')} readOnly={readOnly} />
+                        <SectionHeader title="Employee Information" onEdit={() => onEdit('info')} readOnly={true} />
                     </CardHeader>
                     <CardContent className="pt-6">
                         <InfoItem label="Full Name" value={details.employee_name} />
                         <InfoItem label="Employee ID" value={details.employee_number} />
                         <InfoItem label="Date Hired" value={formatDate(details.date_hired)} />
                         <InfoItem label="Date of Resignation" value={formatDate(details.date_of_resignation)} />
-                        <InfoItem label="Position (Hired)" value={details.position_when_hired} />
-                        <InfoItem label="Current Position" value={details.current_position} />
+                        <InfoItem label="Position" value={details.position} />
                         <InfoItem label="Department" value={details.department} />
                         <InfoItem label="Business Unit" value={details.business_unit} />
                         <InfoItem label="Supervisor" value={details.intermediate_supervisor} />

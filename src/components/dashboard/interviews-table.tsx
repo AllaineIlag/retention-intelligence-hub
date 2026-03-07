@@ -755,11 +755,27 @@ function DataTable({
                                                 </div>
                                             ) : tabType === 'pending_interview' ? (
                                                 <div className="flex justify-end">
-                                                    <Button asChild size="sm" className="bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20 shrink-0">
-                                                        <Link href={`/dashboard/interview/${interview.id}`}>
-                                                            Go to Interview
-                                                            <ArrowRight className="ml-2 h-3 w-3" />
-                                                        </Link>
+                                                    <Button
+                                                        asChild={interview.status === 'pending_interview'}
+                                                        disabled={interview.status !== 'pending_interview'}
+                                                        size="sm"
+                                                        className={`shrink-0 transition-all ${interview.status === 'pending_interview'
+                                                                ? 'bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-900/20'
+                                                                : 'bg-muted/80 text-muted-foreground/70 cursor-not-allowed border border-border/50 shadow-none'
+                                                            }`}
+                                                        title={interview.status !== 'pending_interview' ? "Waiting for employee to complete exit form" : ""}
+                                                    >
+                                                        {interview.status === 'pending_interview' ? (
+                                                            <Link href={`/dashboard/interview/${interview.id}`}>
+                                                                Go to Interview
+                                                                <ArrowRight className="ml-2 h-3 w-3" />
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="flex items-center">
+                                                                Go to Interview
+                                                                <ArrowRight className="ml-2 h-3 w-3 opacity-50" />
+                                                            </span>
+                                                        )}
                                                     </Button>
                                                 </div>
                                             ) : (

@@ -40,28 +40,28 @@ function LoginForm() {
 
     return (
         <Card className="w-full max-w-md border-border bg-card/80 backdrop-blur-xl shadow-2xl relative z-10">
-            <CardHeader className="space-y-4 pb-6">
-                <div className="flex items-center gap-4">
+            <CardHeader className="space-y-4 text-center pb-6">
+                <div className="flex justify-center mb-2">
                     {isForbidden ? (
-                        <div className="rounded-2xl p-3 ring-1 ring-border bg-destructive/10">
+                        <div className="rounded-2xl p-4 ring-1 ring-border bg-destructive/10">
                             <ShieldX className="h-8 w-8 text-destructive" />
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center p-2.5 rounded-2xl bg-accent/30 border border-border shadow-sm shrink-0">
-                            <Image src="/tdk-logo.png" alt="TDK Logo" width={48} height={34} className="object-contain" priority />
+                        <div className="flex items-center justify-center p-3 rounded-2xl bg-accent/30 border border-border shadow-sm">
+                            <Image src="/tdk-logo.png" alt="TDK Logo" width={64} height={46} className="object-contain" priority />
                         </div>
                     )}
-                    <div className="space-y-1 text-left">
-                        <CardTitle className="text-xl font-bold tracking-tight text-foreground leading-tight">
-                            {isForbidden ? 'Access Denied' : 'Retention Intelligence Hub'}
-                        </CardTitle>
-                        <CardDescription className="text-muted-foreground font-medium text-[13px]">
-                            {isForbidden
-                                ? 'Your account is not authorized to access this system.'
-                                : 'Enter credentials to access the system'
-                            }
-                        </CardDescription>
-                    </div>
+                </div>
+                <div className="space-y-1">
+                    <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+                        {isForbidden ? 'Access Denied' : 'Account Login'}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground font-medium">
+                        {isForbidden
+                            ? 'Your account is not authorized to access this system.'
+                            : 'Enter credentials to access the Retention Intelligence Hub'
+                        }
+                    </CardDescription>
                 </div>
             </CardHeader>
             <CardContent>
@@ -145,7 +145,7 @@ function LoginForm() {
                                 {isLoading ? (
                                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 ) : (
-                                    'Secure Login'
+                                    'Login'
                                 )}
                             </Button>
 

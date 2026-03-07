@@ -54,10 +54,11 @@ export async function verifyResignation(resignationId: string, lastWorkingDay: D
     const targetEmail = detail?.personal_email || profile?.email;
 
     if (targetEmail) {
+        const deliveryEmail = process.env.RESEND_TEST_EMAIL || targetEmail;
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [targetEmail],
+                to: [deliveryEmail],
                 subject: 'Resignation Notice Received',
                 react: ResignationAckEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });
@@ -114,10 +115,11 @@ export async function approveResignation(resignationId: string, scheduleDate: Da
     const targetEmail = detail?.personal_email || profile?.email;
 
     if (targetEmail) {
+        const deliveryEmail = process.env.RESEND_TEST_EMAIL || targetEmail;
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [targetEmail],
+                to: [deliveryEmail],
                 subject: 'Exit Interview Scheduled',
                 react: ResignationApprovalEmail({
                     employeeName: employeeDetails?.full_name || 'Employee',
@@ -170,10 +172,11 @@ export async function declineResignation(resignationId: string) {
     const targetEmail = resignation?.personal_email || profile?.email;
 
     if (targetEmail) {
+        const deliveryEmail = process.env.RESEND_TEST_EMAIL || targetEmail;
         try {
             await resend.emails.send({
                 from: process.env.RESEND_FROM_EMAIL || EMAIL_CONFIG.FROM,
-                to: [targetEmail],
+                to: [deliveryEmail],
                 subject: 'Update Regarding Your Resignation',
                 react: ResignationDeclineEmail({ employeeName: employeeDetails?.full_name || 'Employee' }),
             });

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Retention Intelligence Hub | @League of Developer',
+  title: 'Retention Intelligence Hub',
   description: 'Predict. Prevent. Retain. The advanced analytics platform for modern HR teams.',
 };
 

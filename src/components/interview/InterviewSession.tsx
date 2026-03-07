@@ -209,15 +209,15 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
     return (
         <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-140px)] gap-6">
             {/* LEFT: Sidebar with Tabs */}
-            <div className="w-full lg:w-[380px] bg-black/20 rounded-2xl border border-white/5 flex flex-col overflow-hidden backdrop-blur-md shrink-0">
+            <div className="w-full lg:w-[380px] bg-card/60 rounded-2xl border border-border flex flex-col overflow-hidden backdrop-blur-md shrink-0">
                 <Tabs defaultValue="questionnaire" className="flex flex-col h-full" onValueChange={(v) => setActiveTab(v)}>
-                    <div className="p-4 border-b border-white/5 bg-white/[0.02]">
-                        <TabsList className="w-full bg-black/30 p-1">
-                            <TabsTrigger value="personal" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5">
+                    <div className="p-4 border-b border-border bg-muted/30">
+                        <TabsList className="w-full bg-muted/50 p-1">
+                            <TabsTrigger value="personal" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
                                 <User className="w-3.5 h-3.5" />
                                 Personal Info
                             </TabsTrigger>
-                            <TabsTrigger value="questionnaire" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-white gap-1.5">
+                            <TabsTrigger value="questionnaire" className="flex-1 text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5">
                                 <ClipboardList className="w-3.5 h-3.5" />
                                 Questionnaire
                             </TabsTrigger>
@@ -254,40 +254,40 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                                         onClick={() => setSelectedResponseId(response.id)}
                                         disabled={questionStatus === 'skipped'}
                                         className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
-                                            ? 'bg-primary/10 border-primary/30'
+                                            ? 'bg-primary/10 border-primary/20 shadow-sm'
                                             : questionStatus === 'skipped'
-                                                ? 'bg-transparent border-transparent opacity-30 grayscale cursor-not-allowed'
-                                                : 'bg-transparent border-transparent hover:bg-white/5'
+                                                ? 'bg-transparent border-transparent opacity-40 grayscale cursor-not-allowed'
+                                                : 'bg-transparent border-transparent hover:bg-muted/50'
                                             }`}
                                     >
                                         <div className="flex justify-between items-start gap-2 mb-1.5">
-                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-blue-400' :
-                                                questionStatus === 'skipped' ? 'line-through text-gray-500' : 'text-gray-300'
+                                            <span className={`font-semibold text-xs leading-tight line-clamp-2 ${isSelected ? 'text-primary' :
+                                                questionStatus === 'skipped' ? 'line-through text-muted-foreground' : 'text-foreground/80'
                                                 }`}>
                                                 {response.question?.question_text || `Question ${index + 1}`}
                                             </span>
                                             {questionStatus === 'skipped' ? (
                                                 <div className="flex items-center gap-1">
-                                                    <span className="text-[9px] text-white/40 font-bold uppercase tracking-tighter">N/A</span>
+                                                    <span className="text-[9px] text-foreground/40 font-bold uppercase tracking-tighter">N/A</span>
                                                 </div>
                                             ) : questionStatus === 'modified' ? (
                                                 <div className="flex items-center gap-1">
-                                                    <Pencil className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                                                    <span className="text-[9px] text-amber-400/60 font-bold uppercase tracking-tighter">Edit</span>
+                                                    <Pencil className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                                    <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60 font-bold uppercase tracking-tighter">Edit</span>
                                                 </div>
                                             ) : questionStatus === 'confirmed' ? (
                                                 <div className="flex items-center gap-1">
-                                                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 shadow-[0_0_8px_rgba(52,211,153,0.3)]" />
+                                                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5 shadow-[0_0_8px_rgba(16,185,129,0.2)]" />
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-1">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-white/20 shrink-0 mt-1.5 mr-1" />
-                                                    <span className="text-[9px] text-white/20 font-bold uppercase tracking-tighter">Pending</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-foreground/20 shrink-0 mt-1.5 mr-1" />
+                                                    <span className="text-[9px] text-foreground/20 font-bold uppercase tracking-tighter">Pending</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-blue-300/50' :
-                                            questionStatus === 'skipped' ? 'text-gray-600' : 'text-muted-foreground/40'
+                                        <p className={`line-clamp-1 text-[11px] leading-relaxed ${isSelected ? 'text-primary/60' :
+                                            questionStatus === 'skipped' ? 'text-muted-foreground/50' : 'text-muted-foreground'
                                             }`}>
                                             {questionStatus === 'skipped' ? 'Not Required' : getAnswerPreview(response)}
                                         </p>
@@ -335,9 +335,9 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                         />
                     </motion.div>
                 ) : (
-                    <div className="flex-1 flex items-center justify-center text-muted-foreground bg-black/10 rounded-2xl border border-dashed border-white/10">
-                        <p className="flex items-center gap-2">
-                            <AlertCircle className="w-5 h-5" />
+                    <div className="flex-1 flex items-center justify-center text-muted-foreground bg-muted/30 rounded-2xl border border-dashed border-border">
+                        <p className="flex items-center gap-2 text-sm">
+                            <AlertCircle className="w-5 h-5 opacity-50" />
                             Select a question to begin
                         </p>
                     </div>
@@ -352,7 +352,7 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
                         className="pt-2"
                     >
                         <Button
-                            className="bg-brand-primary hover:bg-brand-primary/90 text-white h-11 px-6 rounded-xl shadow-lg shadow-brand-primary/20 transition-all active:scale-[0.98]"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-6 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                             onClick={() => setShowConfirmDialog(true)}
                             disabled={finishing}
                         >
@@ -364,23 +364,23 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
 
             {/* Finalize Confirmation Dialog */}
             <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-                <AlertDialogContent className="bg-zinc-900 border border-white/10 text-white max-w-md">
+                <AlertDialogContent className="bg-popover border border-border text-foreground max-w-md">
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-amber-400" />
+                        <AlertDialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             Finalize & Seal Case
                         </AlertDialogTitle>
-                        <AlertDialogDescription className="text-white/60 text-sm leading-relaxed">
-                            This action will <span className="text-amber-400 font-semibold">permanently lock</span> all verified answers for this interview. No further edits will be possible.
+                        <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed">
+                            This action will <span className="text-amber-600 dark:text-amber-400 font-semibold">permanently lock</span> all verified answers for this interview. No further edits will be possible.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="gap-2">
-                        <AlertDialogCancel className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white">
+                        <AlertDialogCancel className="bg-muted hover:bg-accent text-foreground/70 hover:text-foreground border-border">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleFinalize}
-                            className="bg-primary hover:bg-blue-600 text-white font-bold"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
                         >
                             <ThumbsUp className="w-4 h-4 mr-2" />
                             Yes, Seal It
@@ -397,15 +397,15 @@ export function InterviewSession({ resignation, responses: rawResponses, verifie
 // --- Constants & Config ---
 
 const PERSONAL_FIELDS = [
-    { key: 'personal_full_name', label: 'Full Name', icon: <User className="w-4 h-4 text-blue-400" />, rawKey: 'full_name', type: 'text' },
-    { key: 'personal_employee_number', label: 'Employee Number', icon: <Shield className="w-4 h-4 text-emerald-400" />, rawKey: 'employee_number', type: 'text' },
-    { key: 'personal_business_unit', label: 'Business Unit', icon: <Briefcase className="w-4 h-4 text-orange-400" />, rawKey: 'business_unit', type: 'business_unit' },
-    { key: 'personal_current_position', label: 'Current Position', icon: <Briefcase className="w-4 h-4 text-cyan-400" />, rawKey: 'current_position', type: 'position' },
-    { key: 'personal_position_hired', label: 'Position When Hired', icon: <Briefcase className="w-4 h-4 text-slate-400" />, rawKey: 'position_when_hired', type: 'position' },
-    { key: 'personal_department', label: 'Department', icon: <MapPin className="w-4 h-4 text-amber-400" />, rawKey: 'department', type: 'department' },
-    { key: 'personal_date_hired', label: 'Date Hired', icon: <Calendar className="w-4 h-4 text-purple-400" />, rawKey: 'date_hired', type: 'date' },
-    { key: 'personal_immediate_superior', label: 'Immediate Superior', icon: <User className="w-4 h-4 text-rose-400" />, rawKey: 'immediate_superior', type: 'supervisor' },
-    { key: 'personal_resignation_date', label: 'Resignation Date', icon: <Calendar className="w-4 h-4 text-red-400" />, rawKey: 'resignation_date', type: 'date' },
+    { key: 'personal_full_name', label: 'Full Name', icon: <User className="w-4 h-4 text-primary" />, rawKey: 'full_name', type: 'text' },
+    { key: 'personal_employee_number', label: 'Employee Number', icon: <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />, rawKey: 'employee_number', type: 'text' },
+    { key: 'personal_business_unit', label: 'Business Unit', icon: <Briefcase className="w-4 h-4 text-orange-600 dark:text-orange-400" />, rawKey: 'business_unit', type: 'business_unit' },
+    { key: 'personal_current_position', label: 'Current Position', icon: <Briefcase className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />, rawKey: 'current_position', type: 'position' },
+    { key: 'personal_position_hired', label: 'Position When Hired', icon: <Briefcase className="w-4 h-4 text-slate-500" />, rawKey: 'position_when_hired', type: 'position' },
+    { key: 'personal_department', label: 'Department', icon: <MapPin className="w-4 h-4 text-amber-600 dark:text-amber-400" />, rawKey: 'department', type: 'department' },
+    { key: 'personal_date_hired', label: 'Date Hired', icon: <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />, rawKey: 'date_hired', type: 'date' },
+    { key: 'personal_immediate_superior', label: 'Immediate Superior', icon: <User className="w-4 h-4 text-rose-600 dark:text-rose-400" />, rawKey: 'immediate_superior', type: 'supervisor' },
+    { key: 'personal_resignation_date', label: 'Resignation Date', icon: <Calendar className="w-4 h-4 text-red-600 dark:text-red-400" />, rawKey: 'resignation_date', type: 'date' },
 ];
 
 
@@ -465,23 +465,23 @@ function PersonalInfoSidebarItem({ field, employee, resignation, verifiedResults
         <button
             onClick={onSelect}
             className={`w-full text-left p-3.5 rounded-xl text-sm transition-all border relative overflow-hidden group ${isSelected
-                ? 'bg-primary/10 border-primary/30'
-                : 'bg-transparent border-transparent hover:bg-white/5'
+                ? 'bg-primary/10 border-primary/20 shadow-sm'
+                : 'bg-transparent border-transparent hover:bg-muted/50'
                 }`}
         >
             <div className="flex items-center gap-3">
                 <div className="mt-0.5 shrink-0">{field.icon}</div>
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? 'text-blue-300' : 'text-muted-foreground/60'}`}>
+                        <p className={`text-[10px] uppercase tracking-widest font-bold ${isSelected ? 'text-primary' : 'text-muted-foreground/60'}`}>
                             {field.label}
                         </p>
                         <div className="flex items-center gap-1">
-                            {isModified && <Pencil className="w-3.5 h-3.5 text-amber-400" />}
-                            {isConfirmed && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                            {isModified && <Pencil className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
+                            {isConfirmed && <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
                         </div>
                     </div>
-                    <p className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-white/80'}`}>
+                    <p className={`text-sm font-medium truncate ${isSelected ? 'text-foreground' : 'text-foreground/80'}`}>
                         {verifiedDisplay ?? originalDisplay}
                     </p>
                 </div>
@@ -613,7 +613,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
         }
         return (
             <input
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-4 text-lg text-white outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-white/20"
+                className="w-full bg-muted/40 border border-border rounded-xl px-4 py-4 text-lg text-foreground outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all placeholder:text-foreground/20"
                 placeholder={`Enter correct ${field.label.toLowerCase()}...`}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
@@ -629,28 +629,28 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex-1 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden flex flex-col shadow-2xl"
+            className="flex-1 bg-card/60 backdrop-blur-xl border border-border rounded-2xl overflow-hidden flex flex-col shadow-xl"
         >
             {/* Header */}
-            <div className="p-6 border-b border-white/5 bg-gradient-to-r from-primary/5 to-transparent">
+            <div className="p-6 border-b border-border bg-muted/30">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-blue-400">
+                    <div className="p-2 rounded-lg bg-primary/10 border border-primary/20 text-primary">
                         {field.icon}
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-white tracking-tight">{field.label}</h2>
-                        <p className="text-sm text-blue-300/60 font-medium">Personal Information Correction</p>
+                        <h2 className="text-xl font-bold text-foreground tracking-tight">{field.label}</h2>
+                        <p className="text-sm text-muted-foreground font-medium">Personal Information Correction</p>
                     </div>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 {/* Original Answer */}
-                <div className="space-y-3 opacity-60 hover:opacity-100 transition-opacity">
+                <div className="space-y-3 opacity-80 hover:opacity-100 transition-opacity">
                     <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold pl-1">
                         Employee's Original Entry
                     </p>
-                    <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-lg text-white/90 font-medium leading-relaxed">
+                    <div className="p-4 rounded-xl bg-muted/30 border border-border text-lg text-foreground/90 font-medium leading-relaxed">
                         {originalDisplay || 'N/A'}
                     </div>
                 </div>
@@ -658,12 +658,12 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                 {/* Verified Answer Input */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold pl-1 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                        <p className="text-[10px] uppercase tracking-widest text-primary font-bold pl-1 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                             Verified Information
                         </p>
                         {value !== rawOriginal && (
-                            <span className="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">
+                            <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">
                                 MODIFIED
                             </span>
                         )}
@@ -678,7 +678,7 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                             <Button
                                 variant="ghost"
                                 onClick={() => setValue(verifiedValue ?? rawOriginal)}
-                                className="text-white/40 hover:text-white hover:bg-white/5"
+                                className="text-muted-foreground hover:text-foreground hover:bg-muted"
                             >
                                 Cancel
                             </Button>
@@ -689,8 +689,8 @@ function PersonalInfoCorrectionCard({ fieldKey, resignationId, employee, verifie
                             className={cn(
                                 "font-bold shadow-lg transition-all",
                                 value !== (verifiedValue ?? rawOriginal)
-                                    ? "bg-primary hover:bg-blue-600 text-white shadow-blue-500/20"
-                                    : "bg-white/5 text-white/40 hover:bg-white/10"
+                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20"
+                                    : "bg-muted text-muted-foreground"
                             )}
                         >
                             {saving ? (

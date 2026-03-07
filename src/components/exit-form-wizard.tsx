@@ -98,8 +98,7 @@ export function ExitFormWizard({
     employee_number: initialResponse?.employee_details?.employee_number || profile?.employee_number || '',
     employee_name: initialResponse?.employee_details?.employee_name || profile?.full_name || '',
     date_hired: initialResponse?.employee_details?.date_hired || profile?.date_hired || '',
-    position_when_hired: initialResponse?.employee_details?.position_when_hired || profile?.position_when_hired || '',
-    current_position: initialResponse?.employee_details?.current_position || profile?.current_position || '',
+    position: initialResponse?.employee_details?.position || profile?.position || '',
     business_unit: initialResponse?.employee_details?.business_unit || profile?.business_unit || '',
     intermediate_supervisor: initialResponse?.employee_details?.intermediate_supervisor || profile?.intermediate_supervisor || '',
     department: initialResponse?.employee_details?.department || profile?.department || '',
@@ -252,8 +251,7 @@ export function ExitFormWizard({
         'employee_number',
         'date_hired',
         'date_of_resignation',
-        'position_when_hired',
-        'current_position',
+        'position',
         'department',
         'business_unit',
         'intermediate_supervisor',
@@ -495,9 +493,9 @@ export function ExitFormWizard({
                     <FieldLabel htmlFor="employee_name">Full Name</FieldLabel>
                     <Input
                       id="employee_name"
-                      placeholder="Juan Dela Cruz"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                       value={details.employee_name}
-                      onChange={(e) => updateDetail('employee_name', e.target.value)}
                     />
                   </Field>
 
@@ -505,102 +503,70 @@ export function ExitFormWizard({
                     <FieldLabel htmlFor="employee_number">Employee Number</FieldLabel>
                     <Input
                       id="employee_number"
-                      placeholder="EMP-001"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                       value={details.employee_number}
-                      onChange={(e) => updateDetail('employee_number', e.target.value)}
                     />
                   </Field>
 
-                  <DatePicker
-                    label="Date of Hire"
-                    id="date_hired"
-                    date={details.date_hired ? new Date(details.date_hired) : undefined}
-                    onChange={(date) => updateDetail('date_hired', date?.toISOString() || '')}
-                    placeholder="Pick hire date"
-                  />
-
-                  <DatePicker
-                    label="Date of Resignation"
-                    id="date_of_resignation"
-                    date={details.date_of_resignation ? new Date(details.date_of_resignation) : undefined}
-                    onChange={(date) => updateDetail('date_of_resignation', date?.toISOString() || '')}
-                    placeholder="Pick resignation date"
-                    disabled={true}
-                  />
-
                   <Field>
-                    <FieldLabel htmlFor="pos_hired">Position when Hired</FieldLabel>
-                    <Select
-                      value={details.position_when_hired}
-                      onValueChange={(val) => updateDetail('position_when_hired', val)}
-                    >
-                      <SelectTrigger id="pos_hired">
-                        <SelectValue placeholder="Select position" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {positions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel htmlFor="date_hired">Date of Hire</FieldLabel>
+                    <Input
+                      id="date_hired"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                      value={details.date_hired ? new Date(details.date_hired).toLocaleDateString() : ''}
+                    />
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="pos_current">Current Position</FieldLabel>
-                    <Select
-                      value={details.current_position}
-                      onValueChange={(val) => updateDetail('current_position', val)}
-                    >
-                      <SelectTrigger id="pos_current">
-                        <SelectValue placeholder="Select position" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {positions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <FieldLabel htmlFor="date_of_resignation">Date of Resignation</FieldLabel>
+                    <Input
+                      id="date_of_resignation"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                      value={details.date_of_resignation ? new Date(details.date_of_resignation).toLocaleDateString() : ''}
+                    />
+                  </Field>
+
+                  <Field>
+                    <FieldLabel htmlFor="pos_current">Position</FieldLabel>
+                    <Input
+                      id="pos_current"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
+                      value={details.position}
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="department">Department</FieldLabel>
-                    <Select
+                    <Input
+                      id="department"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                       value={details.department}
-                      onValueChange={(val) => updateDetail('department', val)}
-                    >
-                      <SelectTrigger id="department">
-                        <SelectValue placeholder="Select department" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departments.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="business_unit">Business Unit</FieldLabel>
-                    <Select
+                    <Input
+                      id="business_unit"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                       value={details.business_unit}
-                      onValueChange={(val) => updateDetail('business_unit', val)}
-                    >
-                      <SelectTrigger id="business_unit">
-                        <SelectValue placeholder="Select business unit" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {businessUnits.map(bu => <SelectItem key={bu} value={bu}>{bu}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="intermediate_supervisor">Department/Immediate Supervisor</FieldLabel>
-                    <Select
+                    <Input
+                      id="intermediate_supervisor"
+                      readOnly
+                      className="bg-muted cursor-not-allowed"
                       value={details.intermediate_supervisor}
-                      onValueChange={(val) => updateDetail('intermediate_supervisor', val)}
-                    >
-                      <SelectTrigger id="intermediate_supervisor">
-                        <SelectValue placeholder="Select supervisor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {supervisors.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    />
                   </Field>
                 </FieldGroup>
               )}
