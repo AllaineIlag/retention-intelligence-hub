@@ -51,7 +51,7 @@ export default async function ExportPrintPage({ searchParams }: Props) {
     const filters: AnalyticsFilters = {
         startDate: params.startDate ? parseISO(params.startDate) : startOfMonth(subMonths(today, 5)),
         endDate: params.endDate ? parseISO(params.endDate) : endOfMonth(today),
-        department: params.department || undefined,
+        department: params.department ? [params.department] : undefined,
     };
 
     // Fetch all data in parallel
@@ -199,10 +199,10 @@ export default async function ExportPrintPage({ searchParams }: Props) {
                             <div
                                 key={insight.id}
                                 className={`p-4 rounded-xl border ${insight.type === 'critical'
-                                        ? 'bg-red-950/20 border-red-500/20'
-                                        : insight.type === 'warning'
-                                            ? 'bg-amber-950/20 border-amber-500/20'
-                                            : 'bg-emerald-950/20 border-emerald-500/20'
+                                    ? 'bg-red-950/20 border-red-500/20'
+                                    : insight.type === 'warning'
+                                        ? 'bg-amber-950/20 border-amber-500/20'
+                                        : 'bg-emerald-950/20 border-emerald-500/20'
                                     }`}
                             >
                                 <p className="text-sm font-semibold text-foreground">{insight.title}</p>
